@@ -20,17 +20,17 @@ public class TravellerController {
         this.travellerService = travellerService;
     }
 
-//    @PostMapping("/login")
-//    public ResponseEntity<ApiResponse<String>> login(@RequestBody TravellerLoginDTO request) {
-//        logger.info("Received request to login traveller with email: {}", request.getEmail());
-//        try {
-//            ApiResponse<String> response = travellerService.loginTraveller(request);
-//            return ResponseEntity.ok(response);
-//        } catch (Exception e) {
-//            logger.error("An error occurred while log in traveller with email: {}", request.getEmail(), e);
-//            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while log in traveller"));
-//        }
-//    }
+    @PostMapping("/login")
+    public ResponseEntity<ApiResponse<String>> login(@RequestBody TravellerLoginDTO request) {
+        logger.info("Received request to login traveller with email: {}", request.getEmail());
+        try {
+            ApiResponse<String> response = travellerService.loginTraveller(request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while log in traveller with email: {}", request.getEmail(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while log in traveller"));
+        }
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<String>> signup(@RequestBody TravellerSignupDTO request) {

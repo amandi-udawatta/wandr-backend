@@ -7,6 +7,8 @@ import com.wandr.backend.service.TravellerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Optional;
@@ -17,22 +19,26 @@ public class TravellerServiceImpl implements TravellerService {
     private final TravellerDAO travellerDAO;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    private static final Logger logger = LoggerFactory.getLogger(TravellerServiceImpl.class);
+
     @Autowired
     public TravellerServiceImpl(TravellerDAO travellerDAO, BCryptPasswordEncoder passwordEncoder) {
         this.travellerDAO = travellerDAO;
         this.passwordEncoder = passwordEncoder;
     }
 
-//    @Override
-//    public ApiResponse<String> loginTraveller(TravellerLoginDTO request) {
-//        Optional<Traveller> travellerOpt = travellerDAO.findByEmail(request.getEmail());
-//
-//        if (travellerOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), travellerOpt.get().getPassword())) {
-//            return new ApiResponse<>(false, 401, "Invalid email or password");
-//        }
-//        return new ApiResponse<>(true, 200, "Traveller Login successful");
-//
-//    }
+    @Override
+    public ApiResponse<String> loginTraveller(TravellerLoginDTO request) {
+        Optional<Traveller> travellerOpt = travellerDAO.findByEmail(request.getEmail());
+
+        if (travellerOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), travellerOpt.get().getPassword())) {
+            logger.error("Invalid email or password for traveller with email: {}", request.getEmail());
+            return new ApiResponse<>(false, 401, "Invalid email or password");
+        }
+        logger.info("Traveller with email: {} logged in successfully", request.getEmail());
+        return new ApiResponse<>(true, 200, "Traveller Login successful");
+
+    }
 
     @Override
     public ApiResponse<String> registerTraveller(TravellerSignupDTO request) {
