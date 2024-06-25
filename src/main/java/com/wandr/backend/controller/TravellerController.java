@@ -49,6 +49,7 @@ public class TravellerController {
         logger.info("Received request to update categories for traveller with ID: {}", travellerId);
         try {
             ApiResponse<String> response = travellerService.updateCategories(travellerId, request);
+            logger.info("Categories updated successfully for traveller with ID: {}", travellerId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while updating categories for traveller with ID: {}", travellerId, e);
@@ -61,6 +62,7 @@ public class TravellerController {
         logger.info("Received request to update activities for traveller with ID: {}", travellerId);
         try {
             ApiResponse<String> response = travellerService.updateActivities(travellerId, request);
+            logger.info("Activities updated successfully for traveller with ID: {}", travellerId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while updating activities for traveller with ID: {}", travellerId, e);
