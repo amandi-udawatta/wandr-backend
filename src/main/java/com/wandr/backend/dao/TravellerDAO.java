@@ -52,4 +52,9 @@ public class TravellerDAO {
         List<Traveller> travellers = jdbcTemplate.query(sql, new Object[]{email}, new TravellerRowMapper());
         return travellers.isEmpty() ? Optional.empty() : Optional.of(travellers.get(0));
     }
+
+    public void updateTravellerJwt(String jwt, Long travellerId) {
+        String sql = "UPDATE travellers SET jwt = ? WHERE traveller_id = ?";
+        jdbcTemplate.update(sql, jwt, travellerId);
+    }
 }
