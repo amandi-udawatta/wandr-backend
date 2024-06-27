@@ -2,11 +2,15 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
 import com.wandr.backend.service.TravellerService;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/travellers")
@@ -21,16 +25,18 @@ public class TravellerController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@RequestBody TravellerLoginDTO request) {
+    public ResponseEntity<ApiResponse<UserDetailsDTO>> login(@RequestBody TravellerLoginDTO request) {
         logger.info("Received request to login traveller with email: {}", request.getEmail());
         try {
-            ApiResponse<String> response = travellerService.loginTraveller(request);
+            ApiResponse<UserDetailsDTO> response = travellerService.loginTraveller(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("An error occurred while log in traveller with email: {}", request.getEmail(), e);
-            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while log in traveller"));
+            logger.error("An error occurred while logging in traveller with email: {}", request.getEmail(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, 500, "An error occurred while logging in traveller"));
         }
     }
+
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<String>> signup(@RequestBody TravellerSignupDTO request) {
@@ -79,6 +85,23 @@ public class TravellerController {
         } catch (Exception e) {
             logger.error("An error occurred while updating profile for traveller with ID: {}", travellerId, e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating profile"));
+        }
+    }
+
+    @PostMapping("/save-jwt")
+    public ResponseEntity<ApiResponse<Void>> saveJwtToken(@RequestBody Map<String, String> requestMap) {
+        long travellerId = Long.parseLong(requestMap.get("travellerId"));
+        String jwtToken = requestMap.get("jwtToken");
+        logger.info("Received request to save JWT token for traveller with ID: {}", travellerId);
+
+        try {
+            travellerService.updateTravellerJwt(jwtToken, travellerId);
+            logger.info("Successfully saved JWT token for traveller with ID: {}", travellerId);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "JWT token saved", null));
+        }
+        catch (Exception e) {
+            logger.error("Error saving JWT token for traveller with ID {}: {}", travellerId, e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to save JWT token", null));
         }
     }
 }

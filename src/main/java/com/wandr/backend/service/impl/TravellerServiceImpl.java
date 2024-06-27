@@ -3,7 +3,9 @@ package com.wandr.backend.service.impl;
 import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
 import com.wandr.backend.entity.Traveller;
+import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.TravellerService;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,19 +28,34 @@ public class TravellerServiceImpl implements TravellerService {
         this.travellerDAO = travellerDAO;
         this.passwordEncoder = passwordEncoder;
     }
+    @Override
+    public ApiResponse<Void> updateTravellerJwt (String jwt, Long travellerId) {
+        travellerDAO.updateTravellerJwt(jwt, travellerId);
+        return new ApiResponse<>(true, 200, "JWT updated successfully");
+    }
+
 
     @Override
-    public ApiResponse<String> loginTraveller(TravellerLoginDTO request) {
+    public ApiResponse<UserDetailsDTO> loginTraveller(TravellerLoginDTO request) {
         Optional<Traveller> travellerOpt = travellerDAO.findByEmail(request.getEmail());
 
         if (travellerOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), travellerOpt.get().getPassword())) {
             logger.error("Invalid email or password for traveller with email: {}", request.getEmail());
             return new ApiResponse<>(false, 401, "Invalid email or password");
         }
-        logger.info("Traveller with email: {} logged in successfully", request.getEmail());
-        return new ApiResponse<>(true, 200, "Traveller Login successful");
 
+        Traveller traveller = travellerOpt.get();
+        UserDetailsDTO userDetails = new UserDetailsDTO(
+                traveller.getTravellerId(),
+                traveller.getEmail(),
+                Role.TRAVELLER,
+                traveller.getName()
+        );
+
+        logger.info("Traveller with email: {} logged in successfully", request.getEmail());
+        return new ApiResponse<>(true, 200, "Traveller login successful", userDetails);
     }
+
 
     @Override
     public ApiResponse<String> registerTraveller(TravellerSignupDTO request) {
@@ -106,4 +123,6 @@ public class TravellerServiceImpl implements TravellerService {
 
         return new ApiResponse<>(true, 200, "Profile updated successfully");
     }
+
+
 }
