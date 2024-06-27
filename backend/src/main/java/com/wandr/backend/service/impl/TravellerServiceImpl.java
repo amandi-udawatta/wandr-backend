@@ -58,11 +58,7 @@ public class TravellerServiceImpl implements TravellerService {
 
 
     @Override
-    public ApiResponse<String> registerTraveller(TravellerSignupDTO request) {
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            return new ApiResponse<>(false, 400, "Passwords do not match");
-        }
-
+    public ApiResponse<UserDetailsDTO> registerTraveller(TravellerSignupDTO request) {
         if (travellerDAO.existsByEmail(request.getEmail())) {
             return new ApiResponse<>(false, 400, "Email already in use");
         }
@@ -78,7 +74,16 @@ public class TravellerServiceImpl implements TravellerService {
 
         travellerDAO.save(traveller);
 
-        return new ApiResponse<>(true, 201, "Traveller registered successfully");
+        Optional<Traveller> travellerOpt = travellerDAO.findByEmail(request.getEmail());
+        Traveller travellerData = travellerOpt.get();
+        UserDetailsDTO userDetails = new UserDetailsDTO(
+                travellerData.getTravellerId(),
+                travellerData.getEmail(),
+                Role.TRAVELLER,
+                travellerData.getName()
+        );
+
+        return new ApiResponse<>(true, 201, "Traveller registered successfully", userDetails);
     }
 
     @Override
