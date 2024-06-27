@@ -7,6 +7,5 @@ public class TravellerSignupDTO {
     private String name;
     private String email;
     private String password;
-    private String confirmPassword;
     private String country;
 }

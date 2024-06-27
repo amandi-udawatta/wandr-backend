@@ -39,10 +39,10 @@ public class TravellerController {
 
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<String>> signup(@RequestBody TravellerSignupDTO request) {
+    public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@RequestBody TravellerSignupDTO request) {
         logger.info("Received request to register traveller with email: {}", request.getEmail());
         try {
-            ApiResponse<String> response = travellerService.registerTraveller(request);
+            ApiResponse<UserDetailsDTO> response = travellerService.registerTraveller(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while registering traveller with email: {}", request.getEmail(), e);

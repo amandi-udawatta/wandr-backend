@@ -85,12 +85,10 @@ public class ProxyController {
 
         try {
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(loginUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-            logger.info("Login response: {}", response);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 @SuppressWarnings("unchecked")
                 Map<String, Object> userDetails = (Map<String, Object>) response.getBody().get("data");
-                logger.info("User details: {}", userDetails);
                 if (userDetails != null) {
                     Long id = Long.valueOf(userDetails.get("id").toString());
                     String role = userDetails.get("role").toString();
@@ -100,8 +98,6 @@ public class ProxyController {
                     String accessToken = jwtService.createJwtToken(id, role, email, name);
                     String refreshToken = jwtService.createRefreshToken(id, role, email, name);
 
-                    logger.info("access token: {}", accessToken);
-                    logger.info("refresh token: {}", refreshToken);
 
                     logger.info("Successfully created JWT token for user with email: {}", email);
 
@@ -123,13 +119,10 @@ public class ProxyController {
                     }
 
                     Map<String, Object> saveTokenRequestBody = Map.of("travellerId", id, "jwtToken", refreshToken);
-                    logger.info("Save token req body: {}", saveTokenRequestBody);
 
                     HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, headers);
-                    logger.info("Save token entity: {}", saveTokenEntity);
 
                     ResponseEntity<Map<String, Object>> saveTokenResponse = restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
-                    logger.info("Save token response: {}", saveTokenResponse);
 
                     // Create token response
                     TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
@@ -141,6 +134,89 @@ public class ProxyController {
                     .body(new ApiResponse<>(false, response.getStatusCodeValue(), "Login failed", response.getBody()));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error during login: ", e);
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
+        } catch (Exception e) {
+            logger.error("Unexpected error: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
+        }
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody Map<String, String> signupDetails) {
+        String signUpUrl = "";
+        switch (signupDetails.get("role")) {
+            case "TRAVELLER":
+                signUpUrl = coreBackendUrl + "/api/travellers/signup";
+                break;
+            case "ADMIN":
+                signUpUrl = coreBackendUrl + "/api/admins/signup";
+                break;
+            case "BUSINESS":
+                signUpUrl = coreBackendUrl + "/api/businesses/signup";
+                break;
+            default:
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ApiResponse<>(false, HttpStatus.BAD_REQUEST.value(), "Invalid role", null));
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(signupDetails, headers);
+
+        try {
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> userDetails = (Map<String, Object>) response.getBody().get("data");
+                if (userDetails != null) {
+                    Long id = Long.valueOf(userDetails.get("id").toString());
+                    String role = userDetails.get("role").toString();
+                    String email = userDetails.get("email").toString();
+                    String name = userDetails.get("name").toString();
+
+                    String accessToken = jwtService.createJwtToken(id, role, email, name);
+                    String refreshToken = jwtService.createRefreshToken(id, role, email, name);
+
+
+                    logger.info("Successfully created JWT token for user with email: {}", email);
+
+                    // Send refresh token to backend for it to save
+                    String saveRefreshTokenUrl;
+                    switch (role) {
+                        case "TRAVELLER":
+                            saveRefreshTokenUrl = coreBackendUrl + "/api/travellers/save-jwt";
+                            break;
+                        case "ADMIN":
+                            saveRefreshTokenUrl = coreBackendUrl + "/api/admins/save-jwt";
+                            break;
+                        case "BUSINESS":
+                            saveRefreshTokenUrl = coreBackendUrl + "/api/businesses/save-jwt";
+                            break;
+                        default:
+                            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                    .body(new ApiResponse<>(false, HttpStatus.BAD_REQUEST.value(), "Invalid role", null));
+                    }
+
+                    Map<String, Object> saveTokenRequestBody = Map.of("travellerId", id, "jwtToken", refreshToken);
+
+                    HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, headers);
+
+                    ResponseEntity<Map<String, Object>> saveTokenResponse = restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
+
+                    // Create token response
+                    TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
+                    ApiResponse<TokenResponse> tokenApiResponse = new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully signed up", tokenResponse);
+                    return ResponseEntity.ok(tokenApiResponse);
+                }
+            }
+            return ResponseEntity.status(response.getStatusCode())
+                    .body(new ApiResponse<>(false, response.getStatusCodeValue(), "Sign Up failed", response.getBody()));
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error during signup: ", e);
             return ResponseEntity.status(e.getStatusCode())
                     .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
         } catch (Exception e) {
