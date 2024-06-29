@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -82,6 +83,8 @@ public class TravellerServiceImpl implements TravellerService {
         traveller.setActivities(Collections.emptyList()); // Initially empty
         traveller.setProfileImage(""); // Initially empty
         traveller.setSalt(request.getSalt());
+        traveller.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+
 
 
         travellerDAO.save(traveller);

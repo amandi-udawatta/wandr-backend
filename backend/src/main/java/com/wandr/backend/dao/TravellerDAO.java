@@ -24,8 +24,8 @@ public class TravellerDAO {
     }
 
     public void save(Traveller traveller) {
-        String sql = "INSERT INTO travellers (name, email, password, country, categories, activities,salt) VALUES (?, ?, ?, ?, ?::jsonb, ?::jsonb,?)";
-        jdbcTemplate.update(sql, traveller.getName(), traveller.getEmail(), traveller.getPassword(), traveller.getCountry(), traveller.getCategories().toString(), traveller.getActivities().toString(), traveller.getSalt());
+        String sql = "INSERT INTO travellers (name, email, password, country, categories, activities,salt, created_at) VALUES (?, ?, ?, ?, ?::jsonb, ?::jsonb, ?, ?)";
+        jdbcTemplate.update(sql, traveller.getName(), traveller.getEmail(), traveller.getPassword(), traveller.getCountry(), traveller.getCategories().toString(), traveller.getActivities().toString(), traveller.getSalt(), traveller.getCreatedAt());
     }
 
     public void updateCategories(Long travellerId, List<Integer> categories) {

@@ -43,6 +43,7 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
             traveller.setActivities(Collections.emptyList());
         }
         traveller.setSalt(rs.getString("salt"));
+        traveller.setCreatedAt(rs.getTimestamp("created_at"));
 
 
         return traveller;
