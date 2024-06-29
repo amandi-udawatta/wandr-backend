@@ -3,7 +3,7 @@ package com.wandr.backend.dto;
 import lombok.Data;
 @Data
 
-public class TravellerLoginDTO {
+public class UserLoginDTO {
     private String email;
     private String password;
 }

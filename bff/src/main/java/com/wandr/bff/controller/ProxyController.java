@@ -8,24 +8,20 @@ import com.wandr.bff.service.JwtService;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.Arrays;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
+import com.wandr.bff.util.PasswordUtil;
 
 @RestController
 @RequestMapping("/api/proxy")
@@ -62,28 +58,24 @@ public class ProxyController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> loginDetails) {
-        String loginUrl = "";
-        switch (loginDetails.get("role")) {
-            case "TRAVELLER":
-                loginUrl = coreBackendUrl + "/api/travellers/login";
-                break;
-            case "ADMIN":
-                loginUrl = coreBackendUrl + "/api/admins/login";
-                break;
-            case "BUSINESS":
-                loginUrl = coreBackendUrl + "/api/businesses/login";
-                break;
-            default:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponse<>(false, HttpStatus.BAD_REQUEST.value(), "Invalid role", null));
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(loginDetails, headers);
+        String userRole = loginDetails.get("role");
+        String hashedPassword = loginDetails.get("password");
+        String userEmail = loginDetails.get("email");
+        String getSaltUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/get-salt?email=" + userEmail;
 
         try {
+            ResponseEntity<Map<String, Object>> saltResponse = restTemplate.exchange(getSaltUrl, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
+
+            String salt = (String) saltResponse.getBody().get("data");
+            String encryptedPassword = PasswordUtil.encryptPassword(hashedPassword, salt);
+            loginDetails.put("password", encryptedPassword);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(loginDetails, headers);
+            String loginUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/login";
+
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(loginUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
 
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -98,27 +90,12 @@ public class ProxyController {
                     String accessToken = jwtService.createJwtToken(id, role, email, name);
                     String refreshToken = jwtService.createRefreshToken(id, role, email, name);
 
-
                     logger.info("Successfully created JWT token for user with email: {}", email);
 
                     // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl;
-                    switch (role) {
-                        case "TRAVELLER":
-                            saveRefreshTokenUrl = coreBackendUrl + "/api/travellers/save-jwt";
-                            break;
-                        case "ADMIN":
-                            saveRefreshTokenUrl = coreBackendUrl + "/api/admins/save-jwt";
-                            break;
-                        case "BUSINESS":
-                            saveRefreshTokenUrl = coreBackendUrl + "/api/businesses/save-jwt";
-                            break;
-                        default:
-                            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                    .body(new ApiResponse<>(false, HttpStatus.BAD_REQUEST.value(), "Invalid role", null));
-                    }
+                    String saveRefreshTokenUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/save-jwt";
 
-                    Map<String, Object> saveTokenRequestBody = Map.of("travellerId", id, "jwtToken", refreshToken);
+                    Map<String, Object> saveTokenRequestBody = Map.of("userId", id, "jwtToken", refreshToken);
 
                     HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, headers);
 
@@ -136,6 +113,10 @@ public class ProxyController {
             logger.error("Error during login: ", e);
             return ResponseEntity.status(e.getStatusCode())
                     .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Encryption error during login: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Encryption error", null));
         } catch (Exception e) {
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -145,28 +126,25 @@ public class ProxyController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> signupDetails) {
-        String signUpUrl = "";
-        switch (signupDetails.get("role")) {
-            case "TRAVELLER":
-                signUpUrl = coreBackendUrl + "/api/travellers/signup";
-                break;
-            case "ADMIN":
-                signUpUrl = coreBackendUrl + "/api/admins/signup";
-                break;
-            case "BUSINESS":
-                signUpUrl = coreBackendUrl + "/api/businesses/signup";
-                break;
-            default:
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ApiResponse<>(false, HttpStatus.BAD_REQUEST.value(), "Invalid role", null));
-        }
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(signupDetails, headers);
+        String userRole = signupDetails.get("role");
+        String signUpUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/signup";
 
         try {
+            String hashedPassword = signupDetails.get("password");
+            String salt = PasswordUtil.generateSalt();
+            System.out.println("Salt: " + salt);
+            // Add salt to password before hashing
+            String encryptedPassword = PasswordUtil.encryptPassword(hashedPassword, salt);
+            signupDetails.put("password", encryptedPassword);
+            signupDetails.put("salt", salt);
+
+            System.out.println("signupDetails: " + signupDetails);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(signupDetails, headers);
+
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
 
             if (response.getStatusCode() == HttpStatus.OK) {
@@ -181,27 +159,12 @@ public class ProxyController {
                     String accessToken = jwtService.createJwtToken(id, role, email, name);
                     String refreshToken = jwtService.createRefreshToken(id, role, email, name);
 
-
                     logger.info("Successfully created JWT token for user with email: {}", email);
 
                     // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl;
-                    switch (role) {
-                        case "TRAVELLER":
-                            saveRefreshTokenUrl = coreBackendUrl + "/api/travellers/save-jwt";
-                            break;
-                        case "ADMIN":
-                            saveRefreshTokenUrl = coreBackendUrl + "/api/admins/save-jwt";
-                            break;
-                        case "BUSINESS":
-                            saveRefreshTokenUrl = coreBackendUrl + "/api/businesses/save-jwt";
-                            break;
-                        default:
-                            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                    .body(new ApiResponse<>(false, HttpStatus.BAD_REQUEST.value(), "Invalid role", null));
-                    }
+                    String saveRefreshTokenUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/save-jwt";
 
-                    Map<String, Object> saveTokenRequestBody = Map.of("travellerId", id, "jwtToken", refreshToken);
+                    Map<String, Object> saveTokenRequestBody = Map.of("userId", id, "jwtToken", refreshToken);
 
                     HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, headers);
 
@@ -219,13 +182,16 @@ public class ProxyController {
             logger.error("Error during signup: ", e);
             return ResponseEntity.status(e.getStatusCode())
                     .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
+        } catch (NoSuchAlgorithmException e) {
+            logger.error("Encryption error during signup: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Encryption error", null));
         } catch (Exception e) {
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
         }
     }
-
 
     @PostMapping("/forward")
     public ResponseEntity<ApiResponse<Object>> forwardRequest(

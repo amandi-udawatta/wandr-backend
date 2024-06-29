@@ -40,6 +40,8 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
         } else {
             traveller.setActivities(Collections.emptyList());
         }
+        traveller.setSalt(rs.getString("salt"));
+
 
         return traveller;
     }
