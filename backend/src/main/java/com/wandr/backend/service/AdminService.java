@@ -6,6 +6,8 @@ public interface AdminService {
 
     ApiResponse<UserDetailsDTO> loginAdmin(UserLoginDTO request);
 
-    ApiResponse<Void> updateAdminJwt (String jwt, Long travellerId);
+    public String getSalt(String email);
+
+    ApiResponse<Void> updateAdminJwt (String jwt, Long adminId);
 
 }

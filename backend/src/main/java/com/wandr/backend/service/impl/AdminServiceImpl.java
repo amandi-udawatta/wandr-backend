@@ -1,17 +1,13 @@
 package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.AdminDAO;
-import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
 import com.wandr.backend.entity.Admin;
-import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.AdminService;
-import com.wandr.backend.service.TravellerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
@@ -21,19 +17,27 @@ import java.util.Optional;
 public class AdminServiceImpl implements AdminService {
 
     private final AdminDAO adminDAO;
-    private final BCryptPasswordEncoder passwordEncoder;
 
     private static final Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
 
     @Autowired
-    public AdminServiceImpl(AdminDAO adminDAO, BCryptPasswordEncoder passwordEncoder) {
+    public AdminServiceImpl(AdminDAO adminDAO) {
         this.adminDAO = adminDAO;
-        this.passwordEncoder = passwordEncoder;
     }
     @Override
-    public ApiResponse<Void> updateAdminJwt (String jwt, Long travellerId) {
-        adminDAO.updateAdminJwt(jwt, travellerId);
+    public ApiResponse<Void> updateAdminJwt (String jwt, Long adminId) {
+        adminDAO.updateAdminJwt(jwt, adminId);
         return new ApiResponse<>(true, 200, "JWT updated successfully");
+    }
+
+    @Override
+    public String getSalt(String email){
+        Optional<Admin> adminOpt = adminDAO.findByEmail(email);
+        if (adminOpt.isEmpty()) {
+            return null;
+        }
+        Admin admin = adminOpt.get();
+        return admin.getSalt();
     }
 
 
@@ -41,10 +45,11 @@ public class AdminServiceImpl implements AdminService {
     public ApiResponse<UserDetailsDTO> loginAdmin(UserLoginDTO request) {
         Optional<Admin> adminOpt = adminDAO.findByEmail(request.getEmail());
 
-        if (adminOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), adminOpt.get().getPassword())) {
+        if (adminOpt.isEmpty() || !request.getPassword().equals(adminOpt.get().getPassword())) {
             logger.error("Invalid email or password for admin with email: {}", request.getEmail());
             return new ApiResponse<>(false, 401, "Invalid email or password");
         }
+
 
         Admin admin = adminOpt.get();
         UserDetailsDTO userDetails = new UserDetailsDTO(

@@ -17,9 +17,11 @@ public class AdminRowMapper implements RowMapper<Admin> {
     public Admin mapRow(ResultSet rs, int rowNum) throws SQLException {
         Admin admin = new Admin();
         admin.setAdminId(rs.getLong("admin_id"));
+        admin.setName(rs.getString("name"));
         admin.setEmail(rs.getString("email"));
         admin.setPassword(rs.getString("password"));
         admin.setJwt(rs.getString("jwt"));
+        admin.setSalt(rs.getString("salt"));
 
 
 
