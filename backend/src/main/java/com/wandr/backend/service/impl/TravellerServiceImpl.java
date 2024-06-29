@@ -2,12 +2,14 @@ package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.traveller.TravellerSignupDTO;
+import com.wandr.backend.dto.traveller.UpdateActivitiesDTO;
+import com.wandr.backend.dto.traveller.UpdateCategoriesDTO;
+import com.wandr.backend.dto.traveller.UpdateProfileDTO;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.TravellerService;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,14 +21,12 @@ import java.util.Optional;
 public class TravellerServiceImpl implements TravellerService {
 
     private final TravellerDAO travellerDAO;
-    private final BCryptPasswordEncoder passwordEncoder;
 
     private static final Logger logger = LoggerFactory.getLogger(TravellerServiceImpl.class);
 
     @Autowired
-    public TravellerServiceImpl(TravellerDAO travellerDAO, BCryptPasswordEncoder passwordEncoder) {
+    public TravellerServiceImpl(TravellerDAO travellerDAO) {
         this.travellerDAO = travellerDAO;
-        this.passwordEncoder = passwordEncoder;
     }
     @Override
     public ApiResponse<Void> updateTravellerJwt (String jwt, Long travellerId) {

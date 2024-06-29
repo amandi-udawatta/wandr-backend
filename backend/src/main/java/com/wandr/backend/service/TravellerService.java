@@ -1,6 +1,10 @@
 package com.wandr.backend.service;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.traveller.TravellerSignupDTO;
+import com.wandr.backend.dto.traveller.UpdateActivitiesDTO;
+import com.wandr.backend.dto.traveller.UpdateCategoriesDTO;
+import com.wandr.backend.dto.traveller.UpdateProfileDTO;
 
 public interface TravellerService {
 

@@ -35,8 +35,6 @@ public class AdminDAO {
         return admin.isEmpty() ? Optional.empty() : Optional.of(admin.get(0));
     }
 
-
-
     public void updateAdminJwt(String jwt, Long adminId) {
         String sql = "UPDATE admins SET jwt = ? WHERE admin_id = ?";
         jdbcTemplate.update(sql, jwt, adminId);

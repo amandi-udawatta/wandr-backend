@@ -1,4 +1,4 @@
-package com.wandr.backend.dto;
+package com.wandr.backend.dto.traveller;
 
 import lombok.Data;
 

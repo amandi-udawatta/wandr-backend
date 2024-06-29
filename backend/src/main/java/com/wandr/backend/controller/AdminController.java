@@ -2,7 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
 import com.wandr.backend.service.AdminService;
-import com.wandr.backend.service.TravellerService;
+import com.wandr.backend.service.AdminService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +34,22 @@ public class AdminController {
             logger.error("An error occurred while logging in admin with email: {}", request.getEmail(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, 500, "An error occurred while logging in admin"));
+        }
+    }
+
+    @GetMapping("/get-salt")
+    public ResponseEntity<ApiResponse<String>> getSalt(@RequestParam Map<String, String> requestMap) {
+        String userEmail = requestMap.get("email");
+        logger.info("Received request to get salt for admin with email: {}", userEmail);
+
+        try {
+            String salt = adminService.getSalt(userEmail);
+            logger.info("Successfully retrieved salt for admin with email: {}", userEmail);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Salt retrieved", salt));
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving salt for admin with email {}: {}", userEmail, e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
         }
     }
 

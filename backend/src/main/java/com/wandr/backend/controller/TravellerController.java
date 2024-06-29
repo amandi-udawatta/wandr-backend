@@ -1,8 +1,11 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.traveller.TravellerSignupDTO;
+import com.wandr.backend.dto.traveller.UpdateActivitiesDTO;
+import com.wandr.backend.dto.traveller.UpdateCategoriesDTO;
+import com.wandr.backend.dto.traveller.UpdateProfileDTO;
 import com.wandr.backend.service.TravellerService;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
