@@ -14,5 +14,7 @@ public class Traveller {
     private List<Integer> categories;
     private List<Integer> activities;
     private String profileImage;
+    private String jwt;
+    private String salt;
 
 }

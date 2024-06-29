@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/travellers")
+@RequestMapping("/api/traveller")
 public class TravellerController {
 
     private final TravellerService travellerService;
@@ -25,7 +25,7 @@ public class TravellerController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<UserDetailsDTO>> login(@RequestBody TravellerLoginDTO request) {
+    public ResponseEntity<ApiResponse<UserDetailsDTO>> login(@RequestBody UserLoginDTO request) {
         logger.info("Received request to login traveller with email: {}", request.getEmail());
         try {
             ApiResponse<UserDetailsDTO> response = travellerService.loginTraveller(request);
@@ -90,7 +90,7 @@ public class TravellerController {
 
     @PostMapping("/save-jwt")
     public ResponseEntity<ApiResponse<Void>> saveJwtToken(@RequestBody Map<String, String> requestMap) {
-        long travellerId = Long.parseLong(requestMap.get("travellerId"));
+        long travellerId = Long.parseLong(requestMap.get("userId"));
         String jwtToken = requestMap.get("jwtToken");
         logger.info("Received request to save JWT token for traveller with ID: {}", travellerId);
 
@@ -102,6 +102,22 @@ public class TravellerController {
         catch (Exception e) {
             logger.error("Error saving JWT token for traveller with ID {}: {}", travellerId, e.getMessage(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to save JWT token", null));
+        }
+    }
+
+    @GetMapping("/get-salt")
+    public ResponseEntity<ApiResponse<String>> getSalt(@RequestParam Map<String, String> requestMap) {
+        String userEmail = requestMap.get("email");
+        logger.info("Received request to get salt for traveller with email: {}", userEmail);
+
+        try {
+            String salt = travellerService.getSalt(userEmail);
+            logger.info("Successfully retrieved salt for traveller with email: {}", userEmail);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Salt retrieved", salt));
+        }
+        catch (Exception e) {
+            logger.error("Error retrieving salt for traveller with email {}: {}", userEmail, e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
         }
     }
 }

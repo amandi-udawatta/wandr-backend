@@ -34,12 +34,22 @@ public class TravellerServiceImpl implements TravellerService {
         return new ApiResponse<>(true, 200, "JWT updated successfully");
     }
 
+    @Override
+        public String getSalt(String email){
+        Optional<Traveller> travellerOpt = travellerDAO.findByEmail(email);
+        if (travellerOpt.isEmpty()) {
+            return null;
+        }
+        Traveller traveller = travellerOpt.get();
+        return traveller.getSalt();
+    }
+
 
     @Override
-    public ApiResponse<UserDetailsDTO> loginTraveller(TravellerLoginDTO request) {
+    public ApiResponse<UserDetailsDTO> loginTraveller(UserLoginDTO request) {
         Optional<Traveller> travellerOpt = travellerDAO.findByEmail(request.getEmail());
 
-        if (travellerOpt.isEmpty() || !passwordEncoder.matches(request.getPassword(), travellerOpt.get().getPassword())) {
+        if (travellerOpt.isEmpty() || !request.getPassword().equals(travellerOpt.get().getPassword())) {
             logger.error("Invalid email or password for traveller with email: {}", request.getEmail());
             return new ApiResponse<>(false, 401, "Invalid email or password");
         }
@@ -66,11 +76,13 @@ public class TravellerServiceImpl implements TravellerService {
         Traveller traveller = new Traveller();
         traveller.setName(request.getName());
         traveller.setEmail(request.getEmail());
-        traveller.setPassword(passwordEncoder.encode(request.getPassword()));
+        traveller.setPassword(request.getPassword());
         traveller.setCountry(request.getCountry());
         traveller.setCategories(Collections.emptyList()); // Initially empty
         traveller.setActivities(Collections.emptyList()); // Initially empty
         traveller.setProfileImage(""); // Initially empty
+        traveller.setSalt(request.getSalt());
+
 
         travellerDAO.save(traveller);
 
