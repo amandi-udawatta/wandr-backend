@@ -10,8 +10,9 @@ import java.util.Random;
 
 public class FileUploadUtil {
     private static final String UPLOAD_DIR = "uploads/";
-
-    public static String saveFile(MultipartFile file, long ivrNo) {
+    //get file, directory and created at timestamp for this method
+public static String saveFile(MultipartFile file, String directory) {
+    long createdAt = System.currentTimeMillis();
         try {
             if (file.isEmpty()) {
                 throw new IOException("Failed to store empty file.");
@@ -29,10 +30,11 @@ public class FileUploadUtil {
             }
 
             // Construct the new filename
-            String fileName = randomNumber + "_" + ivrNo + fileExtension;
+            String fileName = randomNumber +  + createdAt + fileExtension;
 
             // Ensure the uploads directory exists
-            Path uploadPath = Paths.get(UPLOAD_DIR);
+            Path uploadPath = Paths.get(UPLOAD_DIR + directory);
+
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
@@ -49,3 +51,4 @@ public class FileUploadUtil {
         }
     }
 }
+

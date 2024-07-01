@@ -4,13 +4,16 @@ import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.service.BusinessService;
+import com.wandr.backend.util.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -39,17 +42,23 @@ public class BusinessController {
     }
 
 
-    @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@RequestBody BusinessSignupDTO request) {
+    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@ModelAttribute BusinessSignupDTO request,
+            @RequestParam("shopImage") MultipartFile shopImage
+    ) {
         logger.info("Received request to register business with email: {}", request.getEmail());
-        try {
-            ApiResponse<UserDetailsDTO> response = businessService.registerBusiness(request);
+
+        try{
+            ApiResponse<UserDetailsDTO> response = businessService.registerBusiness(request, shopImage);
+            logger.info("Successfully registered business with email: {}", request.getEmail());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while registering business with email: {}", request.getEmail(), e);
-            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while registering business"));
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, 500, "An error occurred while registering business"));
         }
     }
+
 
     @PutMapping("/{businessId}/profile")
     public ResponseEntity<ApiResponse<String>> updateProfile(@PathVariable Long businessId, @RequestBody UpdateProfileDTO request) {
@@ -87,6 +96,10 @@ public class BusinessController {
 
         try {
             String salt = businessService.getSalt(userEmail);
+            if(salt == null) {
+                logger.error("No business found with email: {}", userEmail);
+                return ResponseEntity.ok(new ApiResponse<>(false, 404, "Business not found", null));
+            }
             logger.info("Successfully retrieved salt for business with email: {}", userEmail);
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "Salt retrieved", salt));
         }
