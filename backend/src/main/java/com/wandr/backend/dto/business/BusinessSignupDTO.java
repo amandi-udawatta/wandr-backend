@@ -1,6 +1,7 @@
 package com.wandr.backend.dto.business;
 
 import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -15,13 +16,11 @@ public class BusinessSignupDTO {
     private List<String> languages;
     private String websiteUrl;
     private String businessContact;
-    private String shopImage;
     private Integer categoryId;
     private String ownerName;
     private String ownerContact;
     private String ownerNic;
-    private Boolean approved;
-    private String jwt;
     private String salt;
+    private MultipartFile shopImage;
 
 }

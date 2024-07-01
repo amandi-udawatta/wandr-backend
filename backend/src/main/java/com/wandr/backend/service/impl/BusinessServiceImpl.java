@@ -9,11 +9,14 @@ import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.BusinessService;
+import com.wandr.backend.util.FileUploadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service
@@ -47,10 +50,16 @@ public class BusinessServiceImpl implements BusinessService {
     @Override
     public ApiResponse<UserDetailsDTO> loginBusiness(UserLoginDTO request) {
         Optional<Business> businessOpt = businessDAO.findByEmail(request.getEmail());
+        logger.info("business opt", businessOpt);
 
-        if (businessOpt.isEmpty() || !request.getPassword().equals(businessOpt.get().getPassword())) {
-            logger.error("Invalid email or password for business with email: {}", request.getEmail());
-            return new ApiResponse<>(false, 401, "Invalid email or password");
+        if (businessOpt.isEmpty()) {
+            logger.error("Invalid email entered for business with email: {}", request.getEmail());
+            return new ApiResponse<>(false, 401, "Invalid email", null);
+        }
+
+        if (!request.getPassword().equals(businessOpt.get().getPassword())) {
+            logger.error("Invalid password for business with email: {}", request.getEmail());
+            return new ApiResponse<>(false, 401, "Invalid password", null);
         }
 
 
@@ -58,7 +67,7 @@ public class BusinessServiceImpl implements BusinessService {
         UserDetailsDTO userDetails = new UserDetailsDTO(
                 business.getBusinessId(),
                 business.getEmail(),
-                Role.ADMIN,
+                Role.BUSINESS,
                 business.getName()
         );
 
@@ -70,7 +79,7 @@ public class BusinessServiceImpl implements BusinessService {
 
 
     @Override
-    public ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request) {
+    public ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFilename) {
         if (businessDAO.existsByEmail(request.getEmail())) {
             return new ApiResponse<>(false, 400, "Email already in use");
         }
@@ -83,7 +92,6 @@ public class BusinessServiceImpl implements BusinessService {
         business.setLanguages(request.getLanguages());
         business.setWebsiteUrl(request.getWebsiteUrl());
         business.setBusinessContact(request.getBusinessContact());
-        business.setShopImage(request.getShopImage());
         business.setCategoryId(request.getCategoryId());
         business.setOwnerName(request.getOwnerName());
         business.setOwnerContact(request.getOwnerContact());
@@ -93,10 +101,23 @@ public class BusinessServiceImpl implements BusinessService {
         business.setApproved(false); // Default value, businesses need business approval
         business.setSalt(request.getSalt());
         business.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-
+        business.setJwt(null); // Assuming jwt_token is null for initial registration
+        String shopImg = FileUploadUtil.saveFile(shopImageFilename, "business/shop_images");
+        business.setShopImage(shopImg);
         businessDAO.save(business);
+        //return userDetails;
 
-        return new ApiResponse<>(true, 201, "Business registered successfully");
+        Optional<Business> businessOpt = businessDAO.findByEmail(request.getEmail());
+        Business businessData = businessOpt.get();
+        UserDetailsDTO userDetails = new UserDetailsDTO(
+                businessData.getBusinessId(),
+                businessData.getEmail(),
+                Role.BUSINESS,
+                businessData.getName()
+        );
+
+        return new ApiResponse<>(true, 201, "Business registered successfully", userDetails);
+
     }
 
     @Override

@@ -5,11 +5,12 @@ import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface BusinessService {
 
     ApiResponse<UserDetailsDTO> loginBusiness(UserLoginDTO request);
-    ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request);
+    ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFileName);
     public ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request);
 
     ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId);
