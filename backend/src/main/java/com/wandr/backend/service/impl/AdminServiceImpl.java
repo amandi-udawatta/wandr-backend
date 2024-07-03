@@ -43,11 +43,17 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public ApiResponse<UserDetailsDTO> loginAdmin(UserLoginDTO request) {
+
         Optional<Admin> adminOpt = adminDAO.findByEmail(request.getEmail());
 
-        if (adminOpt.isEmpty() || !request.getPassword().equals(adminOpt.get().getPassword())) {
-            logger.error("Invalid email or password for admin with email: {}", request.getEmail());
-            return new ApiResponse<>(false, 401, "Invalid email or password");
+        if (adminOpt.isEmpty()) {
+            logger.error("Invalid email entered for admin with email: {}", request.getEmail());
+            return new ApiResponse<>(false, 401, "Invalid email", null);
+        }
+
+        if (!request.getPassword().equals(adminOpt.get().getPassword())) {
+            logger.error("Invalid password for admin with email: {}", request.getEmail());
+            return new ApiResponse<>(false, 401, "Invalid password", null);
         }
 
 
