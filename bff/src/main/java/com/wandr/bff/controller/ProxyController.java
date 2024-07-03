@@ -77,7 +77,7 @@ public class ProxyController {
             if (saltResponse.getBody() == null || !saltResponse.getBody().isSuccess() || saltResponse.getBody().getData() == null) {
                 logger.error("Failed to retrieve salt for user: {}", userEmail);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, 401, "Login failed", null));
+                        .body(new ApiResponse<>(false, 401, "Please register first to login", null));
             }
 
             String salt = saltResponse.getBody().getData();
@@ -137,11 +137,11 @@ public class ProxyController {
         } catch (NoSuchAlgorithmException e) {
             logger.error("Encryption error during login: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Encryption error", null));
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Login failed", null));
         } catch (Exception e) {
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Login failed", null));
         }
     }
 
@@ -207,11 +207,11 @@ public class ProxyController {
         } catch (NoSuchAlgorithmException e) {
             logger.error("Encryption error during signup: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Encryption error", null));
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         } catch (Exception e) {
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         }
     }
 
@@ -310,11 +310,11 @@ public class ProxyController {
         } catch (NoSuchAlgorithmException e) {
             logger.error("Encryption error during signup: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Encryption error", null));
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         } catch (Exception e) {
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         }
     }
 
