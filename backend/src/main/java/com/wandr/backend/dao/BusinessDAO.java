@@ -43,7 +43,7 @@ public class BusinessDAO {
 //        private String websiteUrl;
 //        private String businessContact;
 //        private String shopImage;
-//        private Integer categoryId;
+//        private Integer businessType;
 //        private String ownerName;
 //        private String ownerContact;
 //        private String ownerNic;
@@ -53,8 +53,8 @@ public class BusinessDAO {
 //    }
 
     public void save(Business business) {
-        String sql = "INSERT INTO businesses (name, email, password, description, services, address, languages, website_url, business_contact, category_id,approved, owner_name, owner_contact, owner_nic, jwt, salt, created_at, shop_image) VALUES (?, ?, ?, ?, ?::jsonb, ?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
-        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), business.getServices().toString(), business.getAddress(), business.getLanguages().toString(), business.getWebsiteUrl(), business.getBusinessContact(), business.getCategoryId(), business.getApproved(),business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
+        String sql = "INSERT INTO businesses (name, email, password, description, services, address, languages, website_url, business_contact, business_type,approved, owner_name, owner_contact, owner_nic, jwt, salt, created_at, shop_image) VALUES (?, ?, ?, ?, ?::jsonb, ?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), business.getServices().toString(), business.getAddress(), business.getLanguages().toString(), business.getWebsiteUrl(), business.getBusinessContact(), business.getBusinessType(), business.getApproved(),business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
     }
 
     public Business findById(Long businessId) {
@@ -63,9 +63,9 @@ public class BusinessDAO {
     }
 
     public void updateProfile(Business business) {
-        String sql = "UPDATE businesses SET name = ?, email = ?, description = ?, services = ?::jsonb, address = ?, languages =?::jsonb, website_url = ?, business_contact = ?, shop_image = ?, category_id = ?, owner_name = ?, owner_contact = ?, owner_nic = ? WHERE business_id = ?";
+        String sql = "UPDATE businesses SET name = ?, email = ?, description = ?, services = ?::jsonb, address = ?, languages =?::jsonb, website_url = ?, business_contact = ?, shop_image = ?, business_type = ?, owner_name = ?, owner_contact = ?, owner_nic = ? WHERE business_id = ?";
         logger.info("sql",sql);
-        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), business.getServices(), business.getAddress(), business.getLanguages(), business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(), business.getCategoryId(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getBusinessId());
+        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), business.getServices(), business.getAddress(), business.getLanguages(), business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(), business.getBusinessType(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getBusinessId());
     }
 
 

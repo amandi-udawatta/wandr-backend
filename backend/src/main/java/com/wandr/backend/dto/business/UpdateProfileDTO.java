@@ -16,7 +16,7 @@ public class UpdateProfileDTO {
     private String websiteUrl;
     private String businessContact;
     private String shopImage;
-    private Integer categoryId;
+    private Integer businessType;
     private String ownerName;
     private String ownerContact;
     private String ownerNic;
