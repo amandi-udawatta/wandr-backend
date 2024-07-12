@@ -24,7 +24,7 @@ public class BusinessRowMapper implements RowMapper<Business> {
         business.setWebsiteUrl(rs.getString("website_url"));
         business.setShopImage(rs.getString("shop_image"));
         business.setBusinessContact(rs.getString("business_contact"));
-        business.setCategoryId(rs.getInt("category_id"));
+        business.setBusinessType(rs.getInt("business_type"));
         business.setApproved(rs.getBoolean("approved"));
         business.setOwnerName(rs.getString("owner_name"));
         business.setOwnerContact(rs.getString("owner_contact"));
