@@ -5,6 +5,7 @@ import com.wandr.backend.mapper.PlaceRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Array;
 import java.util.List;
 
 @Repository
@@ -24,5 +25,21 @@ public class PlaceDAO {
     public List<Places> findAll() {
         String sql = "SELECT * FROM places";
         return jdbcTemplate.query(sql, new PlaceRowMapper());
+    }
+
+    public void updateCategories(Long placeId, List<Long> categories) {
+        String sql = "UPDATE places SET categories = ?::jsonb WHERE place_id = ?";
+        jdbcTemplate.update(sql, categories.toString(), placeId);
+    }
+
+    public void updateActivities(Long placeId, List<Long> activities) {
+        String sql = "UPDATE places SET activities = ?::jsonb WHERE place_id = ?";
+        jdbcTemplate.update(sql, activities.toString(), placeId);
+    }
+
+    public Places findById(Long placeId) {
+        String sql = "SELECT * FROM places WHERE place_id = ?";
+        List<Places> places = jdbcTemplate.query(sql, new Object[]{placeId}, new PlaceRowMapper());
+        return places.isEmpty() ? null : places.get(0);
     }
 }

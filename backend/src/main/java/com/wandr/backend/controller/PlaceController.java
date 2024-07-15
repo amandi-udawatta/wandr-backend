@@ -23,4 +23,16 @@ public class PlaceController {
     public ApiResponse<Void> updatePlaces(@RequestParam String location, @RequestParam(defaultValue = "50000") int radius, @RequestParam(defaultValue = "10") int maxResults) {
         return placeService.updatePlaces(location, radius, maxResults);
     }
+
+    @GetMapping("/get-category")
+    public ApiResponse<Void> getPlaceCategories(@RequestParam Long placeId) {
+        return placeService.getPlaceCategories(placeId);
+    }
+
+    @GetMapping("/get-activity")
+    public ApiResponse<Void> getPlaceActivities(@RequestParam Long placeId) {
+        return placeService.getPlaceActivities(placeId);
+    }
+
+
 }

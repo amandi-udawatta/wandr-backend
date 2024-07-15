@@ -12,6 +12,6 @@ public class Places {
     private double latitude;
     private double longitude;
     private String address;
-    private List<Integer> category;
-    private List<Integer> activities;
+    private List<Long> categories;
+    private List<Long> activities;
 }
