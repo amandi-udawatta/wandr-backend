@@ -77,22 +77,31 @@
 //}
 package com.wandr.backend.service.impl;
 
+import com.wandr.backend.dao.ActivityDAO;
 import com.wandr.backend.dao.PlaceDAO;
+import com.wandr.backend.dao.CategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Places;
+import com.wandr.backend.entity.Activity;
 import com.wandr.backend.service.PlaceService;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PlaceServiceImpl implements PlaceService {
 
     private final PlaceDAO placeDAO;
+
+    private final CategoryDAO categoryDAO;
+
+    private final ActivityDAO activityDAO;
     private final RestTemplate restTemplate;
 
     @Value("${google.api.key}")
@@ -107,8 +116,16 @@ public class PlaceServiceImpl implements PlaceService {
     @Value("${wikipedia.search.url}")
     private String wikipediaSearchUrl;
 
-    public PlaceServiceImpl(PlaceDAO placeDAO, RestTemplate restTemplate) {
+    @Value("${OPENAI_API_KEY}")
+    private String openAiApiKey;
+
+    @Value("${openai.api.url}")
+    private String openAiApiUrl;
+
+    public PlaceServiceImpl(PlaceDAO placeDAO, CategoryDAO categoryDAO, ActivityDAO activityDAO, RestTemplate restTemplate) {
         this.placeDAO = placeDAO;
+        this.categoryDAO = categoryDAO;
+        this.activityDAO = activityDAO;
         this.restTemplate = restTemplate;
     }
 
@@ -144,6 +161,10 @@ public class PlaceServiceImpl implements PlaceService {
                     String formattedAddress = (String) placeData.getOrDefault("formatted_address", vicinity);
                     place.setAddress(formattedAddress);
                     placeDAO.save(place);
+
+                    // Categorize the place after saving
+//                    categorizePlace(place.getId());
+
                     resultsCount++;
                 }
 
@@ -212,6 +233,152 @@ public class PlaceServiceImpl implements PlaceService {
             }
         }
         return "No detailed description available.";
+    }
+
+
+
+    // categorize places into category
+    public ApiResponse<Void> getPlaceCategories(Long placeId) {
+        Places place = placeDAO.findById(placeId);
+
+        List<String> categoriesForPlace = getCategoriesForPlace(place);
+        List<Long> categoryIds = categoriesForPlace.stream()
+                .map(categoryDAO::findByName)
+                .filter(Objects::nonNull)
+                .map(Category::getId)
+                .collect(Collectors.toList());
+
+        System.out.println("CategorY IDs: " + categoryIds);
+
+        placeDAO.updateCategories(placeId, categoryIds);
+        return new ApiResponse<>(true, 200, "Place categorized successfully");
+    }
+
+    private List<String> getCategoriesForPlace(Places place) {
+        List<Category> categories = categoryDAO.findAll();
+        String categoriesStr = categories.stream()
+                .map(Category::getName)
+                .collect(Collectors.joining(", "));
+
+        System.out.println("Categories string: " + categoriesStr);
+
+        String prompt = String.format(
+                "Categorize the following tourist attraction place in Sri Lanka into up to 3 of the following categories. Return only the category names, separated by commas: %s. The place name is: %s",
+                categoriesStr, place.getName());
+
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("messages", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("role", "system");
+                    put("content", "You are a helpful assistant that categorizes places.");
+                }},
+                new HashMap<String, String>() {{
+                    put("role", "user");
+                    put("content", prompt);
+                }}
+        ));
+        requestBody.put("max_tokens", 100);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(openAiApiUrl, HttpMethod.POST, entity, Map.class);
+
+        System.out.println("Response from open ai: " + response);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+                System.out.println("Choices: " + choices);
+                if (!choices.isEmpty()) {
+                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                    String text = (String) message.get("content");
+                    return Arrays.stream(text.split(","))
+                            .map(String::trim)
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+
+        return Collections.emptyList();
+    }
+
+
+
+    // categorize places into activities
+    public ApiResponse<Void> getPlaceActivities(Long placeId) {
+        Places place = placeDAO.findById(placeId);
+
+        List<String> activitiesForPlace = getActivitiesForPlace(place);
+        List<Long> activityIds = activitiesForPlace.stream()
+                .map(activityDAO::findByName)
+                .filter(Objects::nonNull)
+                .map(Activity::getId)
+                .collect(Collectors.toList());
+
+        System.out.println("Activity IDs: " + activityIds);
+
+        placeDAO.updateActivities(placeId, activityIds);
+        return new ApiResponse<>(true, 200, "Fetched activities for place successfully");
+    }
+
+    private List<String> getActivitiesForPlace(Places place) {
+        List<Activity> activities = activityDAO.findAll();
+        String activitiesStr = activities.stream()
+                .map(Activity::getName)
+                .collect(Collectors.joining(", "));
+
+        System.out.println("Activities string: " + activitiesStr);
+
+        String prompt = String.format(
+                "List up to maximum 3 activities that can be done at the following tourist attraction place in Sri Lanka. Return only the activity names, separated by commas: %s. The place name is: %s",
+                activitiesStr, place.getName());
+
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("messages", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("role", "system");
+                    put("content", "You are a helpful assistant that list activities can be done in places.");
+                }},
+                new HashMap<String, String>() {{
+                    put("role", "user");
+                    put("content", prompt);
+                }}
+        ));
+        requestBody.put("max_tokens", 100);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(openAiApiUrl, HttpMethod.POST, entity, Map.class);
+
+        System.out.println("Response from open ai: " + response);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+                System.out.println("Choices: " + choices);
+                if (!choices.isEmpty()) {
+                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                    String text = (String) message.get("content");
+                    return Arrays.stream(text.split(","))
+                            .map(String::trim)
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+
+        return Collections.emptyList();
     }
 }
 
