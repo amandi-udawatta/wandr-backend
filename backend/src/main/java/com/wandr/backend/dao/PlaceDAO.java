@@ -18,8 +18,8 @@ public class PlaceDAO {
     }
 
     public void save(Places place) {
-        String sql = "INSERT INTO places (name, description, latitude, longitude, address) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, place.getName(), place.getDescription(), place.getLatitude(), place.getLongitude(), place.getAddress());
+        String sql = "INSERT INTO places (name, description, latitude, longitude, address, image) VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, place.getName(), place.getDescription(), place.getLatitude(), place.getLongitude(), place.getAddress(), place.getImage());
     }
 
     public List<Places> findAll() {
