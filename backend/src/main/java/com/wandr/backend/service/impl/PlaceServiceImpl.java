@@ -1,80 +1,3 @@
-//package com.wandr.backend.service.impl;
-//
-//import com.wandr.backend.dao.PlaceDAO;
-//import com.wandr.backend.dto.ApiResponse;
-//import com.wandr.backend.entity.Places; // Ensure the entity name matches
-//import com.wandr.backend.entity.Places;
-//import com.wandr.backend.service.PlaceService;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.client.RestTemplate;
-//
-//import java.util.List;
-//import java.util.Map;
-//
-//@Service
-//public class PlaceServiceImpl implements PlaceService {
-//
-//    private final PlaceDAO placeDAO;
-//    private final RestTemplate restTemplate;
-//
-//    @Value("${google.api.key}")
-//    private String apiKey;
-//
-//    @Value("${google.places.api.url}")
-//    private String apiUrl;
-//
-//    public PlaceServiceImpl(PlaceDAO placeDAO, RestTemplate restTemplate) {
-//        this.placeDAO = placeDAO;
-//        this.restTemplate = restTemplate;
-//    }
-//
-//    @Override
-//    public ApiResponse<Void> updatePlaces(String location, int radius, int maxResults) {
-//        String url = String.format("%s?location=%s&radius=%d&type=tourist_attraction&key=%s", apiUrl, location, radius, apiKey);
-//        fetchAndSavePlaces(url, maxResults);
-//        return new ApiResponse<>(true, 200, "Places updated successfully");
-//    }
-//
-//    public void fetchAndSavePlaces(String url, int maxResults) {
-//        int resultsCount = 0;
-//        while (url != null && resultsCount < maxResults) {
-//            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
-//
-//            if (response != null && response.containsKey("results")) {
-//                List<Map<String, Object>> places = (List<Map<String, Object>>) response.get("results");
-//
-//                for (Map<String, Object> placeData : places) {
-//                    if (resultsCount >= maxResults) break;
-//                    Places place = new Places();
-//                    place.setName((String) placeData.get("name"));
-//                    place.setDescription((String) placeData.getOrDefault("editorial_summary", "No description available"));
-//                    Map<String, Object> geometry = (Map<String, Object>) placeData.get("geometry");
-//                    Map<String, Object> locationData = (Map<String, Object>) geometry.get("location");
-//                    place.setLatitude((double) locationData.get("lat"));
-//                    place.setLongitude((double) locationData.get("lng"));
-//                    place.setAddress((String) placeData.getOrDefault("vicinity", "No address available"));
-//                    placeDAO.save(place);
-//                    resultsCount++;
-//                }
-//
-//                if (response.containsKey("next_page_token")) {
-//                    String nextPageToken = (String) response.get("next_page_token");
-//                    url = apiUrl + "?pagetoken=" + nextPageToken + "&key=" + apiKey;
-//                    try {
-//                        Thread.sleep(2000); // wait for a few seconds before making the next request
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                } else {
-//                    url = null;
-//                }
-//            } else {
-//                url = null;
-//            }
-//        }
-//    }
-//}
 package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.ActivityDAO;
@@ -85,11 +8,14 @@ import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Activity;
 import com.wandr.backend.service.PlaceService;
+import com.wandr.backend.util.FileUploadUtil;
+import com.wandr.backend.util.ByteArrayMultipartFile;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -144,26 +70,34 @@ public class PlaceServiceImpl implements PlaceService {
             if (response != null && response.containsKey("results")) {
                 List<Map<String, Object>> places = (List<Map<String, Object>>) response.get("results");
 
+
                 for (Map<String, Object> placeData : places) {
                     List<String> types = (List<String>) placeData.get("types");
                     if (types == null || !types.contains("tourist_attraction") || types.contains("lodging")) {
                         continue;
                     }
+
                     if (resultsCount >= maxResults) break;
                     Places place = new Places();
                     place.setName((String) placeData.get("name"));
-                    String vicinity = (String) placeData.getOrDefault("vicinity", "No description available");
                     place.setDescription(fetchPlaceDescription((String) placeData.get("name")));
                     Map<String, Object> geometry = (Map<String, Object>) placeData.get("geometry");
                     Map<String, Object> locationData = (Map<String, Object>) geometry.get("location");
                     place.setLatitude((double) locationData.get("lat"));
                     place.setLongitude((double) locationData.get("lng"));
-                    String formattedAddress = (String) placeData.getOrDefault("formatted_address", vicinity);
-                    place.setAddress(formattedAddress);
+                    place.setAddress((String) placeData.get("vicinity"));
+
+                    // Store photo_reference
+                    if (placeData.containsKey("photos")) {
+                        List<Map<String, Object>> photos = (List<Map<String, Object>>) placeData.get("photos");
+                        if (!photos.isEmpty()) {
+                            String photoReference = (String) photos.get(0).get("photo_reference");
+                            // Fetch and save the photo
+                            savePlacePhoto(photoReference, place);
+                        }
+                    }
                     placeDAO.save(place);
 
-                    // Categorize the place after saving
-//                    categorizePlace(place.getId());
 
                     resultsCount++;
                 }
@@ -182,6 +116,25 @@ public class PlaceServiceImpl implements PlaceService {
             } else {
                 url = null;
             }
+        }
+    }
+
+    private void savePlacePhoto(String photoReference, Places place) {
+        String photoUrl = String.format("https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=%s&key=%s", photoReference, apiKey);
+        try {
+            ResponseEntity<byte[]> response = restTemplate.getForEntity(photoUrl, byte[].class);
+            if (response.getStatusCode() == HttpStatus.OK) {
+                byte[] imageBytes = response.getBody();
+                if (imageBytes != null) {
+                    String fileName = place.getName().replaceAll("\\s+", "_") + ".jpg";
+                    MultipartFile multipartFile = new ByteArrayMultipartFile("file", fileName, "image/jpeg", imageBytes);
+                    String savedFileName = FileUploadUtil.saveFile(multipartFile, "places");
+                    place.setImage(savedFileName); // Assuming the Places entity has an image field
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Failed to fetch or save photo for place: " + place.getName(), e);
         }
     }
 
@@ -263,8 +216,8 @@ public class PlaceServiceImpl implements PlaceService {
         System.out.println("Categories string: " + categoriesStr);
 
         String prompt = String.format(
-                "Categorize the following tourist attraction place in Sri Lanka into up to 3 of the following categories. Return only the category names, separated by commas: %s. The place name is: %s",
-                categoriesStr, place.getName());
+                "Categorize the following tourist attraction place in Sri Lanka into up to 3 of the following categories. Return only the category names, separated by commas: %s. The place name is: %s. located in: %s",
+                categoriesStr, place.getName(), place.getAddress());
 
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -336,8 +289,8 @@ public class PlaceServiceImpl implements PlaceService {
         System.out.println("Activities string: " + activitiesStr);
 
         String prompt = String.format(
-                "List up to maximum 3 activities that can be done at the following tourist attraction place in Sri Lanka. Return only the activity names, separated by commas: %s. The place name is: %s",
-                activitiesStr, place.getName());
+                "List up to maximum 3 activities that can be done at the following tourist attraction place in Sri Lanka. Return only the activity names, separated by commas: %s. The place name is: %s. located in: %s",
+                activitiesStr, place.getName(), place.getAddress());
 
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -379,6 +332,46 @@ public class PlaceServiceImpl implements PlaceService {
         }
 
         return Collections.emptyList();
+    }
+
+
+    //bulk categorize all places in the db in one function
+    public ApiResponse<Void> bulkCategorizePlaces() {
+        List<Places> places = placeDAO.findAll();
+        for (Places place : places) {
+            getPlaceCategories(place.getId());
+            getPlaceActivities(place.getId());
+        }
+        return new ApiResponse<>(true, 200, "Bulk categorization completed successfully");
+    }
+
+
+    public Map<String, Object> searchPlaceByName(String placeName) {
+        String url = String.format("https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=%s&inputtype=textquery&fields=place_id,name,formatted_address&key=%s", placeName, apiKey);
+        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("candidates")) {
+                return ((List<Map<String, Object>>) responseBody.get("candidates")).get(0);
+            }
+        }
+
+        return null;
+    }
+
+    public Map<String, Object> getPlaceDetails(String placeId) {
+        String url = String.format("https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&key=%s", placeId, apiKey);
+        ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("result")) {
+                return (Map<String, Object>) responseBody.get("result");
+            }
+        }
+
+        return null;
     }
 }
 

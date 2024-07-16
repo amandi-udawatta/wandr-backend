@@ -21,6 +21,7 @@ public class PlaceRowMapper implements RowMapper<Places> {
         place.setLatitude(rs.getDouble("latitude"));
         place.setLongitude(rs.getDouble("longitude"));
         place.setAddress(rs.getString("address"));
+        String image = rs.getString("image");
         String categories = rs.getString("categories");
         if (categories != null && !categories.trim().isEmpty()) {
             List<Long> categoryList = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))

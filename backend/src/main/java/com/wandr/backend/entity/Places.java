@@ -14,4 +14,5 @@ public class Places {
     private String address;
     private List<Long> categories;
     private List<Long> activities;
+    private String image;
 }
