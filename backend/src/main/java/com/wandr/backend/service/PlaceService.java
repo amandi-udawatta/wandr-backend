@@ -21,6 +21,7 @@ public interface PlaceService {
     Map<String, Object> getPlaceDetailsFromAPI(String placeId);
     Map<String, Object> searchPlaceByNameFromAPI(String placeName);
 
+    PlaceDTO add(String placeId);
 
 
 

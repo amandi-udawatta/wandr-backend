@@ -43,9 +43,21 @@ public class PlaceController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> searchPlace(@RequestParam String name) {
+    public ResponseEntity<ApiResponse<Map<String, Object>>> searchPlace(@RequestParam String name) {
         Map<String, Object> place = placeService.searchPlaceByNameFromAPI(name);
-        return ResponseEntity.ok(place);
+        return ResponseEntity.ok(new ApiResponse<>(true, 200, "Place found", place));
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<ApiResponse<PlaceDTO>> addPlace(@RequestParam String placeId) {
+        try{
+            PlaceDTO placeDTO = placeService.add(placeId);
+            logger.info("Place added successfully");
+            return ResponseEntity.ok(new ApiResponse<>(true, 201, "Place added successfully", placeDTO));
+        } catch (Exception e) {
+            logger.error("Error adding place: {}", e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 400, "Error adding place"));
+        }
     }
 
     @GetMapping("/details")
@@ -90,6 +102,8 @@ public class PlaceController {
             return new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error deleting place");
         }
     }
+
+
 
 
 }
