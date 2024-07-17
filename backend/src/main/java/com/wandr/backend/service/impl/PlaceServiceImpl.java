@@ -433,5 +433,83 @@ public class PlaceServiceImpl implements PlaceService {
         return null;
     }
 
+    @Override
+    public PlaceDTO add(String placeId) {
+        Map<String, Object> placeDetails = getPlaceDetailsFromAPI(placeId);
+        if (placeDetails == null) {
+            logger.warn("Place details not found for placeId: {}", placeId);
+            throw new IllegalArgumentException("Place details not found for placeId: " + placeId);
+        }
+
+        Places place = new Places();
+        place.setName((String) placeDetails.get("name"));
+        place.setLatitude((double) ((Map<String, Object>) ((Map<String, Object>) placeDetails.get("geometry")).get("location")).get("lat"));
+        place.setLongitude((double) ((Map<String, Object>) ((Map<String, Object>) placeDetails.get("geometry")).get("location")).get("lng"));
+        place.setAddress((String) placeDetails.get("formatted_address"));
+
+        // Store photo_reference
+        if (placeDetails.containsKey("photos")) {
+            List<Map<String, Object>> photos = (List<Map<String, Object>>) placeDetails.get("photos");
+            if (!photos.isEmpty()) {
+                String photoReference = (String) photos.get(0).get("photo_reference");
+                // Fetch and save the photo
+                savePlacePhoto(photoReference, place);
+            }
+        }
+
+        Long id = placeDAO.save(place);
+        Places addedPlace = placeDAO.findById(id);
+
+        // Generate description, categories, and activities
+        String description = generateDescription(addedPlace.getName(), addedPlace.getAddress());
+        placeDAO.updateDescription(addedPlace.getId(), description);
+        getPlaceCategories(id);
+
+        //return newly added place details
+        return getPlaceById(id);
+
+    }
+
+
+    private String generateDescription(String name, String address) {
+        String prompt = String.format(
+                "Give a 50 word description for following tourist attraction place in Sri Lanka for a travel app. Return only the description.The place name is: %s. located in: %s",
+                name,address);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", "gpt-3.5-turbo");
+        requestBody.put("messages", Arrays.asList(
+                new HashMap<String, String>() {{
+                    put("role", "system");
+                    put("content", "You are a helpful assistant that generate descriptions for places.");
+                }},
+                new HashMap<String, String>() {{
+                    put("role", "user");
+                    put("content", prompt);
+                }}
+        ));
+        requestBody.put("max_tokens", 100);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(openAiApiKey);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<Map> response = restTemplate.exchange(openAiApiUrl, HttpMethod.POST, entity, Map.class);
+
+        if (response.getStatusCode() == HttpStatus.OK) {
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && responseBody.containsKey("choices")) {
+                List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
+                if (!choices.isEmpty()) {
+                    Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+                    String description = (String) message.get("content");
+                    return description;
+                }
+            }
+        }
+        return ("No description found");
+    }
+
 }
 

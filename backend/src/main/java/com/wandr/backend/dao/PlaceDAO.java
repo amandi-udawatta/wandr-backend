@@ -17,9 +17,10 @@ public class PlaceDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void save(Places place) {
+    public Long save(Places place) {
         String sql = "INSERT INTO places (name, description, latitude, longitude, address, image) VALUES (?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, place.getName(), place.getDescription(), place.getLatitude(), place.getLongitude(), place.getAddress(), place.getImage());
+        return jdbcTemplate.queryForObject("SELECT lastval()", Long.class);
     }
 
     public List<Places> findAll() {
@@ -45,7 +46,13 @@ public class PlaceDAO {
 
     public void update(Places place) {
         String sql = "UPDATE places SET name = ?, description = ?, address = ? WHERE place_id = ?";
+        System.out.println(sql);
         jdbcTemplate.update(sql, place.getName(), place.getDescription(), place.getAddress(), place.getId());
+    }
+
+    public void updateDescription(Long placeId, String description) {
+        String sql = "UPDATE places SET description = ? WHERE place_id = ?";
+        jdbcTemplate.update(sql, description, placeId);
     }
 
     public void delete(Long placeId) {
