@@ -93,6 +93,7 @@ public class BusinessServiceImpl implements BusinessService {
         business.setWebsiteUrl(request.getWebsiteUrl());
         business.setBusinessContact(request.getBusinessContact());
         business.setBusinessType(request.getBusinessType());
+        business.setShopCategory(request.getShopCategory());
         business.setOwnerName(request.getOwnerName());
         business.setOwnerContact(request.getOwnerContact());
         business.setOwnerNic(request.getOwnerNic());
@@ -156,6 +157,9 @@ public class BusinessServiceImpl implements BusinessService {
         }
         if (request.getBusinessType() != null) {
             existingBusiness.setBusinessType(request.getBusinessType());
+        }
+        if (request.getShopCategory() != null) {
+            existingBusiness.setShopCategory(request.getShopCategory());
         }
         if (request.getOwnerName() != null) {
             existingBusiness.setOwnerName(request.getOwnerName());
