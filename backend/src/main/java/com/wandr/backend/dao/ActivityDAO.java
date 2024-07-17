@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class ActivityDAO {
@@ -27,5 +28,14 @@ public class ActivityDAO {
         String sql = "SELECT * FROM activities WHERE name = ?";
         List<Activity> activities = jdbcTemplate.query(sql, new Object[]{name}, new ActivityRowMapper());
         return activities.isEmpty() ? null : activities.get(0);
+    }
+
+    public List<Activity> findByActivityIds(List<Long> activityIds) {
+        if (activityIds.isEmpty()) {
+            return List.of();
+        }
+        String sql = String.format("SELECT * FROM activities WHERE activity_id IN (%s)",
+                activityIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+        return jdbcTemplate.query(sql, new ActivityRowMapper());
     }
 }
