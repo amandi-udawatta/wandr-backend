@@ -42,4 +42,16 @@ public class PlaceDAO {
         List<Places> places = jdbcTemplate.query(sql, new Object[]{placeId}, new PlaceRowMapper());
         return places.isEmpty() ? null : places.get(0);
     }
+
+    public void update(Places place) {
+        String sql = "UPDATE places SET name = ?, description = ?, address = ? WHERE place_id = ?";
+        jdbcTemplate.update(sql, place.getName(), place.getDescription(), place.getAddress(), place.getId());
+    }
+
+    public void delete(Long placeId) {
+        String sql = "DELETE FROM places WHERE place_id = ?";
+        jdbcTemplate.update(sql, placeId);
+    }
+
+
 }

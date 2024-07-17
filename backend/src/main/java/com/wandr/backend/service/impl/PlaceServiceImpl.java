@@ -4,6 +4,8 @@ import com.wandr.backend.dao.ActivityDAO;
 import com.wandr.backend.dao.PlaceDAO;
 import com.wandr.backend.dao.CategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.place.PlaceDTO;
+import com.wandr.backend.dto.place.UpdatePlaceDTO;
 import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Activity;
@@ -16,7 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,9 +29,7 @@ import java.util.stream.Collectors;
 public class PlaceServiceImpl implements PlaceService {
 
     private final PlaceDAO placeDAO;
-
     private final CategoryDAO categoryDAO;
-
     private final ActivityDAO activityDAO;
     private final RestTemplate restTemplate;
 
@@ -48,6 +51,7 @@ public class PlaceServiceImpl implements PlaceService {
     @Value("${openai.api.url}")
     private String openAiApiUrl;
 
+    private static final Logger logger = LoggerFactory.getLogger(PlaceServiceImpl.class);
     public PlaceServiceImpl(PlaceDAO placeDAO, CategoryDAO categoryDAO, ActivityDAO activityDAO, RestTemplate restTemplate) {
         this.placeDAO = placeDAO;
         this.categoryDAO = categoryDAO;
@@ -56,7 +60,86 @@ public class PlaceServiceImpl implements PlaceService {
     }
 
     @Override
-    public ApiResponse<Void> updatePlaces(String location, int radius, int maxResults) {
+    public PlaceDTO getPlaceById(long placeId) {
+        Places place = placeDAO.findById(placeId);
+        if (place == null) {
+            logger.warn("Place not found with id: {}", placeId);
+            throw new IllegalArgumentException("Place not found with id: " + placeId);
+        }
+        PlaceDTO placeDTO = new PlaceDTO();
+        placeDTO.setId(place.getId());
+        placeDTO.setName(place.getName());
+        placeDTO.setDescription(place.getDescription());
+        placeDTO.setLatitude(place.getLatitude());
+        placeDTO.setLongitude(place.getLongitude());
+        placeDTO.setAddress(place.getAddress());
+        placeDTO.setImage(place.getImage());
+        return placeDTO;
+    }
+
+    //get all places
+    @Override
+    public List<PlaceDTO> getAllPlaces() {
+        List<Places> places = placeDAO.findAll();
+        return places.stream()
+                .map(place -> {
+                    PlaceDTO placeDTO = new PlaceDTO();
+                    placeDTO.setId(place.getId());
+                    placeDTO.setName(place.getName());
+                    placeDTO.setDescription(place.getDescription());
+                    placeDTO.setLatitude(place.getLatitude());
+                    placeDTO.setLongitude(place.getLongitude());
+                    placeDTO.setAddress(place.getAddress());
+                    placeDTO.setImage(place.getImage());
+                    return placeDTO;
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public PlaceDTO update(long placeId, UpdatePlaceDTO updatePlaceDTO) {
+        try {
+            Places place = placeDAO.findById(placeId);
+            if (place == null) {
+                logger.warn("Place not found with id: {}", placeId);
+                throw new IllegalArgumentException("Place not found with id: " + placeId);
+            }
+            // Update only the fields that are provided in the DTO
+            if (updatePlaceDTO.getName() != null) {
+                place.setName(updatePlaceDTO.getName());
+            }
+            if (updatePlaceDTO.getDescription() != null) {
+                place.setDescription(updatePlaceDTO.getDescription());
+            }
+            if (updatePlaceDTO.getAddress() != null) {
+                place.setAddress(updatePlaceDTO.getAddress());
+            }
+            placeDAO.update(place);
+            logger.info("Successfully updated place with id: {}", placeId);
+            //return newly updated place details
+            return getPlaceById(placeId);
+
+        } catch (Exception e) {
+            logger.error("Error updating place with id: {}", placeId, e);
+            throw e;
+        }
+    }
+
+
+    //delete place
+    @Override
+    public ApiResponse<Void> delete(long placeId) {
+        try {
+            placeDAO.delete(placeId);
+            return new ApiResponse<>(true, 200, "Place deleted successfully");
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "Error deleting place");
+        }
+    }
+
+    @Override
+    public ApiResponse<Void> fillDatabase(String location, int radius, int maxResults) {
         String url = String.format("%s?location=%s&radius=%d&type=tourist_attraction&key=%s", apiUrl, location, radius, apiKey);
         fetchAndSavePlaces(url, maxResults);
         return new ApiResponse<>(true, 200, "Places updated successfully");
@@ -190,30 +273,38 @@ public class PlaceServiceImpl implements PlaceService {
 
 
 
-    // categorize places into category
+    // categorize places into category and activity
     public ApiResponse<Void> getPlaceCategories(Long placeId) {
         Places place = placeDAO.findById(placeId);
 
         List<String> categoriesForPlace = getCategoriesForPlace(place);
+        List<String> activitiesForPlace = getActivitiesForPlace(place);
+
         List<Long> categoryIds = categoriesForPlace.stream()
                 .map(categoryDAO::findByName)
                 .filter(Objects::nonNull)
                 .map(Category::getId)
                 .collect(Collectors.toList());
 
-        System.out.println("CategorY IDs: " + categoryIds);
+        List<Long> activityIds = activitiesForPlace.stream()
+                .map(activityDAO::findByName)
+                .filter(Objects::nonNull)
+                .map(Activity::getId)
+                .collect(Collectors.toList());
 
         placeDAO.updateCategories(placeId, categoryIds);
-        return new ApiResponse<>(true, 200, "Place categorized successfully");
+        placeDAO.updateActivities(placeId, activityIds);
+
+        return new ApiResponse<>(true, 200, "Places categorized successfully");
     }
 
+
+//categorize places into categories
     private List<String> getCategoriesForPlace(Places place) {
         List<Category> categories = categoryDAO.findAll();
         String categoriesStr = categories.stream()
                 .map(Category::getName)
                 .collect(Collectors.joining(", "));
-
-        System.out.println("Categories string: " + categoriesStr);
 
         String prompt = String.format(
                 "Categorize the following tourist attraction place in Sri Lanka into up to 3 of the following categories. Return only the category names, separated by commas: %s. The place name is: %s. located in: %s",
@@ -241,13 +332,10 @@ public class PlaceServiceImpl implements PlaceService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.exchange(openAiApiUrl, HttpMethod.POST, entity, Map.class);
 
-        System.out.println("Response from open ai: " + response);
-
         if (response.getStatusCode() == HttpStatus.OK) {
             Map<String, Object> responseBody = response.getBody();
             if (responseBody != null && responseBody.containsKey("choices")) {
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
-                System.out.println("Choices: " + choices);
                 if (!choices.isEmpty()) {
                     Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
                     String text = (String) message.get("content");
@@ -257,27 +345,7 @@ public class PlaceServiceImpl implements PlaceService {
                 }
             }
         }
-
         return Collections.emptyList();
-    }
-
-
-
-    // categorize places into activities
-    public ApiResponse<Void> getPlaceActivities(Long placeId) {
-        Places place = placeDAO.findById(placeId);
-
-        List<String> activitiesForPlace = getActivitiesForPlace(place);
-        List<Long> activityIds = activitiesForPlace.stream()
-                .map(activityDAO::findByName)
-                .filter(Objects::nonNull)
-                .map(Activity::getId)
-                .collect(Collectors.toList());
-
-        System.out.println("Activity IDs: " + activityIds);
-
-        placeDAO.updateActivities(placeId, activityIds);
-        return new ApiResponse<>(true, 200, "Fetched activities for place successfully");
     }
 
     private List<String> getActivitiesForPlace(Places place) {
@@ -285,8 +353,6 @@ public class PlaceServiceImpl implements PlaceService {
         String activitiesStr = activities.stream()
                 .map(Activity::getName)
                 .collect(Collectors.joining(", "));
-
-        System.out.println("Activities string: " + activitiesStr);
 
         String prompt = String.format(
                 "List up to maximum 3 activities that can be done at the following tourist attraction place in Sri Lanka. Return only the activity names, separated by commas: %s. The place name is: %s. located in: %s",
@@ -314,13 +380,10 @@ public class PlaceServiceImpl implements PlaceService {
         HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
         ResponseEntity<Map> response = restTemplate.exchange(openAiApiUrl, HttpMethod.POST, entity, Map.class);
 
-        System.out.println("Response from open ai: " + response);
-
         if (response.getStatusCode() == HttpStatus.OK) {
             Map<String, Object> responseBody = response.getBody();
             if (responseBody != null && responseBody.containsKey("choices")) {
                 List<Map<String, Object>> choices = (List<Map<String, Object>>) responseBody.get("choices");
-                System.out.println("Choices: " + choices);
                 if (!choices.isEmpty()) {
                     Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
                     String text = (String) message.get("content");
@@ -330,7 +393,6 @@ public class PlaceServiceImpl implements PlaceService {
                 }
             }
         }
-
         return Collections.emptyList();
     }
 
@@ -340,13 +402,12 @@ public class PlaceServiceImpl implements PlaceService {
         List<Places> places = placeDAO.findAll();
         for (Places place : places) {
             getPlaceCategories(place.getId());
-            getPlaceActivities(place.getId());
         }
         return new ApiResponse<>(true, 200, "Bulk categorization completed successfully");
     }
 
 
-    public Map<String, Object> searchPlaceByName(String placeName) {
+    public Map<String, Object> searchPlaceByNameFromAPI(String placeName) {
         String url = String.format("https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=%s&inputtype=textquery&fields=place_id,name,formatted_address&key=%s", placeName, apiKey);
         ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
@@ -356,11 +417,10 @@ public class PlaceServiceImpl implements PlaceService {
                 return ((List<Map<String, Object>>) responseBody.get("candidates")).get(0);
             }
         }
-
         return null;
     }
 
-    public Map<String, Object> getPlaceDetails(String placeId) {
+    public Map<String, Object> getPlaceDetailsFromAPI(String placeId) {
         String url = String.format("https://maps.googleapis.com/maps/api/place/details/json?place_id=%s&key=%s", placeId, apiKey);
         ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
 
@@ -370,8 +430,8 @@ public class PlaceServiceImpl implements PlaceService {
                 return (Map<String, Object>) responseBody.get("result");
             }
         }
-
         return null;
     }
+
 }
 
