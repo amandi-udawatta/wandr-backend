@@ -79,7 +79,7 @@ public class BusinessServiceImpl implements BusinessService {
 
 
     @Override
-    public ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFilename) {
+    public ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFilename, Integer shopCategory) {
         if (businessDAO.existsByEmail(request.getEmail())) {
             return new ApiResponse<>(false, 400, "Email already in use");
         }
@@ -93,7 +93,7 @@ public class BusinessServiceImpl implements BusinessService {
         business.setWebsiteUrl(request.getWebsiteUrl());
         business.setBusinessContact(request.getBusinessContact());
         business.setBusinessType(request.getBusinessType());
-        business.setShopCategory(request.getShopCategory());
+        business.setShopCategory(shopCategory);
         business.setOwnerName(request.getOwnerName());
         business.setOwnerContact(request.getOwnerContact());
         business.setOwnerNic(request.getOwnerNic());

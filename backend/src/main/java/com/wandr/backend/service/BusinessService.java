@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 public interface BusinessService {
 
     ApiResponse<UserDetailsDTO> loginBusiness(UserLoginDTO request);
-    ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFileName);
+    ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFileName, Integer shopCategory);
     public ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request);
 
     ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId);

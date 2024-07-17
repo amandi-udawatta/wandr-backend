@@ -44,12 +44,12 @@ public class BusinessController {
 
     @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@ModelAttribute BusinessSignupDTO request,
-            @RequestParam("shopImage") MultipartFile shopImage
+            @RequestParam("shopImage") MultipartFile shopImage, @RequestParam(value = "shopCategory", required = false) Integer shopCategory
     ) {
         logger.info("Received request to register business with email: {}", request.getEmail());
 
         try{
-            ApiResponse<UserDetailsDTO> response = businessService.registerBusiness(request, shopImage);
+            ApiResponse<UserDetailsDTO> response = businessService.registerBusiness(request, shopImage, shopCategory);
             logger.info("Successfully registered business with email: {}", request.getEmail());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
