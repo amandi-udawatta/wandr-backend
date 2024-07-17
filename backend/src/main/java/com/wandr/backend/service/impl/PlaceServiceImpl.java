@@ -66,14 +66,7 @@ public class PlaceServiceImpl implements PlaceService {
             logger.warn("Place not found with id: {}", placeId);
             throw new IllegalArgumentException("Place not found with id: " + placeId);
         }
-        PlaceDTO placeDTO = new PlaceDTO();
-        placeDTO.setId(place.getId());
-        placeDTO.setName(place.getName());
-        placeDTO.setDescription(place.getDescription());
-        placeDTO.setLatitude(place.getLatitude());
-        placeDTO.setLongitude(place.getLongitude());
-        placeDTO.setAddress(place.getAddress());
-        placeDTO.setImage(place.getImage());
+        PlaceDTO placeDTO = placeToPlaceDTO(place);
         return placeDTO;
     }
 
@@ -83,14 +76,7 @@ public class PlaceServiceImpl implements PlaceService {
         List<Places> places = placeDAO.findAll();
         return places.stream()
                 .map(place -> {
-                    PlaceDTO placeDTO = new PlaceDTO();
-                    placeDTO.setId(place.getId());
-                    placeDTO.setName(place.getName());
-                    placeDTO.setDescription(place.getDescription());
-                    placeDTO.setLatitude(place.getLatitude());
-                    placeDTO.setLongitude(place.getLongitude());
-                    placeDTO.setAddress(place.getAddress());
-                    placeDTO.setImage(place.getImage());
+                    PlaceDTO placeDTO = placeToPlaceDTO(place);
                     return placeDTO;
                 })
                 .collect(Collectors.toList());
@@ -510,6 +496,32 @@ public class PlaceServiceImpl implements PlaceService {
         }
         return ("No description found");
     }
+
+
+    //place to placeDTO
+    private PlaceDTO placeToPlaceDTO(Places place) {
+        PlaceDTO placeDTO = new PlaceDTO();
+        placeDTO.setId(place.getId());
+        placeDTO.setName(place.getName());
+        placeDTO.setDescription(place.getDescription());
+        placeDTO.setLatitude(place.getLatitude());
+        placeDTO.setLongitude(place.getLongitude());
+        placeDTO.setAddress(place.getAddress());
+        placeDTO.setImage(place.getImage());
+        List<Category> categories = categoryDAO.findByCategoryIds(place.getCategories());
+        List<Activity> activities = activityDAO.findByActivityIds(place.getActivities());
+        //get a list of category and activity names
+        List<String> categoryNames = categories.stream()
+                .map(Category::getName)
+                .collect(Collectors.toList());
+        List<String> activityNames = activities.stream()
+                .map(Activity::getName)
+                .collect(Collectors.toList());
+        placeDTO.setCategories(categoryNames);
+        placeDTO.setActivities(activityNames);
+        return placeDTO;
+    }
+
 
 }
 
