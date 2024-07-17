@@ -17,7 +17,6 @@ public class BusinessSignupDTO {
     private String websiteUrl;
     private String businessContact;
     private Integer businessType;
-    private Integer shopCategory;
     private String ownerName;
     private String ownerContact;
     private String ownerNic;

@@ -229,7 +229,7 @@ public class ProxyController {
                                     @RequestParam("languages") List<String> languages,
                                     @RequestParam("businessContact") String businessContact,
                                     @RequestParam("businessType") Integer businessType,
-                                    @RequestParam("shopCategory") Integer shopCategory,
+                                    @RequestParam(value = "shopCategory", required = false) Integer shopCategory,
                                     @RequestParam("shopImage") MultipartFile shopImage) {
 
         String signUpUrl = coreBackendUrl + "/api/business/signup";
@@ -257,7 +257,11 @@ public class ProxyController {
             body.add("languages", languages);
             body.add("businessContact", businessContact);
             body.add("businessType", businessType);
-            body.add("shopCategory", shopCategory);
+
+            if (shopCategory != null){
+                body.add("shopCategory", shopCategory);
+            }
+
             body.add("shopImage", new ByteArrayResource(shopImage.getBytes()) {
                 @Override
                 public String getFilename() {
