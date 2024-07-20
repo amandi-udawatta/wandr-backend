@@ -116,6 +116,7 @@ public class PlaceServiceImpl implements PlaceService {
     //delete place
     @Override
     public ApiResponse<Void> delete(long placeId) {
+
         try {
             placeDAO.delete(placeId);
             return new ApiResponse<>(true, 200, "Place deleted successfully");
@@ -445,6 +446,7 @@ public class PlaceServiceImpl implements PlaceService {
 
         Long id = placeDAO.save(place);
         Places addedPlace = placeDAO.findById(id);
+        System.out.println("added place: " + addedPlace);
 
         // Generate description, categories, and activities
         String description = generateDescription(addedPlace.getName(), addedPlace.getAddress());

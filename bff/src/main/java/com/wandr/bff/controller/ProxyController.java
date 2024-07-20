@@ -66,7 +66,7 @@ public class ProxyController {
         String userRole = loginDetails.get("role");
         String hashedPassword = loginDetails.get("password");
         String userEmail = loginDetails.get("email");
-        String getSaltUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/get-salt?email=" + userEmail;
+        String getSaltUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/get-salt?email=" + userEmail;
 
         try {
             // Fetch the salt from the backend
@@ -92,7 +92,7 @@ public class ProxyController {
             headers.setContentType(MediaType.APPLICATION_JSON);
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(loginDetails, headers);
-            String loginUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/login";
+            String loginUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/login";
             logger.info("Login URL: {}", loginUrl);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(loginUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
@@ -114,7 +114,7 @@ public class ProxyController {
                     logger.info("Successfully created JWT token for user with email: {}", email);
 
                     // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/save-jwt";
+                    String saveRefreshTokenUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/save-jwt";
 
                     Map<String, Object> saveTokenRequestBody = Map.of("userId", id, "jwtToken", refreshToken);
 
@@ -149,7 +149,7 @@ public class ProxyController {
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> signupDetails) {
         String userRole = signupDetails.get("role");
-        String signUpUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/signup";
+        String signUpUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/signup";
 
         try {
             String hashedPassword = signupDetails.get("password");
@@ -184,7 +184,7 @@ public class ProxyController {
                     logger.info("Successfully created JWT token for user with email: {}", email);
 
                     // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl = coreBackendUrl + "/api/" + userRole.toLowerCase() + "/save-jwt";
+                    String saveRefreshTokenUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/save-jwt";
 
                     Map<String, Object> saveTokenRequestBody = Map.of("userId", id, "jwtToken", refreshToken);
 
@@ -232,7 +232,7 @@ public class ProxyController {
                                     @RequestParam(value = "shopCategory", required = false) Integer shopCategory,
                                     @RequestParam("shopImage") MultipartFile shopImage) {
 
-        String signUpUrl = coreBackendUrl + "/api/business/signup";
+        String signUpUrl = coreBackendUrl + "/business/signup";
 
         try {
             // Add salt to hashed password
@@ -288,7 +288,7 @@ public class ProxyController {
                     logger.info("Successfully created JWT token for user with email: {}", t_email);
 
                     // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl = coreBackendUrl + "/api/business/save-jwt";
+                    String saveRefreshTokenUrl = coreBackendUrl + "/business/save-jwt";
                     logger.info("saveRefreshTokenUrl: " + saveRefreshTokenUrl);
 
                     HttpHeaders jsonHeaders = new HttpHeaders();
@@ -326,8 +326,24 @@ public class ProxyController {
 
 
 
-    @PostMapping("/forward")
-    public ResponseEntity<ApiResponse<Object>> forwardRequest(
+    //handle get requests
+    @GetMapping("/forward/**")
+    public ResponseEntity<?> forwardGetRequest(
+            @RequestHeader("Authorization") String token,
+            HttpServletRequest request) {
+
+        if (!validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
+        }
+
+        String requestUri = request.getRequestURI().replace("/api/proxy/forward", "") + "?" + request.getQueryString();
+        return forwardRequestWithToken(requestUri, token, null, HttpMethod.GET);
+    }
+
+    //handle post requests with JSON body
+    @PostMapping("/forward/**")
+    public ResponseEntity<?> forwardPostRequest(
             @RequestHeader("Authorization") String token,
             @RequestBody Map<String, Object> requestBody,
             HttpServletRequest request) {
@@ -337,14 +353,98 @@ public class ProxyController {
                     .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
         }
 
-        String forwardUrl = coreBackendUrl + request.getRequestURI();
+        String requestUri = request.getRequestURI().replace("/api/proxy/forward", "");
+        System.out.println("requestUri: " + requestUri);
+        return forwardRequestWithToken(requestUri, token, requestBody, HttpMethod.POST);
+    }
+
+    //handle post requests with form data
+    @PostMapping("/forward-form")
+    public ResponseEntity<ApiResponse<Object>> forwardFormPostRequest(
+            @RequestHeader("Authorization") String token,
+            @RequestParam MultiValueMap<String, String> formData,
+            HttpServletRequest request) {
+
+        if (!validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", token);
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formData, headers);
+        String requestUri = request.getRequestURI().replace("/api/proxy/forward", "");
+        String forwardUrl = coreBackendUrl + requestUri;
+        return forwardRequestWithEntity(forwardUrl, entity, HttpMethod.POST);
+    }
+
+    //handle put requests
+    @PutMapping("/forward/**")
+    public ResponseEntity<?> forwardPutRequest(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Map<String, Object> requestBody,
+            HttpServletRequest request) {
+
+        if (!validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
+        }
+
+        String requestUri = request.getRequestURI().replace("/api/proxy/forward", "");
+        return forwardRequestWithToken(requestUri, token, requestBody, HttpMethod.PUT);
+    }
+
+    //handle delete requests
+    @DeleteMapping("/forward/**")
+    public ResponseEntity<?> forwardDeleteRequest(
+            @RequestHeader("Authorization") String token,
+            HttpServletRequest request) {
+
+        if (!validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
+        }
+
+        String requestUri = request.getRequestURI().replace("/api/proxy/forward", "") + "?" + request.getQueryString();
+        return forwardRequestWithToken(requestUri, token, null, HttpMethod.DELETE);
+    }
+
+
+    //helper methods for forward requests
+    private ResponseEntity<?> forwardRequestWithToken(
+            String requestUri, String token, Object body, HttpMethod method) {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HttpEntity<Object> entity = new HttpEntity<>(body, headers);
 
         try {
-            ResponseEntity<String> response = restTemplate.exchange(forwardUrl, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = restTemplate.exchange(coreBackendUrl + requestUri, method, entity, String.class);
+
+            // Parse the backend response to an object
+            ApiResponse<?> backendResponse = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
+
+            return ResponseEntity.ok(new ApiResponse<>(true, backendResponse.getStatusCode(), backendResponse.getMessage(), backendResponse.getData()));
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error forwarding request: ", e);
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
+        } catch (Exception e) {
+            logger.error("Unexpected error: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
+        }
+    }
+
+    private ResponseEntity<ApiResponse<Object>> forwardRequestWithEntity(
+            String forwardUrl, HttpEntity<?> entity, HttpMethod method) {
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(forwardUrl, method, entity, String.class);
             return ResponseEntity.ok(new ApiResponse<>(true, response.getStatusCodeValue(), "Success", response.getBody()));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error forwarding request: ", e);
@@ -356,4 +456,6 @@ public class ProxyController {
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
         }
     }
+
+
 }
