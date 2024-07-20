@@ -3,6 +3,7 @@ package com.wandr.backend.controller;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.place.UpdatePlaceDTO;
+import com.wandr.backend.entity.Places;
 import com.wandr.backend.service.PlaceService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ public class PlaceController {
         return ResponseEntity.ok(new ApiResponse<>(true, 200, "Place found", place));
     }
 
-    @PostMapping("/add")
+    @GetMapping("/add")
     public ResponseEntity<ApiResponse<PlaceDTO>> addPlace(@RequestParam String placeId) {
         try{
             PlaceDTO placeDTO = placeService.add(placeId);
@@ -80,7 +81,11 @@ public class PlaceController {
 
     @PostMapping("/update/{placeId}")
     public ApiResponse<PlaceDTO> update(@PathVariable long placeId, @RequestBody UpdatePlaceDTO updatePlaceDTO) {
-
+        PlaceDTO place = placeService.getPlaceById(placeId);
+        if (place == null) {
+            logger.error("Place with id {} not found", placeId);
+            return new ApiResponse<>(false, HttpStatus.NOT_FOUND.value(), "Place not found");
+        }
         try {
             PlaceDTO updatedPlace = placeService.update(placeId, updatePlaceDTO);
             logger.info("Successfully updated place with id: {}", placeId);
@@ -93,6 +98,11 @@ public class PlaceController {
 
     @DeleteMapping("delete/{placeId}")
     public ApiResponse<Void> delete(@PathVariable long placeId) {
+        PlaceDTO place = placeService.getPlaceById(placeId);
+        if (place == null) {
+            logger.error("Place with id {} not found", placeId);
+            return new ApiResponse<>(false, HttpStatus.NOT_FOUND.value(), "Place not found");
+        }
         try {
             placeService.delete(placeId);
             logger.info("Successfully deleted place with id: {}", placeId);
