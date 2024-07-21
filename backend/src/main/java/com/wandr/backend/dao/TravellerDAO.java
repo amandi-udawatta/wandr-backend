@@ -1,5 +1,6 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.mapper.TravellerRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -57,4 +58,6 @@ public class TravellerDAO {
         String sql = "UPDATE travellers SET jwt = ? WHERE traveller_id = ?";
         jdbcTemplate.update(sql, jwt, travellerId);
     }
+
+
 }

@@ -2,10 +2,8 @@ package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
-import com.wandr.backend.dto.traveller.TravellerSignupDTO;
-import com.wandr.backend.dto.traveller.UpdateActivitiesDTO;
-import com.wandr.backend.dto.traveller.UpdateCategoriesDTO;
-import com.wandr.backend.dto.traveller.UpdateProfileDTO;
+import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
+import com.wandr.backend.dto.traveller.*;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.TravellerService;
@@ -16,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.Timestamp;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,14 +28,15 @@ public class TravellerServiceImpl implements TravellerService {
     public TravellerServiceImpl(TravellerDAO travellerDAO) {
         this.travellerDAO = travellerDAO;
     }
+
     @Override
-    public ApiResponse<Void> updateTravellerJwt (String jwt, Long travellerId) {
+    public ApiResponse<Void> updateTravellerJwt(String jwt, Long travellerId) {
         travellerDAO.updateTravellerJwt(jwt, travellerId);
         return new ApiResponse<>(true, 200, "JWT updated successfully");
     }
 
     @Override
-        public String getSalt(String email){
+    public String getSalt(String email) {
         Optional<Traveller> travellerOpt = travellerDAO.findByEmail(email);
         if (travellerOpt.isEmpty()) {
             return null;
@@ -84,7 +84,6 @@ public class TravellerServiceImpl implements TravellerService {
         traveller.setProfileImage(""); // Initially empty
         traveller.setSalt(request.getSalt());
         traveller.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-
 
 
         travellerDAO.save(traveller);

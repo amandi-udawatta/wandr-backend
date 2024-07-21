@@ -1,6 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.service.BusinessService;
@@ -106,6 +107,20 @@ public class BusinessController {
         catch (Exception e) {
             logger.error("Error retrieving salt for business with email {}: {}", userEmail, e.getMessage(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
+        }
+    }
+
+
+    //get all pending businesses
+    @GetMapping("/pending")
+    public ResponseEntity<ApiResponse<List<BusinessDTO>>> getPendingBusinesses() {
+        logger.info("Received request to get all pending businesses");
+        try {
+            ApiResponse<List<BusinessDTO>> response = businessService.getPendingBusinesses();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting all pending businesses", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all pending businesses", null));
         }
     }
 }

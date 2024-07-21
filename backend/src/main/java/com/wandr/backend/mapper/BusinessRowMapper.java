@@ -26,13 +26,16 @@ public class BusinessRowMapper implements RowMapper<Business> {
         business.setBusinessContact(rs.getString("business_contact"));
         business.setBusinessType(rs.getInt("business_type"));
         business.setShopCategory(rs.getInt("shop_category"));
-        business.setApproved(rs.getBoolean("approved"));
+        business.setStatus(rs.getString("status"));
         business.setOwnerName(rs.getString("owner_name"));
         business.setOwnerContact(rs.getString("owner_contact"));
         business.setOwnerNic(rs.getString("owner_nic"));
         business.setJwt(rs.getString("jwt"));
         business.setSalt(rs.getString("salt"));
         business.setCreatedAt(rs.getTimestamp("created_at"));
+        business.setShopCategory(rs.getInt("shop_category"));
+        business.setPlanId(rs.getInt("plan_id"));
+
 
         String services = rs.getString("services");
         if (services != null && !services.trim().isEmpty()) {
