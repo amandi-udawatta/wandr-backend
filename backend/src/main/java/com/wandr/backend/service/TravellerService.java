@@ -1,10 +1,10 @@
 package com.wandr.backend.service;
 
 import com.wandr.backend.dto.*;
-import com.wandr.backend.dto.traveller.TravellerSignupDTO;
-import com.wandr.backend.dto.traveller.UpdateActivitiesDTO;
-import com.wandr.backend.dto.traveller.UpdateCategoriesDTO;
-import com.wandr.backend.dto.traveller.UpdateProfileDTO;
+import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
+import com.wandr.backend.dto.traveller.*;
+
+import java.util.List;
 
 public interface TravellerService {
 
@@ -18,4 +18,6 @@ public interface TravellerService {
 
     public String getSalt(String email);
 
-}
+
+
+    }

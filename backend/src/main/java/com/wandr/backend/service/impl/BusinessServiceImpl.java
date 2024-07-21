@@ -1,9 +1,12 @@
 package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.BusinessDAO;
+import com.wandr.backend.dao.BusinessPlanDAO;
+import com.wandr.backend.dao.ShopCategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
+import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.entity.Business;
@@ -16,19 +19,25 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
 public class BusinessServiceImpl implements BusinessService {
 
     private final BusinessDAO businessDAO;
+    private final ShopCategoryDAO shopCategoryDAO;
+    private final BusinessPlanDAO businessPlanDAO;
+
 
     private static final Logger logger = LoggerFactory.getLogger(BusinessServiceImpl.class);
 
     @Autowired
-    public BusinessServiceImpl(BusinessDAO businessDAO) {
+    public BusinessServiceImpl(BusinessDAO businessDAO, ShopCategoryDAO shopCategoryDAO, BusinessPlanDAO businessPlanDAO) {
         this.businessDAO = businessDAO;
+        this.shopCategoryDAO = shopCategoryDAO;
+        this.businessPlanDAO = businessPlanDAO;
     }
     @Override
     public ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId) {
@@ -99,7 +108,8 @@ public class BusinessServiceImpl implements BusinessService {
         business.setOwnerNic(request.getOwnerNic());
         business.setEmail(request.getEmail());
         business.setPassword(request.getPassword());
-        business.setApproved(false); // Default value, businesses need business approval
+        //set default values 'pending' to status
+        business.setStatus("pending");
         business.setSalt(request.getSalt());
         business.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
         business.setJwt(null); // Assuming jwt_token is null for initial registration
@@ -174,6 +184,46 @@ public class BusinessServiceImpl implements BusinessService {
         businessDAO.updateProfile(existingBusiness);
 
         return new ApiResponse<>(true, 200, "Profile updated successfully");
+    }
+
+//business to business dto
+    private BusinessDTO businessToBusinessDto (Business business) {
+        BusinessDTO businessDTO = new BusinessDTO();
+        businessDTO.setName(business.getName());
+        businessDTO.setEmail(business.getEmail());
+        businessDTO.setDescription(business.getDescription());
+        businessDTO.setServices(business.getServices());
+        businessDTO.setAddress(business.getAddress());
+        businessDTO.setLanguages(business.getLanguages());
+        businessDTO.setWebsiteUrl(business.getWebsiteUrl());
+        businessDTO.setBusinessContact(business.getBusinessContact());
+        businessDTO.setShopImage(business.getShopImage());
+        businessDTO.setStatus(business.getStatus());
+        businessDTO.setOwnerName(business.getOwnerName());
+        businessDTO.setOwnerContact(business.getOwnerContact());
+        businessDTO.setOwnerNic(business.getOwnerNic());
+        businessDTO.setCreatedAt(business.getCreatedAt());
+        if (business.getBusinessType() == 1) {
+            businessDTO.setBusinessType("Shop");
+        } else if (business.getBusinessType() == 2) {
+            businessDTO.setBusinessType("Service");
+        }
+        String shop_category = shopCategoryDAO.findNameById(business.getShopCategory());
+        businessDTO.setShopCategory(shop_category);
+        String business_plan = businessPlanDAO.findNameById(business.getPlanId());
+        businessDTO.setPlan(business_plan);
+        return businessDTO;
+    }
+
+    //get pending businesses
+    @Override
+    public ApiResponse<List<BusinessDTO>> getPendingBusinesses() {
+        List<Business> businesses = businessDAO.getPendingBusinesses();
+        List<BusinessDTO> businessDTOs = new ArrayList<>();
+        for (Business business : businesses) {
+            businessDTOs.add(businessToBusinessDto(business));
+        }
+        return new ApiResponse<>(true, 200, "Pending businesses retrieved successfully", businessDTOs);
     }
 
 

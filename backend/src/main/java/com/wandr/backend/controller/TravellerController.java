@@ -123,4 +123,6 @@ public class TravellerController {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
         }
     }
+
+
 }

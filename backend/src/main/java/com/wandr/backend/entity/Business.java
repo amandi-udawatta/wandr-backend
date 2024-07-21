@@ -23,9 +23,10 @@ public class Business {
         private String ownerName;
         private String ownerContact;
         private String ownerNic;
-        private Boolean approved;
+        private String status;
         private String jwt;
         private String salt;
         private Timestamp createdAt;
+        private Integer planId;
 
 }
