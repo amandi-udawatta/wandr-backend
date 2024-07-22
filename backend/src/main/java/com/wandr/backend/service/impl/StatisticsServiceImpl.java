@@ -2,6 +2,7 @@ package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.StatisticsDAO;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.ads.AdDTO;
 import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
 import com.wandr.backend.dto.statistics.StatisticsDTO;
 import com.wandr.backend.service.StatisticsService;

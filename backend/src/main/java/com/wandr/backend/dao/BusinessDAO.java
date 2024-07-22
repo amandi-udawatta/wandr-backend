@@ -86,4 +86,13 @@ public class BusinessDAO {
         return jdbcTemplate.query(sql, new BusinessRowMapper());
     }
 
+    //get business name by id
+    public String getBusinessNameById(Long businessId) {
+        String sql = "SELECT name FROM businesses WHERE business_id = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{businessId}, String.class);
+    }
+
+    //get top 3 popular stores
+
+
 }
