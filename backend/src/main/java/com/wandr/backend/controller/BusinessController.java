@@ -3,6 +3,7 @@ package com.wandr.backend.controller;
 import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
+import com.wandr.backend.dto.business.PopularStoreDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.service.BusinessService;
 import com.wandr.backend.util.FileUploadUtil;
@@ -121,6 +122,19 @@ public class BusinessController {
         } catch (Exception e) {
             logger.error("An error occurred while getting all pending businesses", e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all pending businesses", null));
+        }
+    }
+
+    @GetMapping("/popular-stores")
+    public ResponseEntity<ApiResponse<List<PopularStoreDTO>>> getPopularStores() {
+        logger.info("Received request to get popular stores");
+        try {
+            ApiResponse<List<PopularStoreDTO>> response = businessService.getPopularStores();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting popular stores", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, 500, "An error occurred while getting popular stores"));
         }
     }
 }

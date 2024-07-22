@@ -8,6 +8,7 @@ import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
+import com.wandr.backend.dto.business.PopularStoreDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.enums.Role;
@@ -224,6 +225,12 @@ public class BusinessServiceImpl implements BusinessService {
             businessDTOs.add(businessToBusinessDto(business));
         }
         return new ApiResponse<>(true, 200, "Pending businesses retrieved successfully", businessDTOs);
+    }
+
+    @Override
+    public ApiResponse<List<PopularStoreDTO>> getPopularStores() {
+        List<PopularStoreDTO> popularStores = businessDAO.getPopularStores();
+        return new ApiResponse<>(true, 200, "Popular stores retrieved successfully", popularStores);
     }
 
 

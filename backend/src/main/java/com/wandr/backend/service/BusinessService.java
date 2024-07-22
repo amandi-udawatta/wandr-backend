@@ -5,6 +5,7 @@ import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.business.BusinessSignupDTO;
+import com.wandr.backend.dto.business.PopularStoreDTO;
 import com.wandr.backend.dto.business.UpdateProfileDTO;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +22,9 @@ public interface BusinessService {
     public String getSalt(String email);
 
     ApiResponse<List<BusinessDTO>> getPendingBusinesses();
+
+    ApiResponse<List<PopularStoreDTO>> getPopularStores();
+
 
 
     }
