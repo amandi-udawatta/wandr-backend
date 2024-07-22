@@ -1,5 +1,6 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.business.PopularStoreDTO;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.mapper.BusinessRowMapper;
 import org.slf4j.Logger;
@@ -9,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 @Repository
 public class BusinessDAO {
@@ -93,6 +93,21 @@ public class BusinessDAO {
     }
 
     //get top 3 popular stores
+    public List<PopularStoreDTO> getPopularStores() {
+        String sql = "SELECT b.name AS shop_name, p.total_sales_count AS sales_count, " +
+                "ROUND((p.total_sales_count::numeric / total.total_sales) * 100, 2) AS popularity " +
+                "FROM businesses b " +
+                "JOIN (SELECT business_id, SUM(sales_count) AS total_sales_count FROM products GROUP BY business_id) p " +
+                "ON b.business_id = p.business_id " +
+                "JOIN (SELECT SUM(sales_count) AS total_sales FROM products) total ON true " +
+                "ORDER BY p.total_sales_count DESC " +
+                "LIMIT 3;";
+        return jdbcTemplate.query(sql, (rs, rowNum) -> new PopularStoreDTO(
+                rs.getString("shop_name"),
+                rs.getInt("sales_count"),
+                rs.getDouble("popularity")
+        ));
+    }
 
 
 }
