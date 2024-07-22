@@ -43,4 +43,5 @@ public class StatisticsController {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error getting user country statistics", null));
         }
     }
+
 }
