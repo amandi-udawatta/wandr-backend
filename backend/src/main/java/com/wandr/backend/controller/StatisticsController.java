@@ -2,6 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
+import com.wandr.backend.dto.statistics.RevenueDTO;
 import com.wandr.backend.dto.statistics.StatisticsDTO;
 import com.wandr.backend.service.StatisticsService;
 import org.slf4j.Logger;
@@ -43,5 +44,16 @@ public class StatisticsController {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error getting user country statistics", null));
         }
     }
+
+    @GetMapping("/total-revenue")
+    public ResponseEntity<ApiResponse<RevenueDTO>> getTotalRevenue() {
+        try{
+            return ResponseEntity.ok(statisticsService.getTotalRevenue());
+        } catch (Exception e) {
+            logger.error("Error getting total revenue", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error getting total revenue", null));
+        }
+    }
+
 
 }

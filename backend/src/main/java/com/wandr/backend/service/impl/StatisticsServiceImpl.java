@@ -4,6 +4,7 @@ import com.wandr.backend.dao.StatisticsDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.ads.AdDTO;
 import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
+import com.wandr.backend.dto.statistics.RevenueDTO;
 import com.wandr.backend.dto.statistics.StatisticsDTO;
 import com.wandr.backend.service.StatisticsService;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -47,5 +49,18 @@ public class StatisticsServiceImpl implements StatisticsService {
         List<CountryStatisticsDTO> countryStatistics = statisticsDAO.getUserCountryStatistics();
         return new ApiResponse<>(true, 200, "User country statistics retrieved successfully", countryStatistics);
     }
+
+    @Override
+    public ApiResponse<RevenueDTO> getTotalRevenue() {
+        BigDecimal premiumRevenue = statisticsDAO.getPremiumMembershipRevenue();
+        BigDecimal businessPlanRevenue = statisticsDAO.getBusinessPlanRevenue();
+        BigDecimal reservationCommission = statisticsDAO.getReservationCommission();
+        RevenueDTO revenue = new RevenueDTO();
+        revenue.setPremiumRevenue(premiumRevenue);
+        revenue.setBusinessPlanRevenue(businessPlanRevenue);
+        revenue.setReservationRevenue(reservationCommission);
+        return new ApiResponse<>(true, 200, "Revenue retrieved successfully", revenue);
+    }
+
 
 }
