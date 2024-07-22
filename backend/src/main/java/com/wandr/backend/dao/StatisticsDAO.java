@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,10 +54,27 @@ public class StatisticsDAO {
         });
     }
 
-    //get businesses count from that is not pending or rejected in status column
-    public Integer getBusinessesCount() {
-        String sql = "SELECT COUNT(*) FROM businesses WHERE status != 'pending' AND status != 'declined'";
-        return jdbcTemplate.queryForObject(sql, Integer.class);
+    public BigDecimal getPremiumMembershipRevenue() {
+        String sql = "SELECT SUM(tp.price) AS premium_membership_revenue " +
+                "FROM travellers t " +
+                "JOIN tourist_plan tp ON t.membership = 'premium' AND tp.plan_id = 1";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class);
+    }
+
+    public BigDecimal getBusinessPlanRevenue() {
+        String sql = "SELECT SUM(bp.price) AS business_plan_revenue " +
+                "FROM businesses b " +
+                "JOIN business_plan bp ON b.plan_id = bp.plan_id";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class);
+    }
+
+    public BigDecimal getReservationCommission() {
+        String sql = "SELECT SUM(p.price * 0.10) AS reservation_commission " +
+                "FROM reservations r " +
+                "JOIN product_units pu ON r.reservation_id = pu.reservation_id " +
+                "JOIN products p ON pu.product_id = p.product_id " +
+                "WHERE pu.reservation_status = 'reserved'";
+        return jdbcTemplate.queryForObject(sql, BigDecimal.class);
     }
 
 }
