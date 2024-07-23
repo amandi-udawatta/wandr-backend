@@ -2,12 +2,12 @@ package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
 import com.wandr.backend.dto.traveller.*;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.TravellerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +23,9 @@ public class TravellerServiceImpl implements TravellerService {
     private final TravellerDAO travellerDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(TravellerServiceImpl.class);
+
+    @Value("${core.backend.url}")
+    private String backendUrl;
 
     @Autowired
     public TravellerServiceImpl(TravellerDAO travellerDAO) {
@@ -113,7 +116,7 @@ public class TravellerServiceImpl implements TravellerService {
     }
 
     @Override
-    public ApiResponse<String> updateProfile(Long travellerId, UpdateProfileDTO request) {
+    public ApiResponse<TravellerDTO> updateProfile(Long travellerId, UpdateProfileDTO request) {
         Traveller existingTraveller = travellerDAO.findById(travellerId);
         if (existingTraveller == null) {
             return new ApiResponse<>(false, 404, "Traveller not found");
@@ -137,11 +140,45 @@ public class TravellerServiceImpl implements TravellerService {
         if (request.getProfileImage() != null) {
             existingTraveller.setProfileImage(request.getProfileImage());
         }
+        if (request.getMembership() != null) {
+            existingTraveller.setMembership(request.getMembership());
+        }
 
         travellerDAO.updateProfile(existingTraveller);
+        TravellerDTO updatedTraveller = getTravellerById(travellerId);
 
-        return new ApiResponse<>(true, 200, "Profile updated successfully");
+        //return updated traveller details
+        return new ApiResponse<>(true, 200, "Profile updated successfully", updatedTraveller);
     }
+
+
+    //get traveller by id
+    private TravellerDTO getTravellerById(Long travellerId) {
+        Traveller traveller = travellerDAO.findById(travellerId);
+        if (traveller == null) {
+            return null;
+        }
+        TravellerDTO travellerDTO = travellerToTravellerDTO(traveller);
+        return travellerDTO;
+    }
+
+    //traveller to traveller dto
+    private TravellerDTO travellerToTravellerDTO(Traveller traveller) {
+        TravellerDTO travellerDTO = new TravellerDTO();
+        travellerDTO.setTravellerId(traveller.getTravellerId());
+        travellerDTO.setName(traveller.getName());
+        travellerDTO.setEmail(traveller.getEmail());
+        travellerDTO.setCountry(traveller.getCountry());
+        travellerDTO.setCategories(traveller.getCategories());
+        travellerDTO.setActivities(traveller.getActivities());
+        String imageUri = backendUrl + "/traveller/profile_images/" + traveller.getProfileImage();
+        travellerDTO.setProfileImage(imageUri);
+        travellerDTO.setCreatedAt(traveller.getCreatedAt());
+        travellerDTO.setMembership(traveller.getMembership());
+        return travellerDTO;
+    }
+
+
 
 
 }

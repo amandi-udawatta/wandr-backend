@@ -3,18 +3,15 @@ package com.wandr.backend.service.impl;
 import com.wandr.backend.dao.AdDAO;
 import com.wandr.backend.dao.BusinessDAO;
 import com.wandr.backend.dao.BusinessPlanDAO;
-import com.wandr.backend.dao.StatisticsDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.ads.AdDTO;
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
-import com.wandr.backend.dto.statistics.StatisticsDTO;
 import com.wandr.backend.entity.Ad;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.service.AdService;
-import com.wandr.backend.service.StatisticsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -27,6 +24,9 @@ public class AdServiceImpl implements AdService {
     private final BusinessDAO businessDAO;
 
     private final BusinessPlanDAO businessPlanDAO;
+
+    @Value("${core.backend.url}")
+    private String backendUrl;
 
     private static final Logger logger = LoggerFactory.getLogger(AdServiceImpl.class);
 
@@ -54,6 +54,8 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
+        String imageUri = backendUrl + "/ads/" + ad.getImage();
+        adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
         Business business = businessDAO.findById(ad.getBusinessId());
         adDto.setBusinessPlan(businessPlanDAO.findNameById(business.getPlanId()));

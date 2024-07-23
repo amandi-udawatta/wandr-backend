@@ -51,6 +51,9 @@ public class PlaceServiceImpl implements PlaceService {
     @Value("${openai.api.url}")
     private String openAiApiUrl;
 
+    @Value("${core.backend.url}")
+    private String backendUrl;
+
     private static final Logger logger = LoggerFactory.getLogger(PlaceServiceImpl.class);
     public PlaceServiceImpl(PlaceDAO placeDAO, CategoryDAO categoryDAO, ActivityDAO activityDAO, RestTemplate restTemplate) {
         this.placeDAO = placeDAO;
@@ -509,7 +512,8 @@ public class PlaceServiceImpl implements PlaceService {
         placeDTO.setLatitude(place.getLatitude());
         placeDTO.setLongitude(place.getLongitude());
         placeDTO.setAddress(place.getAddress());
-        placeDTO.setImage(place.getImage());
+        String imageUri = backendUrl + "/places/" + place.getImage();
+        placeDTO.setImage(imageUri);
         List<Category> categories = categoryDAO.findByCategoryIds(place.getCategories());
         List<Activity> activities = activityDAO.findByActivityIds(place.getActivities());
         //get a list of category and activity names
