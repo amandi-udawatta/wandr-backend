@@ -1,14 +1,20 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.business.PaidBusinessDTO;
 import com.wandr.backend.dto.business.PopularStoreDTO;
+import com.wandr.backend.entity.Activity;
 import com.wandr.backend.entity.Business;
+import com.wandr.backend.entity.Category;
 import com.wandr.backend.mapper.BusinessRowMapper;
 import org.slf4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 @Repository
@@ -86,6 +92,11 @@ public class BusinessDAO {
         return jdbcTemplate.query(sql, new BusinessRowMapper());
     }
 
+    public List<Business> getApprovedBusinesses() {
+        String sql = "SELECT * FROM businesses WHERE status = 'approved'";
+        return jdbcTemplate.query(sql, new BusinessRowMapper());
+    }
+
     //get business name by id
     public String getBusinessNameById(Long businessId) {
         String sql = "SELECT name FROM businesses WHERE business_id = ?";
@@ -107,6 +118,44 @@ public class BusinessDAO {
                 rs.getInt("sales_count"),
                 rs.getDouble("popularity")
         ));
+    }
+
+    // get paid businesses
+    public List<PaidBusinessDTO> getPaidBusinesses() {
+        String sql = "SELECT b.*, bp.price AS payment_amount, bp.name as plan, EXTRACT(DAY FROM (b.plan_end_date - CURRENT_TIMESTAMP)) AS remaining_days " +
+                "FROM businesses b " +
+                "JOIN business_plan bp ON b.plan_id = bp.plan_id " +
+                "WHERE b.status = 'paid'";
+
+        return jdbcTemplate.query(sql, (rs, rowNum) -> {
+            Business business = new BusinessRowMapper().mapRow(rs, rowNum);
+            String businessType = business.getBusinessType() == 1 ? "Shop" : "Service";
+            String shopCategory = jdbcTemplate.queryForObject("SELECT name FROM shop_categories WHERE category_id = ?", new Object[]{business.getShopCategory()}, String.class);
+
+            return new PaidBusinessDTO(
+                    business.getName(),
+                    business.getEmail(),
+                    business.getDescription(),
+                    business.getServices(),
+                    business.getAddress(),
+                    business.getLanguages(),
+                    business.getWebsiteUrl(),
+                    business.getBusinessContact(),
+                    business.getShopImage(),
+                    businessType,
+                    business.getOwnerName(),
+                    business.getOwnerContact(),
+                    business.getOwnerNic(),
+                    business.getCreatedAt(),
+                    shopCategory,
+                    rs.getString("plan"),
+                    business.getStatus(),
+                    rs.getBigDecimal("payment_amount"),
+                    rs.getTimestamp("paid_date"),
+                    rs.getTimestamp("plan_end_date"),
+                    rs.getInt("remaining_days")
+            );
+        });
     }
 
 

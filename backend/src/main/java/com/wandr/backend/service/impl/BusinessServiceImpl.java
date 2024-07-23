@@ -6,10 +6,7 @@ import com.wandr.backend.dao.ShopCategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
-import com.wandr.backend.dto.business.BusinessDTO;
-import com.wandr.backend.dto.business.BusinessSignupDTO;
-import com.wandr.backend.dto.business.PopularStoreDTO;
-import com.wandr.backend.dto.business.UpdateProfileDTO;
+import com.wandr.backend.dto.business.*;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.BusinessService;
@@ -233,6 +230,30 @@ public class BusinessServiceImpl implements BusinessService {
             businessDTOs.add(businessToBusinessDto(business));
         }
         return new ApiResponse<>(true, 200, "Pending businesses retrieved successfully", businessDTOs);
+    }
+
+
+    //get approved businesses
+    @Override
+    public ApiResponse<List<BusinessDTO>> getApprovedBusinesses() {
+        if (businessDAO.getApprovedBusinesses().isEmpty()) {
+            return new ApiResponse<>(false, 404, "No approved businesses found", null);
+        }
+        List<Business> businesses = businessDAO.getApprovedBusinesses();
+        List<BusinessDTO> businessDTOs = new ArrayList<>();
+        for (Business business : businesses) {
+            businessDTOs.add(businessToBusinessDto(business));
+        }
+        return new ApiResponse<>(true, 200, "Approved businesses retrieved successfully", businessDTOs);
+    }
+
+    @Override
+    public ApiResponse<List<PaidBusinessDTO>> getPaidBusinesses() {
+        if (businessDAO.getPaidBusinesses().isEmpty()) {
+            return new ApiResponse<>(false, 404, "No paid businesses found", null);
+        }
+        List<PaidBusinessDTO> businesses = businessDAO.getPaidBusinesses();
+        return new ApiResponse<>(true, 200, "Paid businesses retrieved successfully", businesses);
     }
 
     @Override
