@@ -86,6 +86,11 @@ public class BusinessDAO {
         return jdbcTemplate.query(sql, new BusinessRowMapper());
     }
 
+    public List<Business> getApprovedBusinesses() {
+        String sql = "SELECT * FROM businesses WHERE status = 'approved'";
+        return jdbcTemplate.query(sql, new BusinessRowMapper());
+    }
+
     //get business name by id
     public String getBusinessNameById(Long businessId) {
         String sql = "SELECT name FROM businesses WHERE business_id = ?";

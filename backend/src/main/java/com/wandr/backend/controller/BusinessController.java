@@ -125,6 +125,19 @@ public class BusinessController {
         }
     }
 
+    //get all approved businesses
+    @GetMapping("/approved")
+    public ResponseEntity<ApiResponse<List<BusinessDTO>>> getApprovedBusinesses() {
+        logger.info("Received request to get all approved businesses");
+        try {
+            ApiResponse<List<BusinessDTO>> response = businessService.getApprovedBusinesses();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting all approved businesses", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all approved businesses", null));
+        }
+    }
+
     @GetMapping("/popular-stores")
     public ResponseEntity<ApiResponse<List<PopularStoreDTO>>> getPopularStores() {
         logger.info("Received request to get popular stores");

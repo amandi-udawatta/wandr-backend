@@ -105,12 +105,18 @@ public class TravellerServiceImpl implements TravellerService {
 
     @Override
     public ApiResponse<String> updateCategories(Long travellerId, UpdateCategoriesDTO request) {
+        if (travellerDAO.findById(travellerId) == null) {
+            return new ApiResponse<>(false, 404, "Traveller not found");
+        }
         travellerDAO.updateCategories(travellerId, request.getCategories());
         return new ApiResponse<>(true, 200, "Categories updated successfully");
     }
 
     @Override
     public ApiResponse<String> updateActivities(Long travellerId, UpdateActivitiesDTO request) {
+        if (travellerDAO.findById(travellerId) == null) {
+            return new ApiResponse<>(false, 404, "Traveller not found");
+        }
         travellerDAO.updateActivities(travellerId, request.getActivities());
         return new ApiResponse<>(true, 200, "Activities updated successfully");
     }

@@ -235,6 +235,21 @@ public class BusinessServiceImpl implements BusinessService {
         return new ApiResponse<>(true, 200, "Pending businesses retrieved successfully", businessDTOs);
     }
 
+
+    //get approved businesses
+    @Override
+    public ApiResponse<List<BusinessDTO>> getApprovedBusinesses() {
+        if (businessDAO.getApprovedBusinesses().isEmpty()) {
+            return new ApiResponse<>(false, 404, "No approved businesses found", null);
+        }
+        List<Business> businesses = businessDAO.getApprovedBusinesses();
+        List<BusinessDTO> businessDTOs = new ArrayList<>();
+        for (Business business : businesses) {
+            businessDTOs.add(businessToBusinessDto(business));
+        }
+        return new ApiResponse<>(true, 200, "Approved businesses retrieved successfully", businessDTOs);
+    }
+
     @Override
     public ApiResponse<List<PopularStoreDTO>> getPopularStores() {
         if (businessDAO.getPopularStores().isEmpty()) {

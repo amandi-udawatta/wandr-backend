@@ -85,7 +85,6 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.toList());
     }
 
-
     @Override
     public PlaceDTO update(long placeId, UpdatePlaceDTO updatePlaceDTO) {
         try {
@@ -119,7 +118,9 @@ public class PlaceServiceImpl implements PlaceService {
     //delete place
     @Override
     public ApiResponse<Void> delete(long placeId) {
-
+        if (placeDAO.findById(placeId) == null) {
+            return new ApiResponse<>(false, 404, "Place not found");
+        }
         try {
             placeDAO.delete(placeId);
             return new ApiResponse<>(true, 200, "Place deleted successfully");

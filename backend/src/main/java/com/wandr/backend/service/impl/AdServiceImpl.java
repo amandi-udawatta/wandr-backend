@@ -39,6 +39,10 @@ public class AdServiceImpl implements AdService {
 
     @Override
     public ApiResponse<List<AdDTO>> getPendingAds() {
+        //if no pending ads, return null
+        if (adDAO.getPendingAds().isEmpty()) {
+            return new ApiResponse<>(false, 404, "No pending advertisements found", null);
+        }
         List<Ad> pendingAds =  adDAO.getPendingAds();
         List<AdDTO> pendingAdsDTO = new ArrayList<>();
         for (Ad ad : pendingAds) {

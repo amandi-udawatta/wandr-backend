@@ -73,19 +73,4 @@ public class AdminController {
         }
     }
 
-    @GetMapping("/statistics")
-    public ResponseEntity<ApiResponse<String>> getStatistics(@RequestParam Map<String, String> requestMap) {
-        String userEmail = requestMap.get("email");
-        logger.info("Received request to get salt for admin with email: {}", userEmail);
-
-        try {
-            String salt = adminService.getSalt(userEmail);
-            logger.info("Successfully retrieved salt for admin with email: {}", userEmail);
-            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Salt retrieved", salt));
-        }
-        catch (Exception e) {
-            logger.error("Error retrieving salt for admin with email {}: {}", userEmail, e.getMessage(), e);
-            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
-        }
-    }
 }
