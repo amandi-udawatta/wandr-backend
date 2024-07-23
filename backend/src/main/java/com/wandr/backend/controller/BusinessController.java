@@ -1,10 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
-import com.wandr.backend.dto.business.BusinessDTO;
-import com.wandr.backend.dto.business.BusinessSignupDTO;
-import com.wandr.backend.dto.business.PopularStoreDTO;
-import com.wandr.backend.dto.business.UpdateProfileDTO;
+import com.wandr.backend.dto.business.*;
 import com.wandr.backend.service.BusinessService;
 import com.wandr.backend.util.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +132,19 @@ public class BusinessController {
         } catch (Exception e) {
             logger.error("An error occurred while getting all approved businesses", e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all approved businesses", null));
+        }
+    }
+
+    //get all paid businesses
+    @GetMapping("/paid")
+    public ResponseEntity<ApiResponse<List<PaidBusinessDTO>>> getPaidBusinesses() {
+        logger.info("Received request to get all paid businesses");
+        try {
+            ApiResponse<List<PaidBusinessDTO>> response = businessService.getPaidBusinesses();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting all paid businesses", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all paid businesses", null));
         }
     }
 
