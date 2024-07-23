@@ -17,6 +17,7 @@ import com.wandr.backend.util.FileUploadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,6 +31,9 @@ public class BusinessServiceImpl implements BusinessService {
     private final BusinessDAO businessDAO;
     private final ShopCategoryDAO shopCategoryDAO;
     private final BusinessPlanDAO businessPlanDAO;
+
+    @Value("${core.backend.url}")
+    private String backendUrl;
 
 
     private static final Logger logger = LoggerFactory.getLogger(BusinessServiceImpl.class);
@@ -198,7 +202,8 @@ public class BusinessServiceImpl implements BusinessService {
         businessDTO.setLanguages(business.getLanguages());
         businessDTO.setWebsiteUrl(business.getWebsiteUrl());
         businessDTO.setBusinessContact(business.getBusinessContact());
-        businessDTO.setShopImage(business.getShopImage());
+        String imageUri = backendUrl + "/business/shop_images/" + business.getShopImage();
+        businessDTO.setShopImage(imageUri);
         businessDTO.setStatus(business.getStatus());
         businessDTO.setOwnerName(business.getOwnerName());
         businessDTO.setOwnerContact(business.getOwnerContact());
@@ -219,6 +224,9 @@ public class BusinessServiceImpl implements BusinessService {
     //get pending businesses
     @Override
     public ApiResponse<List<BusinessDTO>> getPendingBusinesses() {
+        if (businessDAO.getPendingBusinesses().isEmpty()) {
+            return new ApiResponse<>(false, 404, "No pending businesses found", null);
+        }
         List<Business> businesses = businessDAO.getPendingBusinesses();
         List<BusinessDTO> businessDTOs = new ArrayList<>();
         for (Business business : businesses) {
@@ -229,6 +237,9 @@ public class BusinessServiceImpl implements BusinessService {
 
     @Override
     public ApiResponse<List<PopularStoreDTO>> getPopularStores() {
+        if (businessDAO.getPopularStores().isEmpty()) {
+            return new ApiResponse<>(false, 404, "No popular stores found", null);
+        }
         List<PopularStoreDTO> popularStores = businessDAO.getPopularStores();
         return new ApiResponse<>(true, 200, "Popular stores retrieved successfully", popularStores);
     }

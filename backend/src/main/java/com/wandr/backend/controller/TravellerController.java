@@ -1,10 +1,9 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
-import com.wandr.backend.dto.traveller.TravellerSignupDTO;
-import com.wandr.backend.dto.traveller.UpdateActivitiesDTO;
-import com.wandr.backend.dto.traveller.UpdateCategoriesDTO;
-import com.wandr.backend.dto.traveller.UpdateProfileDTO;
+import com.wandr.backend.dto.place.PlaceDTO;
+import com.wandr.backend.dto.place.UpdatePlaceDTO;
+import com.wandr.backend.dto.traveller.*;
 import com.wandr.backend.service.TravellerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -79,11 +78,11 @@ public class TravellerController {
         }
     }
 
-    @PutMapping("/{travellerId}/profile")
-    public ResponseEntity<ApiResponse<String>> updateProfile(@PathVariable Long travellerId, @RequestBody UpdateProfileDTO request) {
+    @PostMapping("/update/{travellerId}")
+    public ResponseEntity<ApiResponse<TravellerDTO>> updateProfile(@PathVariable Long travellerId, @RequestBody UpdateProfileDTO request) {
         logger.info("Received request to update profile for traveller with ID: {}", travellerId);
         try {
-            ApiResponse<String> response = travellerService.updateProfile(travellerId, request);
+            ApiResponse<TravellerDTO> response = travellerService.updateProfile(travellerId, request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while updating profile for traveller with ID: {}", travellerId, e);

@@ -22,6 +22,8 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
         traveller.setCountry(rs.getString("country"));
         traveller.setProfileImage(rs.getString("profile_image"));
         traveller.setJwt(rs.getString("jwt"));
+        traveller.setMembership(rs.getString("membership"));
+
 
         String categories = rs.getString("categories");
         if (categories != null && !categories.trim().isEmpty()) {

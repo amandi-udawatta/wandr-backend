@@ -44,8 +44,8 @@ public class TravellerDAO {
     }
 
     public void updateProfile(Traveller traveller) {
-        String sql = "UPDATE travellers SET name = ?, country = ?, categories = ?::jsonb, activities = ?::jsonb, profile_image = ? WHERE traveller_id = ?";
-        jdbcTemplate.update(sql, traveller.getName(), traveller.getCountry(), traveller.getCategories().toString(), traveller.getActivities().toString(), traveller.getProfileImage(), traveller.getTravellerId());
+        String sql = "UPDATE travellers SET name = ?, country = ?, categories = ?::jsonb, activities = ?::jsonb, profile_image = ?, membership = ? WHERE traveller_id = ?";
+        jdbcTemplate.update(sql, traveller.getName(), traveller.getCountry(), traveller.getCategories().toString(), traveller.getActivities().toString(), traveller.getProfileImage(),traveller.getMembership(), traveller.getTravellerId());
     }
 
     public Optional<Traveller> findByEmail(String email) {
