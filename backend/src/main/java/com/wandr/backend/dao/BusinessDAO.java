@@ -159,5 +159,10 @@ public class BusinessDAO {
         });
     }
 
+    public void setStatus(Long businessId, String status) {
+        String sql = "UPDATE businesses SET status = ? WHERE business_id = ?";
+        jdbcTemplate.update(sql, status, businessId);
+    }
+
 
 }
