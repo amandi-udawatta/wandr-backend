@@ -35,7 +35,8 @@ public class BusinessRowMapper implements RowMapper<Business> {
         business.setCreatedAt(rs.getTimestamp("created_at"));
         business.setShopCategory(rs.getInt("shop_category"));
         business.setPlanId(rs.getInt("plan_id"));
-
+        business.setPaidDate(rs.getTimestamp("paid_date"));
+        business.setPlanEndDate(rs.getTimestamp("plan_end_date"));
 
         String services = rs.getString("services");
         if (services != null && !services.trim().isEmpty()) {

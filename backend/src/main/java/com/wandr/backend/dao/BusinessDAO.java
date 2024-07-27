@@ -57,6 +57,7 @@ public class BusinessDAO {
 //    }
 
     public void save(Business business) {
+        System.out.println("business = " + business);
         String sql = "INSERT INTO businesses (name, email, password, description, services, address, languages, website_url, business_contact, business_type,shop_category, status, owner_name, owner_contact, owner_nic, jwt, salt, created_at, shop_image) VALUES (?, ?, ?, ?, ?::jsonb, ?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
         jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), business.getServices().toString(), business.getAddress(), business.getLanguages().toString(), business.getWebsiteUrl(), business.getBusinessContact(), business.getBusinessType(), business.getShopCategory(), business.getStatus(),business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
     }
