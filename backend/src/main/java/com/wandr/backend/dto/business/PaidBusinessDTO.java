@@ -10,6 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class PaidBusinessDTO {
+    private Long businessId;
     private String name;
     private String email;
     private String description;

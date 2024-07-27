@@ -71,9 +71,30 @@ public class AdServiceImpl implements AdService {
         return new ApiResponse<>(true, 200, "Approved Advertisements retrieved successfully", approvedAdDTO);
     }
 
+    @Override
+    public ApiResponse<Void> approveAd(Long adId) {
+        Ad ad = adDAO.findById(adId);
+        if (ad == null) {
+            return new ApiResponse<>(false, 404, "Ad not found", null);
+        }
+        adDAO.setStatus(adId, "approved");
+        return new ApiResponse<>(true, 200, "Ad approved successfully", null);
+    }
+
+    @Override
+    public ApiResponse<Void> declineAd(Long adId) {
+        Ad ad = adDAO.findById(adId);
+        if (ad == null) {
+            return new ApiResponse<>(false, 404, "Ad not found", null);
+        }
+        adDAO.setStatus(adId, "declined");
+        return new ApiResponse<>(true, 200, "Ad declined successfully", null);
+    }
+
     //ad to ad dto
     private AdDTO adToAdDTO(Ad ad) {
         AdDTO adDto = new AdDTO();
+        adDto.setAdId(ad.getAdId());
         adDto.setShopName(businessDAO.getBusinessNameById(ad.getBusinessId()));
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
@@ -90,6 +111,7 @@ public class AdServiceImpl implements AdService {
 
     private ApprovedAdDTO adToApprovedAdDTO(Ad ad) {
         ApprovedAdDTO adDto = new ApprovedAdDTO();
+        adDto.setAdId(ad.getAdId());
         adDto.setShopName(businessDAO.getBusinessNameById(ad.getBusinessId()));
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());

@@ -2,6 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.business.BusinessPlanDTO;
+import com.wandr.backend.dto.business.NewBusinessPlanDTO;
 import com.wandr.backend.service.BusinessPlanService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ public class BusinessPlanController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<BusinessPlanDTO>> createBusinessPlan(@RequestBody BusinessPlanDTO businessPlan) {
+    public ResponseEntity<ApiResponse<BusinessPlanDTO>> createBusinessPlan(@RequestBody NewBusinessPlanDTO businessPlan) {
         try {
             return ResponseEntity.ok(businessPlanService.create(businessPlan));
         } catch (Exception e) {
@@ -44,7 +45,7 @@ public class BusinessPlanController {
     }
 
     @PostMapping("/update/{businessPlanId}")
-    public ResponseEntity<ApiResponse<BusinessPlanDTO>> updateBusinessPlan(@PathVariable Long businessPlanId, @RequestBody BusinessPlanDTO request) {
+    public ResponseEntity<ApiResponse<BusinessPlanDTO>> updateBusinessPlan(@PathVariable Long businessPlanId, @RequestBody NewBusinessPlanDTO request) {
         try {
             return ResponseEntity.ok(businessPlanService.update(businessPlanId, request));
         } catch (Exception e) {

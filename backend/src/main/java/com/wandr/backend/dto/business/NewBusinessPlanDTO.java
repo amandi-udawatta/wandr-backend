@@ -6,8 +6,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class BusinessPlanDTO {
-    private Long planId;
+public class NewBusinessPlanDTO {
     private String name;
     private String description;
     private List<String> features;

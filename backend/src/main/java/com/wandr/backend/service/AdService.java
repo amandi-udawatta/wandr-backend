@@ -10,6 +10,10 @@ public interface AdService {
 
     ApiResponse<List<AdDTO>> getPendingAds();
     ApiResponse<List<ApprovedAdDTO>> getApprovedAds();
+    ApiResponse<Void> approveAd(Long adId);
+    ApiResponse<Void> declineAd(Long adId);
+
+
 
 
 

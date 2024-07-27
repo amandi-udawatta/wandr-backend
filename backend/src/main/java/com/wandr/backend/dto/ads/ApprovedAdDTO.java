@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 
 @Data
 public class ApprovedAdDTO {
+    private Long adId;
     private String shopName;
     private Long businessId;
     private String title;
