@@ -21,6 +21,8 @@ public interface BusinessService {
     ApiResponse<List<PaidBusinessDTO>> getPaidBusinesses();
 
     ApiResponse<List<PopularStoreDTO>> getPopularStores();
+    ApiResponse<Void> approveBusiness(Long businessId);
+    ApiResponse<Void> declineBusiness(Long businessId);
 
 
 

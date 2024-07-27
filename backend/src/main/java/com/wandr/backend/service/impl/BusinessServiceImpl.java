@@ -265,5 +265,26 @@ public class BusinessServiceImpl implements BusinessService {
         return new ApiResponse<>(true, 200, "Popular stores retrieved successfully", popularStores);
     }
 
+    @Override
+    public ApiResponse<Void> approveBusiness(Long businessId) {
+        Business existingBusiness = businessDAO.findById(businessId);
+        if (existingBusiness == null) {
+            return new ApiResponse<>(false, 404, "Business not found");
+        }
+        businessDAO.setStatus(businessId, "approved");
+        return new ApiResponse<>(true, 200, "Business approved successfully");
+    }
+
+    @Override
+    public ApiResponse<Void> declineBusiness(Long businessId) {
+        Business existingBusiness = businessDAO.findById(businessId);
+        if (existingBusiness == null) {
+            return new ApiResponse<>(false, 404, "Business not found");
+        }
+        businessDAO.setStatus(businessId, "declined");
+
+        return new ApiResponse<>(true, 200, "Business declined successfully");
+    }
+
 
 }

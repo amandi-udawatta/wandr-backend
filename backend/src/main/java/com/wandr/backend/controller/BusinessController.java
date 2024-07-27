@@ -161,4 +161,29 @@ public class BusinessController {
         }
     }
 
+    @GetMapping("/approve/{businessId}")
+    public ResponseEntity<ApiResponse<Void>> approveBusiness(@PathVariable Long businessId) {
+        logger.info("Received request to approve business with ID: {}", businessId);
+        try {
+            ApiResponse<Void> response = businessService.approveBusiness(businessId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while approving business with ID: {}", businessId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while approving business"));
+        }
+    }
+
+    @GetMapping("/decline/{businessId}")
+    public ResponseEntity<ApiResponse<Void>> declineBusiness(@PathVariable Long businessId) {
+        logger.info("Received request to decline business with ID: {}", businessId);
+        try {
+            ApiResponse<Void> response = businessService.declineBusiness(businessId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while declining business with ID: {}", businessId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while declining business"));
+        }
+    }
+
+
 }
