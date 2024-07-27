@@ -28,5 +28,7 @@ public class Business {
         private String salt;
         private Timestamp createdAt;
         private Integer planId;
+        private Timestamp paidDate;
+        private Timestamp planEndDate;
 
 }

@@ -401,6 +401,7 @@ public class PlaceServiceImpl implements PlaceService {
     public Map<String, Object> searchPlaceByNameFromAPI(String placeName) {
         String url = String.format("https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=%s&inputtype=textquery&fields=place_id,name,formatted_address&key=%s", placeName, apiKey);
         ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+        System.out.println("response: " + response);
 
         if (response.getStatusCode() == HttpStatus.OK) {
             Map<String, Object> responseBody = response.getBody();

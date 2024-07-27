@@ -160,4 +160,5 @@ public class BusinessController {
                     .body(new ApiResponse<>(false, 500, "An error occurred while getting popular stores"));
         }
     }
+
 }

@@ -1,7 +1,10 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.business.PaidBusinessDTO;
 import com.wandr.backend.entity.Ad;
+import com.wandr.backend.entity.Business;
 import com.wandr.backend.mapper.AdRowMapper;
+import com.wandr.backend.mapper.BusinessRowMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,6 +25,11 @@ public class AdDAO {
 
     public List<Ad> getPendingAds() {
         String sql = "SELECT * FROM ads WHERE status = 'pending'";
+        return jdbcTemplate.query(sql, new AdRowMapper());
+    }
+
+    public List<Ad> getApprovedAds() {
+        String sql = "SELECT * FROM ads WHERE status = 'approved'";
         return jdbcTemplate.query(sql, new AdRowMapper());
     }
 

@@ -2,6 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.ads.AdDTO;
+import com.wandr.backend.dto.ads.ApprovedAdDTO;
 import com.wandr.backend.service.AdService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,17 @@ public class AdController {
         } catch (Exception e) {
             logger.error("Error getting pending advertisements", e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error getting pending advertisements", null));
+        }
+    }
+
+    @GetMapping("/approved")
+    public  ResponseEntity<ApiResponse<List<ApprovedAdDTO>>> getApprovedAdds() {
+        try{
+            return ResponseEntity.ok(adService.getApprovedAds());
+        }
+        catch (Exception e) {
+            logger.error("Error getting approved advertisements", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error getting approved advertisements", null));
         }
     }
 }
