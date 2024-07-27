@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class BusinessDTO {
+    private Long businessId;
     private String name;
     private String email;
     private String description;

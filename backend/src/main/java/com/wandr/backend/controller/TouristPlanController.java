@@ -1,6 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.traveller.NewTouristPlanDTO;
 import com.wandr.backend.dto.traveller.TouristPlanDTO;
 import com.wandr.backend.service.TouristPlanService;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ public class TouristPlanController {
         }
 
         @PostMapping("/create")
-        public ResponseEntity<ApiResponse<TouristPlanDTO>> createTouristPlan(@RequestBody TouristPlanDTO touristPlan) {
+        public ResponseEntity<ApiResponse<TouristPlanDTO>> createTouristPlan(@RequestBody NewTouristPlanDTO touristPlan) {
             try {
                 return ResponseEntity.ok(touristPlanService.create(touristPlan));
             } catch (Exception e) {
@@ -44,7 +45,7 @@ public class TouristPlanController {
         }
 
         @PostMapping("/update/{touristPlanId}")
-        public ResponseEntity<ApiResponse<TouristPlanDTO>> updateTouristPlan(@PathVariable Long touristPlanId, @RequestBody TouristPlanDTO request) {
+        public ResponseEntity<ApiResponse<TouristPlanDTO>> updateTouristPlan(@PathVariable Long touristPlanId, @RequestBody NewTouristPlanDTO request) {
             try {
                 return ResponseEntity.ok(touristPlanService.update(touristPlanId, request));
             } catch (Exception e) {

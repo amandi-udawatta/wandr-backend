@@ -134,6 +134,7 @@ public class BusinessDAO {
             String shopCategory = jdbcTemplate.queryForObject("SELECT name FROM shop_categories WHERE category_id = ?", new Object[]{business.getShopCategory()}, String.class);
 
             return new PaidBusinessDTO(
+                    business.getBusinessId(),
                     business.getName(),
                     business.getEmail(),
                     business.getDescription(),

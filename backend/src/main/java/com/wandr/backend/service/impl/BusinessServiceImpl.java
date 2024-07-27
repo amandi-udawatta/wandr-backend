@@ -191,6 +191,7 @@ public class BusinessServiceImpl implements BusinessService {
 //business to business dto
     private BusinessDTO businessToBusinessDto (Business business) {
         BusinessDTO businessDTO = new BusinessDTO();
+        businessDTO.setBusinessId(business.getBusinessId());
         businessDTO.setName(business.getName());
         businessDTO.setEmail(business.getEmail());
         businessDTO.setDescription(business.getDescription());

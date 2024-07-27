@@ -3,6 +3,7 @@ package com.wandr.backend.service.impl;
 import com.wandr.backend.dao.BusinessPlanDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.business.BusinessPlanDTO;
+import com.wandr.backend.dto.business.NewBusinessPlanDTO;
 import com.wandr.backend.entity.BusinessPlan;
 import com.wandr.backend.service.BusinessPlanService;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     @Override
-    public ApiResponse<BusinessPlanDTO> create(BusinessPlanDTO businessPlan) {
+    public ApiResponse<BusinessPlanDTO> create(NewBusinessPlanDTO businessPlan) {
         BusinessPlan newBusinessPlan = new BusinessPlan();
         newBusinessPlan.setName(businessPlan.getName());
         newBusinessPlan.setDescription(businessPlan.getDescription());
@@ -47,7 +48,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
     }
 
     @Override
-    public ApiResponse<BusinessPlanDTO> update(Long businessPlanId, BusinessPlanDTO request) {
+    public ApiResponse<BusinessPlanDTO> update(Long businessPlanId, NewBusinessPlanDTO request) {
         BusinessPlan existingBusinessPlan = businessPlanDAO.findById(businessPlanId);
         if (existingBusinessPlan == null) {
             return new ApiResponse<>(false, 404, "Business Plan not found");
@@ -82,6 +83,7 @@ public class BusinessPlanServiceImpl implements BusinessPlanService {
 
     private BusinessPlanDTO businessPlanToBusinessPlanDTO(BusinessPlan businessPlan) {
         BusinessPlanDTO businessPlanDTO = new BusinessPlanDTO();
+        businessPlanDTO.setPlanId(businessPlan.getPlanId());
         businessPlanDTO.setName(businessPlan.getName());
         businessPlanDTO.setDescription(businessPlan.getDescription());
         businessPlanDTO.setFeatures(businessPlan.getFeatures());

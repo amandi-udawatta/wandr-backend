@@ -7,6 +7,7 @@ import java.util.List;
 
 @Data
 public class TouristPlanDTO {
+    private Long planId;
     private String name;
     private String description;
     private List<String> features;

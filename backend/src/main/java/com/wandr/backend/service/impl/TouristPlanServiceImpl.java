@@ -2,6 +2,7 @@ package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.TouristPlanDAO;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.traveller.NewTouristPlanDTO;
 import com.wandr.backend.dto.traveller.TouristPlanDTO;
 import com.wandr.backend.entity.TouristPlan;
 import com.wandr.backend.service.TouristPlanService;
@@ -33,7 +34,7 @@ public class TouristPlanServiceImpl implements TouristPlanService {
         }
 
         @Override
-        public ApiResponse<TouristPlanDTO> create(TouristPlanDTO touristPlanDTO) {
+        public ApiResponse<TouristPlanDTO> create(NewTouristPlanDTO touristPlanDTO) {
             TouristPlan newTouristPlan = new TouristPlan();
             newTouristPlan.setName(touristPlanDTO.getName());
             newTouristPlan.setDescription(touristPlanDTO.getDescription());
@@ -47,7 +48,7 @@ public class TouristPlanServiceImpl implements TouristPlanService {
         }
 
         @Override
-        public ApiResponse<TouristPlanDTO> update(Long planId, TouristPlanDTO request) {
+        public ApiResponse<TouristPlanDTO> update(Long planId, NewTouristPlanDTO request) {
             TouristPlan existingTouristPlan = touristPlanDAO.findById(planId);
             if (existingTouristPlan == null) {
                 return new ApiResponse<>(false, 404, "Tourist Plan not found");
@@ -81,6 +82,7 @@ public class TouristPlanServiceImpl implements TouristPlanService {
 
         private TouristPlanDTO touristPlanToTouristPlanDTO(TouristPlan touristPlan) {
             TouristPlanDTO touristPlanDTO = new TouristPlanDTO();
+            touristPlanDTO.setPlanId(touristPlan.getPlanId());
             touristPlanDTO.setName(touristPlan.getName());
             touristPlanDTO.setDescription(touristPlan.getDescription());
             touristPlanDTO.setFeatures(touristPlan.getFeatures());

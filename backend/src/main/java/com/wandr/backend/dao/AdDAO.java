@@ -23,6 +23,11 @@ public class AdDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    public Ad findById(Long adId) {
+        String sql = "SELECT * FROM ads WHERE ad_id = ?";
+        return jdbcTemplate.queryForObject(sql, new AdRowMapper(), adId);
+    }
+
     public List<Ad> getPendingAds() {
         String sql = "SELECT * FROM ads WHERE status = 'pending'";
         return jdbcTemplate.query(sql, new AdRowMapper());
@@ -31,6 +36,11 @@ public class AdDAO {
     public List<Ad> getApprovedAds() {
         String sql = "SELECT * FROM ads WHERE status = 'approved'";
         return jdbcTemplate.query(sql, new AdRowMapper());
+    }
+
+    public void setStatus(Long adId, String status) {
+        String sql = "UPDATE ads SET status = ? WHERE ad_id = ?";
+        jdbcTemplate.update(sql, status, adId);
     }
 
 }
