@@ -530,6 +530,5 @@ public class PlaceServiceImpl implements PlaceService {
         return placeDTO;
     }
 
-
 }
 

@@ -1,21 +1,30 @@
 package com.wandr.backend.dao;
 
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
+import com.wandr.backend.entity.Activity;
+import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.mapper.TravellerRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 public class TravellerDAO {
 
     private final JdbcTemplate jdbcTemplate;
+    private final CategoryDAO categoryDAO;
+    private final ActivityDAO activityDAO;
 
-    public TravellerDAO(JdbcTemplate jdbcTemplate) {
+    public TravellerDAO(JdbcTemplate jdbcTemplate, CategoryDAO categoryDAO, ActivityDAO activityDAO) {
         this.jdbcTemplate = jdbcTemplate;
+        this.categoryDAO = categoryDAO;
+        this.activityDAO = activityDAO;
     }
 
     public boolean existsByEmail(String email) {
@@ -60,4 +69,58 @@ public class TravellerDAO {
     }
 
 
+    //get popular places
+    public List<DashboardPlaceDTO> getPopularPlaces(Long travellerId) {
+        String sql = "SELECT p.*, " +
+                "COUNT(l.place_id) AS like_count, " +
+                "EXISTS (SELECT 1 FROM likes l2 WHERE l2.place_id = p.place_id AND l2.traveller_id = ?) AS liked " +
+                "FROM places p " +
+                "JOIN likes l ON p.place_id = l.place_id " +
+                "GROUP BY p.place_id " +
+                "HAVING COUNT(l.place_id) > 0 " +
+                "ORDER BY like_count DESC " +
+                "LIMIT 10";
+
+
+        return jdbcTemplate.query(sql, new Object[]{travellerId}, (rs, rowNum) -> {
+            DashboardPlaceDTO dto = new DashboardPlaceDTO();
+            dto.setId(rs.getLong("place_id"));
+            dto.setName(rs.getString("name"));
+            dto.setDescription(rs.getString("description"));
+            dto.setLatitude(rs.getDouble("latitude"));
+            dto.setLongitude(rs.getDouble("longitude"));
+            dto.setAddress(rs.getString("address"));
+            dto.setImage(rs.getString("image"));
+            // Parse categories
+            String categories = rs.getString("categories");
+            if (categories != null && !categories.trim().isEmpty()) {
+                List<Long> categoryIds = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))
+                        .filter(str -> !str.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                dto.setCategories(categoryDAO.findByCategoryIds(categoryIds)
+                        .stream()
+                        .map(Category::getName)
+                        .collect(Collectors.toList()));
+            } else {
+                dto.setCategories(Collections.emptyList());
+            }
+            // Parse activities
+            String activities = rs.getString("activities");
+            if (activities != null && !activities.trim().isEmpty()) {
+                List<Long> activityIds = Arrays.stream(activities.replaceAll("[\\[\\]\\s]", "").split(","))
+                        .filter(str -> !str.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                dto.setActivities(activityDAO.findByActivityIds(activityIds)
+                        .stream()
+                        .map(Activity::getName)
+                        .collect(Collectors.toList()));
+            } else {
+                dto.setActivities(Collections.emptyList());
+            }
+            dto.setLiked(rs.getBoolean("liked"));
+            return dto;
+        });
+    }
 }
