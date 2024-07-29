@@ -140,5 +140,20 @@ public class TravellerController {
     }
 
 
+    //get favourite places for dashboard
+    @GetMapping("/favourite-places/{travellerId}")
+    public ResponseEntity<ApiResponse<List<DashboardPlaceDTO>>> getFavouritePlaces(@PathVariable Long travellerId) {
+        logger.info("Received request to get favourite places for dashboard");
+
+        try {
+            ApiResponse<List<DashboardPlaceDTO>> response = travellerService.getFavouritePlaces(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting favourite places for dashboard", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting favourite places for dashboard", null));
+        }
+    }
+
+
 
 }

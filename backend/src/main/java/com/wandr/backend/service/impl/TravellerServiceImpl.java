@@ -198,6 +198,13 @@ public class TravellerServiceImpl implements TravellerService {
         return new ApiResponse<>(true, 200, "Popular places retrieved", popularPlaces);
     }
 
+    //get favourite places
+    @Override
+    public ApiResponse<List<DashboardPlaceDTO>> getFavouritePlaces(Long travellerId) {
+        List<DashboardPlaceDTO> favouritePlaces = travellerDAO.getFavouritePlaces(travellerId);
+        return new ApiResponse<>(true, 200, "Favourite places retrieved", favouritePlaces);
+    }
+
 
 
 
