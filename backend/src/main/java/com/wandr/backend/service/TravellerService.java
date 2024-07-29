@@ -1,6 +1,7 @@
 package com.wandr.backend.service;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
 import com.wandr.backend.dto.traveller.*;
 
@@ -17,6 +18,10 @@ public interface TravellerService {
     ApiResponse<Void> updateTravellerJwt (String jwt, Long travellerId);
 
     public String getSalt(String email);
+
+    //get popular places
+    ApiResponse<List<DashboardPlaceDTO>> getPopularPlaces(Long travellerId);
+
 
 
 

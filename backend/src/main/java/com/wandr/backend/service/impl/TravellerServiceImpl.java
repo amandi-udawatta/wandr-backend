@@ -2,7 +2,12 @@ package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
+import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.traveller.*;
+import com.wandr.backend.entity.Activity;
+import com.wandr.backend.entity.Category;
+import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.TravellerService;
@@ -16,6 +21,7 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TravellerServiceImpl implements TravellerService {
@@ -183,6 +189,16 @@ public class TravellerServiceImpl implements TravellerService {
         travellerDTO.setMembership(traveller.getMembership());
         return travellerDTO;
     }
+
+
+    //get popular places
+    @Override
+    public ApiResponse<List<DashboardPlaceDTO>> getPopularPlaces(Long travellerId) {
+        List<DashboardPlaceDTO> popularPlaces = travellerDAO.getPopularPlaces(travellerId);
+        return new ApiResponse<>(true, 200, "Popular places retrieved", popularPlaces);
+    }
+
+
 
 
 

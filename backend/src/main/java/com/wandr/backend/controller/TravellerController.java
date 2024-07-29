@@ -1,6 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.place.UpdatePlaceDTO;
 import com.wandr.backend.dto.traveller.*;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -122,6 +124,21 @@ public class TravellerController {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
         }
     }
+
+    //get popular places for dashboard
+    @GetMapping("/popular-places/{travellerId}")
+    public ResponseEntity<ApiResponse<List<DashboardPlaceDTO>>> getPopularPlaces(@PathVariable Long travellerId) {
+        logger.info("Received request to get popular places for dashboard");
+
+        try {
+            ApiResponse<List<DashboardPlaceDTO>> response = travellerService.getPopularPlaces(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting popular places for dashboard", e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting popular places for dashboard", null));
+        }
+    }
+
 
 
 }
