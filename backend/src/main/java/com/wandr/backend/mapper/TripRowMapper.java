@@ -19,7 +19,9 @@ public class TripRowMapper implements RowMapper<Trip> {
         trip.setUpdatedAt(rs.getTimestamp("updated_at"));
         trip.setStatus(rs.getString("status"));
         trip.setRouteType(rs.getLong("route_type"));
-        trip.setEstimatedTime(rs.getInt("estimated_time"));
+        trip.setShortestTime(rs.getInt("shortest_time"));
+        trip.setPreferredTime(rs.getInt("preferred_time"));
+        trip.setOrderedTime(rs.getInt("order_time"));
         return trip;
     }
 }

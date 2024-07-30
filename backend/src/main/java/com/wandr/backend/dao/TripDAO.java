@@ -15,8 +15,8 @@ public class TripDAO {
     }
 
     public Long createTrip(Trip trip) {
-        String sql = "INSERT INTO trips (traveller_id, name, created_at, updated_at, status, estimated_time) VALUES (?, ?, ?, ?, ?, ? ) RETURNING trip_id";
-        return jdbcTemplate.queryForObject(sql, Long.class, trip.getTravellerId(), trip.getName(), trip.getCreatedAt(), trip.getUpdatedAt(), trip.getStatus(), trip.getEstimatedTime());
+        String sql = "INSERT INTO trips (traveller_id, name, created_at, updated_at, status, shortest_time, preferred_time,order_time) VALUES (?, ?, ?, ?, ?, ?, ?, ? ) RETURNING trip_id";
+        return jdbcTemplate.queryForObject(sql, Long.class, trip.getTravellerId(), trip.getName(), trip.getCreatedAt(), trip.getUpdatedAt(), trip.getStatus(), trip.getShortestTime(), trip.getPreferredTime(), trip.getOrderedTime());
     }
 
 
