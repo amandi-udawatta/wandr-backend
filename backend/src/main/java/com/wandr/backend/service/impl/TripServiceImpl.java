@@ -41,7 +41,9 @@ public class TripServiceImpl implements TripService {
             trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             trip.setStatus("pending");
             //initialize estimated time by default to 0
-            trip.setEstimatedTime(0);
+            trip.setShortestTime(0);
+            trip.setPreferredTime(0);
+            trip.setOrderedTime(0);
             //get id returned by createTrip
             Long id = tripDAO.createTrip(trip);
 

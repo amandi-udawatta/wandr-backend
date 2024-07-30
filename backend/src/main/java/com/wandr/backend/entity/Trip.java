@@ -13,5 +13,7 @@ public class Trip {
     private Timestamp updatedAt;
     private String status;
     private Long routeType;
-    private Integer estimatedTime; // Change to int or Integer
+    private Integer shortestTime;
+    private Integer preferredTime;
+    private Integer orderedTime;
 }
