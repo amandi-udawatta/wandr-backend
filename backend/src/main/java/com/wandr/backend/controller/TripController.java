@@ -1,0 +1,55 @@
+package com.wandr.backend.controller;
+
+import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
+import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
+import com.wandr.backend.dto.trip.CreateTripDTO;
+
+import com.wandr.backend.service.TripService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@RestController
+@RequestMapping("/api/trip")
+public class TripController {
+
+    private final TripService tripService;
+
+    private static final Logger logger = LoggerFactory.getLogger(TripController.class);
+
+    public TripController(TripService tripService) {
+        this.tripService = tripService;
+    }
+
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<Void>> createTrip(@RequestBody CreateTripDTO createTripDTO) {
+        logger.info("Received request to create trip with name: {}", createTripDTO.getName());
+        try {
+            ApiResponse<Void> response = tripService.createTrip(createTripDTO);
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while creating trip"));
+        }
+    }
+
+    @PostMapping("/add-place")
+    public ResponseEntity<ApiResponse<Void>> addPlaceToTrip(@RequestBody AddPlaceToTripDTO addPlaceToTripDTO) {
+        logger.info("Received request to add place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
+        try{
+            ApiResponse<Void> response = tripService.addPlaceToTrip(addPlaceToTripDTO);
+            logger.info("Successfully added place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
+            return ResponseEntity.ok(response);
+        }
+        catch (Exception e) {
+            logger.error("An error occurred while adding place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while adding place to trip"));
+        }
+
+    }
+}

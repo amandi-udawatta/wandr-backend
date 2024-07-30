@@ -37,6 +37,8 @@ public class BusinessRowMapper implements RowMapper<Business> {
         business.setPlanId(rs.getInt("plan_id"));
         business.setPaidDate(rs.getTimestamp("paid_date"));
         business.setPlanEndDate(rs.getTimestamp("plan_end_date"));
+        business.setLatitude(rs.getBigDecimal("latitude"));
+        business.setLongitude(rs.getBigDecimal("longitude"));
 
         String services = rs.getString("services");
         if (services != null && !services.trim().isEmpty()) {
