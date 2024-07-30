@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -117,6 +118,13 @@ public class BusinessServiceImpl implements BusinessService {
         business.setJwt(null); // Assuming jwt_token is null for initial registration
         String shopImg = FileUploadUtil.saveFile(shopImageFilename, "business/shop_images");
         business.setShopImage(shopImg);
+        // Convert latitude and longitude to BigDecimal
+        BigDecimal latitude = new BigDecimal(request.getLatitude());
+        BigDecimal longitude = new BigDecimal(request.getLongitude());
+        business.setLatitude(latitude);
+        business.setLongitude(longitude);
+
+
         businessDAO.save(business);
         //return userDetails;
 
@@ -182,6 +190,12 @@ public class BusinessServiceImpl implements BusinessService {
         if (request.getOwnerNic() != null) {
             existingBusiness.setOwnerNic(request.getOwnerNic());
         }
+        if (request.getLatitude() != null) {
+            existingBusiness.setLatitude(new BigDecimal(request.getLatitude()));
+        }
+        if (request.getLongitude() != null) {
+            existingBusiness.setLongitude(new BigDecimal(request.getLongitude()));
+        }
 
         businessDAO.updateProfile(existingBusiness);
 
@@ -212,6 +226,8 @@ public class BusinessServiceImpl implements BusinessService {
         } else if (business.getBusinessType() == 2) {
             businessDTO.setBusinessType("Service");
         }
+        businessDTO.setLatitude(business.getLatitude());
+        businessDTO.setLongitude(business.getLongitude());
         String shop_category = shopCategoryDAO.findNameById(business.getShopCategory());
         businessDTO.setShopCategory(shop_category);
         String business_plan = businessPlanDAO.findNameById(business.getPlanId());

@@ -160,6 +160,7 @@ public class ProxyController {
             // Add salt to password before hashing
             String encryptedPassword = PasswordUtil.encryptPassword(hashedPassword, salt);
             signupDetails.put("password", encryptedPassword);
+            signupDetails.remove("role"); // Remove the role field
             signupDetails.put("salt", salt);
 
             System.out.println("signupDetails: " + signupDetails);
@@ -222,6 +223,8 @@ public class ProxyController {
                                     @RequestParam("email") String email,
                                     @RequestParam("password") String password,
                                     @RequestParam("description") String description,
+                                    @RequestParam("longitude") String longitude,
+                                    @RequestParam("latitude") String latitude,
                                     @RequestParam("address") String address,
                                     @RequestParam("websiteUrl") String websiteUrl,
                                     @RequestParam("ownerName") String ownerName,
@@ -250,6 +253,8 @@ public class ProxyController {
             body.add("password", encryptedPassword);
             body.add("description", description);
             body.add("address", address);
+            body.add("latitude", latitude);
+            body.add("longitude", longitude);
             body.add("websiteUrl", websiteUrl);
             body.add("ownerName", ownerName);
             body.add("ownerContact", ownerContact);

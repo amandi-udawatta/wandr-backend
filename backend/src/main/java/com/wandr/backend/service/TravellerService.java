@@ -22,9 +22,12 @@ public interface TravellerService {
     //get popular places
     ApiResponse<List<DashboardPlaceDTO>> getPopularPlaces(Long travellerId);
 
+    ApiResponse<List<DashboardPlaceDTO>> getFavouritePlaces(Long travellerId);
 
 
 
 
 
-    }
+
+
+}

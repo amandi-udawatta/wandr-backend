@@ -21,4 +21,6 @@ public class UpdateProfileDTO {
     private String ownerName;
     private String ownerContact;
     private String ownerNic;
+    private String latitude;
+    private String longitude;
 }
