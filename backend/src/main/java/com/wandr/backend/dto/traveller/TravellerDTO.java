@@ -12,8 +12,8 @@ public class TravellerDTO {
     private String email;
     private String country;
     private String profileImage;
-    private List<Integer> categories;
-    private List<Integer> activities;
+    private List<Long> categories;
+    private List<Long> activities;
     private Timestamp createdAt;
     private String membership;
 }

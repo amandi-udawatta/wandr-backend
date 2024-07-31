@@ -38,12 +38,12 @@ public class TravellerDAO {
         jdbcTemplate.update(sql, traveller.getName(), traveller.getEmail(), traveller.getPassword(), traveller.getCountry(), traveller.getCategories().toString(), traveller.getActivities().toString(), traveller.getSalt(), traveller.getCreatedAt());
     }
 
-    public void updateCategories(Long travellerId, List<Integer> categories) {
+    public void updateCategories(Long travellerId, List<Long> categories) {
         String sql = "UPDATE travellers SET categories = ?::jsonb WHERE traveller_id = ?";
         jdbcTemplate.update(sql, categories.toString(), travellerId);
     }
 
-    public void updateActivities(Long travellerId, List<Integer> activities) {
+    public void updateActivities(Long travellerId, List<Long> activities) {
         String sql = "UPDATE travellers SET activities = ?::jsonb WHERE traveller_id = ?";
         jdbcTemplate.update(sql, activities.toString(), travellerId);
     }

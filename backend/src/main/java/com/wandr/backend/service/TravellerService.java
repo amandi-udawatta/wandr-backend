@@ -4,6 +4,7 @@ import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
 import com.wandr.backend.dto.traveller.*;
+import com.wandr.backend.entity.Traveller;
 
 import java.util.List;
 
@@ -27,6 +28,8 @@ public interface TravellerService {
     ApiResponse<List<DashboardPlaceDTO>> getPlacesForTraveller(long travellerId);
 
     ApiResponse<Void> logout(Long travellerId);
+
+    TravellerDTO getById(Long travellerId);
 
 
 

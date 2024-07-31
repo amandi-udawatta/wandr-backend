@@ -27,9 +27,9 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
 
         String categories = rs.getString("categories");
         if (categories != null && !categories.trim().isEmpty()) {
-            List<Integer> categoryList = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))
+            List<Long> categoryList = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))
                     .filter(str -> !str.isEmpty()) // Add this to filter out empty strings
-                    .map(Integer::parseInt).collect(Collectors.toList());
+                    .map(Long::parseLong).collect(Collectors.toList());
             traveller.setCategories(categoryList);
         } else {
             traveller.setCategories(Collections.emptyList());
@@ -37,9 +37,9 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
 
         String activities = rs.getString("activities");
         if (activities != null && !activities.trim().isEmpty()) {
-            List<Integer> activityList = Arrays.stream(activities.replaceAll("[\\[\\]\\s]", "").split(","))
+            List<Long> activityList = Arrays.stream(activities.replaceAll("[\\[\\]\\s]", "").split(","))
                     .filter(str -> !str.isEmpty()) // Add this to filter out empty strings
-                    .map(Integer::parseInt).collect(Collectors.toList());
+                    .map(Long::parseLong).collect(Collectors.toList());
             traveller.setActivities(activityList);
         } else {
             traveller.setActivities(Collections.emptyList());
