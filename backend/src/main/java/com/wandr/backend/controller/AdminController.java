@@ -73,4 +73,17 @@ public class AdminController {
         }
     }
 
+    //logout admin
+    @GetMapping("/logout/{adminId}")
+    public ResponseEntity<ApiResponse<Void>> logout(@PathVariable Long adminId) {
+        logger.info("Received request to logout admin with ID: {}", adminId);
+        try {
+            ApiResponse<Void> response = adminService.logout(adminId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while logging out admin with ID: {}", adminId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while logging out admin"));
+        }
+    }
+
 }

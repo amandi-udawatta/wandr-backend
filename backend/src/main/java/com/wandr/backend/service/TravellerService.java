@@ -24,6 +24,10 @@ public interface TravellerService {
 
     ApiResponse<List<DashboardPlaceDTO>> getFavouritePlaces(Long travellerId);
 
+    ApiResponse<List<DashboardPlaceDTO>> getPlacesForTraveller(long travellerId);
+
+    ApiResponse<Void> logout(Long travellerId);
+
 
 
 

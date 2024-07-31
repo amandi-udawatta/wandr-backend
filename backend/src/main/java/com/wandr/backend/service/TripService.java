@@ -9,4 +9,6 @@ import com.wandr.backend.entity.TripPlace;
 public interface TripService {
     ApiResponse<Void> createTrip(CreateTripDTO createTripDTO);
     ApiResponse<Void> addPlaceToTrip(AddPlaceToTripDTO addPlaceToTripDTO);
+
+    ApiResponse<Void> updateTripOrder(Long tripId, String orderType);
 }

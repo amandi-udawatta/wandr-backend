@@ -331,6 +331,48 @@ public class ProxyController {
         }
     }
 
+    //logout users
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(@RequestBody Map<String, String> logoutDetails, @RequestHeader("Authorization") String token) {
+
+        if (!validateToken(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
+        }
+
+        String userRole = logoutDetails.get("role");
+        try {
+            logoutDetails.remove("role"); // Remove the role field
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            String logoutUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/logout/" + logoutDetails.get("id");
+            logger.info("Logout URL: {}", logoutUrl);
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(logoutDetails, headers);
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(logoutUrl, HttpMethod.GET, entity, new ParameterizedTypeReference<>() {});
+            logger.info("Response: {}", response);
+
+            if (response.getStatusCode() == HttpStatus.OK) {
+                return ResponseEntity.ok(new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully logged out", null));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(false, response.getStatusCodeValue(), "Logout failed", response.getBody()));
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error during logout: ", e);
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
+        } catch (Exception e) {
+            logger.error("Unexpected error: ", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Logout failed", null));
+        }
+
+
+
+
+    }
+
 
 
     //handle get requests

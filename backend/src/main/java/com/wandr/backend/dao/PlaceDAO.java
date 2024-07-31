@@ -1,12 +1,17 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.place.Coordinates;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.mapper.PlaceRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Array;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class PlaceDAO {
@@ -60,7 +65,11 @@ public class PlaceDAO {
         jdbcTemplate.update(sql, placeId);
     }
 
-
+    // Method to get place id from coordinate
+    public Long getPlaceIdFromCoordinate(String coordinates) {
+        String sql = "SELECT place_id FROM places WHERE latitude = ? AND longitude = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{coordinates.split(",")[0], coordinates.split(",")[1]}, Long.class);
+    }
 
 
 }

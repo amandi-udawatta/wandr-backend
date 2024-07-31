@@ -15,6 +15,10 @@ public class ShopCategoryDAO {
         this.jdbcTemplate = jdbcTemplate;
     }
     public String findNameById(int id) {
+        //handle null exception
+        if (id == 0) {
+            return null;
+        }
         String sql = "SELECT name FROM shop_categories WHERE category_id = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{id}, String.class);
     }

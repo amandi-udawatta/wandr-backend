@@ -10,4 +10,6 @@ public interface AdminService {
 
     ApiResponse<Void> updateAdminJwt (String jwt, Long adminId);
 
+    ApiResponse<Void> logout(Long adminId);
+
 }

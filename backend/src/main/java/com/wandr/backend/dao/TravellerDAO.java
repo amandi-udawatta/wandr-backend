@@ -175,4 +175,62 @@ public class TravellerDAO {
             return dto;
         });
     }
+
+    //get all places for traveller
+    public List<DashboardPlaceDTO> getAllPlaces(Long travellerId) {
+        String sql = "SELECT p.*, " +
+                "EXISTS (SELECT 1 FROM likes l2 WHERE l2.place_id = p.place_id AND l2.traveller_id = ?) AS liked " +
+                "FROM places p " +
+                "LEFT JOIN likes l ON p.place_id = l.place_id " +
+                "WHERE l.traveller_id = ? OR l.traveller_id IS NULL " +
+                "GROUP BY p.place_id";
+
+        return jdbcTemplate.query(sql, new Object[]{travellerId, travellerId}, (rs, rowNum) -> {
+            DashboardPlaceDTO dto = new DashboardPlaceDTO();
+            dto.setId(rs.getLong("place_id"));
+            dto.setName(rs.getString("name"));
+            dto.setDescription(rs.getString("description"));
+            dto.setLatitude(rs.getDouble("latitude"));
+            dto.setLongitude(rs.getDouble("longitude"));
+            dto.setAddress(rs.getString("address"));
+            dto.setImage(rs.getString("image"));
+            // Parse categories
+            String categories = rs.getString("categories");
+            if (categories != null && !categories.trim().isEmpty()) {
+                List<Long> categoryIds = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))
+                        .filter(str -> !str.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                dto.setCategories(categoryDAO.findByCategoryIds(categoryIds)
+                        .stream()
+                        .map(Category::getName)
+                        .collect(Collectors.toList()));
+            } else {
+                dto.setCategories(Collections.emptyList());
+            }
+            // Parse activities
+            String activities = rs.getString("activities");
+            if (activities != null && !activities.trim().isEmpty()) {
+                List<Long> activityIds = Arrays.stream(activities.replaceAll("[\\[\\]\\s]", "").split(","))
+                        .filter(str -> !str.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                dto.setActivities(activityDAO.findByActivityIds(activityIds)
+                        .stream()
+                        .map(Activity::getName)
+                        .collect(Collectors.toList()));
+            } else {
+                dto.setActivities(Collections.emptyList());
+            }
+            dto.setLiked(rs.getBoolean("liked"));
+            return dto;
+        });
+    }
+
+    //logout traveller
+    public void deleteTravellerJwt(Long travellerId) {
+        String sql = "UPDATE travellers SET jwt = NULL WHERE traveller_id = ?";
+        jdbcTemplate.update(sql, travellerId);
+    }
+
 }

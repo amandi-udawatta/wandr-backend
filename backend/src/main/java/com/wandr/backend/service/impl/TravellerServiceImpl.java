@@ -205,6 +205,20 @@ public class TravellerServiceImpl implements TravellerService {
         return new ApiResponse<>(true, 200, "Favourite places retrieved", favouritePlaces);
     }
 
+    //get all places for given traveller
+    @Override
+    public ApiResponse<List<DashboardPlaceDTO>> getPlacesForTraveller(long travellerId) {
+        List<DashboardPlaceDTO> allPlaces = travellerDAO.getAllPlaces(travellerId);
+        return new ApiResponse<>(true, 200, "All places retrieved", allPlaces);
+    }
+
+    //logout traveller
+    @Override
+    public ApiResponse<Void> logout(Long travellerId) {
+        travellerDAO.deleteTravellerJwt(travellerId);
+        return new ApiResponse<>(true, 200, "Traveller logged out successfully");
+    }
+
 
 
 
