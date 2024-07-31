@@ -5,6 +5,7 @@ import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
 import com.wandr.backend.dto.trip.CreateTripDTO;
 
+import com.wandr.backend.dto.trip.PendingTripsDTO;
 import com.wandr.backend.service.TripService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,17 @@ public class TripController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating trip order: " + e.getMessage()));
+        }
+    }
+
+    //get pending trips of the traveller
+    @GetMapping("/pending/{travellerId}")
+    public ResponseEntity<ApiResponse<List<PendingTripsDTO>>> getPendingTrips(@PathVariable Long travellerId) {
+        try {
+            ApiResponse<List<PendingTripsDTO>> response = tripService.getPendingTrips(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting pending trips: " + e.getMessage()));
         }
     }
 }

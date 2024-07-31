@@ -21,7 +21,7 @@ public class TripRowMapper implements RowMapper<Trip> {
         trip.setRouteType(rs.getLong("route_type"));
         trip.setShortestTime(rs.getInt("shortest_time"));
         trip.setPreferredTime(rs.getInt("preferred_time"));
-        trip.setOrderedTime(rs.getInt("order_time"));
+        trip.setOrderTime(rs.getInt("order_time"));
         return trip;
     }
 }

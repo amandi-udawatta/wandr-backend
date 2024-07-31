@@ -1,18 +1,19 @@
-package com.wandr.backend.entity;
+package com.wandr.backend.dto.trip;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+
 import java.sql.Timestamp;
-import java.time.Duration;
+import java.util.List;
 
 @Data
-public class Trip {
+public class PendingTripsDTO {
     private Long tripId;
-    private Integer travellerId;
     private String name;
+    private Long routeType;
     private Timestamp createdAt;
     private Timestamp updatedAt;
-    private String status;
-    private Long routeType;
+    private List<TripPlaceDTO> tripPlaces;
     private Integer shortestTime;
     private Integer preferredTime;
     private Integer orderTime;
