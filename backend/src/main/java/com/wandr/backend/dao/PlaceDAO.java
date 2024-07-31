@@ -71,5 +71,12 @@ public class PlaceDAO {
         return jdbcTemplate.queryForObject(sql, new Object[]{coordinates.split(",")[0], coordinates.split(",")[1]}, Long.class);
     }
 
+    public boolean isPlaceLikedByTraveller(Long placeId, Long travellerId) {
+        String sql = "SELECT COUNT(*) FROM likes WHERE place_id = ? AND traveller_id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{placeId, travellerId}, Integer.class);
+        return count != null && count > 0;
+    }
+
+
 
 }

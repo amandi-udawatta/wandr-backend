@@ -5,5 +5,5 @@ import java.util.List;
 
 @Data
 public class UpdateActivitiesDTO {
-    private List<Integer> activities;
+    private List<Long> activities;
 }

@@ -12,8 +12,8 @@ public class Traveller {
     private String email;
     private String password;
     private String country;
-    private List<Integer> categories;
-    private List<Integer> activities;
+    private List<Long> categories;
+    private List<Long> activities;
     private String profileImage;
     private Timestamp createdAt;
     private String membership;

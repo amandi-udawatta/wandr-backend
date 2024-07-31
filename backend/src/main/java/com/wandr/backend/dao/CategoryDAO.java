@@ -38,4 +38,5 @@ public class CategoryDAO {
                 categoryIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
         return jdbcTemplate.query(sql, new CategoryRowMapper());
     }
+
 }

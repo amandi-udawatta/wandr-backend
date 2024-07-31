@@ -174,6 +174,16 @@ public class TravellerServiceImpl implements TravellerService {
         return travellerDTO;
     }
 
+    @Override
+    public TravellerDTO getById(Long travellerId) {
+        Traveller traveller = travellerDAO.findById(travellerId);
+        if (traveller == null) {
+            return null;
+        }
+        TravellerDTO travellerDTO = travellerToTravellerDTO(traveller);
+        return travellerDTO;
+    }
+
     //traveller to traveller dto
     private TravellerDTO travellerToTravellerDTO(Traveller traveller) {
         TravellerDTO travellerDTO = new TravellerDTO();

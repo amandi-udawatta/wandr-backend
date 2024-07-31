@@ -300,7 +300,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.joining(", "));
 
         String prompt = String.format(
-                "Categorize the following tourist attraction place in Sri Lanka into up to 3 of the following categories. Return only the category names, separated by commas: %s. The place name is: %s. located in: %s",
+                "Categorize the following tourist attraction place in Sri Lanka into 3 of the following categories. Return only the category names, separated by commas: %s. The place name is: %s. located in: %s",
                 categoriesStr, place.getName(), place.getAddress());
 
 
@@ -348,7 +348,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.joining(", "));
 
         String prompt = String.format(
-                "List up to maximum 3 activities that can be done at the following tourist attraction place in Sri Lanka. Return only the activity names, separated by commas: %s. The place name is: %s. located in: %s",
+                "List 1 to 3 activities that can be done at the following tourist attraction place in Sri Lanka. Return only the activity names, separated by commas: %s. The place name is: %s. located in: %s",
                 activitiesStr, place.getName(), place.getAddress());
 
 

@@ -5,5 +5,5 @@ import java.util.List;
 
 @Data
 public class UpdateCategoriesDTO {
-    private List<Integer> categories;
+    private List<Long> categories;
 }
