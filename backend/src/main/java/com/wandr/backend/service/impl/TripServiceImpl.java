@@ -139,6 +139,9 @@ public class TripServiceImpl implements TripService {
     public ApiResponse<List<PendingTripsDTO>> getPendingTrips(Long travellerId) {
         try {
             List<Trip> trips = tripDAO.getPendingTrips(travellerId);
+            if (trips.isEmpty()) {
+                return new ApiResponse<>(false, 404, "No pending trips found");
+            }
             List<PendingTripsDTO> pendingTripsDTOList = new ArrayList<>();
 
             for (Trip trip : trips) {
@@ -164,4 +167,65 @@ public class TripServiceImpl implements TripService {
             return new ApiResponse<>(false, 500, "An error occurred while retrieving pending trips");
         }
     }
-}
+
+    @Override
+    public ApiResponse<List<PendingTripsDTO>> getFinalizedTrips(Long travellerId) {
+        try {
+            List<Trip> trips = tripDAO.getFinalizedTrips(travellerId);
+            if (trips.isEmpty()) {
+                return new ApiResponse<>(false, 404, "No finalized trips found");
+            }
+            List<PendingTripsDTO> finalizedTripsDTOList = new ArrayList<>();
+
+            for (Trip trip : trips) {
+                List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(trip.getTripId());
+                PendingTripsDTO finalizedTripDTO = new PendingTripsDTO();
+                finalizedTripDTO.setTripId(trip.getTripId());
+                finalizedTripDTO.setName(trip.getName());
+                finalizedTripDTO.setRouteType(trip.getRouteType());
+                finalizedTripDTO.setCreatedAt(trip.getCreatedAt());
+                finalizedTripDTO.setUpdatedAt(trip.getUpdatedAt());
+                finalizedTripDTO.setTripPlaces(tripPlaces);
+                finalizedTripDTO.setShortestTime(trip.getShortestTime());
+                finalizedTripDTO.setPreferredTime(trip.getPreferredTime());
+                finalizedTripDTO.setOrderTime(trip.getOrderTime());
+
+
+                finalizedTripsDTOList.add(finalizedTripDTO);
+            }
+
+
+            return new ApiResponse<>(true, 200, "Finalized trips retrieved successfully", finalizedTripsDTOList);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while retrieving finalized trips");
+        }
+    }
+
+    //get ongoing trip
+    @Override
+    public ApiResponse<PendingTripsDTO> getOngoingTrip(Long travellerId) {
+        try {
+            Trip trip = tripDAO.getOngoingTrip(travellerId);
+            if (trip == null) {
+                return new ApiResponse<>(false, 404, "No ongoing trip found");
+            }
+            List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(trip.getTripId());
+            PendingTripsDTO ongoingTripDTO = new PendingTripsDTO();
+            ongoingTripDTO.setTripId(trip.getTripId());
+            ongoingTripDTO.setName(trip.getName());
+            ongoingTripDTO.setRouteType(trip.getRouteType());
+            ongoingTripDTO.setCreatedAt(trip.getCreatedAt());
+            ongoingTripDTO.setUpdatedAt(trip.getUpdatedAt());
+            ongoingTripDTO.setTripPlaces(tripPlaces);
+            ongoingTripDTO.setShortestTime(trip.getShortestTime());
+            ongoingTripDTO.setPreferredTime(trip.getPreferredTime());
+            ongoingTripDTO.setOrderTime(trip.getOrderTime());
+
+            return new ApiResponse<>(true, 200, "Ongoing trip retrieved successfully", ongoingTripDTO);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while retrieving ongoing trip");
+        }
+    }
+
+
+    }

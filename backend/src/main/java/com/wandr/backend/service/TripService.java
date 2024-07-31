@@ -17,4 +17,9 @@ public interface TripService {
 
     ApiResponse<List<PendingTripsDTO>> getPendingTrips(Long travellerId);
 
-}
+    ApiResponse<List<PendingTripsDTO>> getFinalizedTrips(Long travellerId);
+
+    ApiResponse<PendingTripsDTO> getOngoingTrip(Long travellerId);
+
+
+    }
