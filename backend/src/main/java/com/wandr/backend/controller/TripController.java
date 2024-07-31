@@ -52,4 +52,14 @@ public class TripController {
         }
 
     }
+
+    @PutMapping("/update-order/{tripId}")
+    public ResponseEntity<ApiResponse<Void>> updateTripOrder(@PathVariable Long tripId, @RequestBody String orderType) {
+        try {
+            ApiResponse<Void> response = tripService.updateTripOrder(tripId, orderType);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating trip order: " + e.getMessage()));
+        }
+    }
 }

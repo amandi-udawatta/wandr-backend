@@ -303,5 +303,11 @@ public class BusinessServiceImpl implements BusinessService {
         return new ApiResponse<>(true, 200, "Business declined successfully");
     }
 
+    @Override
+    public ApiResponse<Void> logout(Long businessId) {
+        businessDAO.deleteBusinessJwt(businessId);
+        return new ApiResponse<>(true, 200, "Business logged out successfully");
+    }
+
 
 }

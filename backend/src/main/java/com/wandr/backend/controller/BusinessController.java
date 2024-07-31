@@ -185,5 +185,21 @@ public class BusinessController {
         }
     }
 
+    //logout BUSINESS
+    @GetMapping("/logout/{businessId}")
+    public ResponseEntity<ApiResponse<Void>> logout(@PathVariable Long businessId) {
+        logger.info("Received request to logout business with ID: {}", businessId);
+        try {
+            //delete jwt token
+            businessService.logout(businessId);
+            logger.info("Successfully logged out business with ID: {}", businessId);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Business logged out successfully"));
+        }
+        catch (Exception e) {
+            logger.error("Error logging out business with ID {}: {}", businessId, e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to logout business"));
+        }
+    }
+
 
 }

@@ -154,6 +154,30 @@ public class TravellerController {
         }
     }
 
+    @GetMapping("/all-places/{travellerId}")
+    public ResponseEntity<ApiResponse<List<DashboardPlaceDTO>>> getAllPlacesForTraveller(@PathVariable Long travellerId) {
+        try {
+            ApiResponse<List<DashboardPlaceDTO>> response = travellerService.getPlacesForTraveller(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting all places for traveller with ID: {}", travellerId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all places for traveller"));
+        }
+    }
 
-
+    //logout traveller
+    @GetMapping("/logout/{travellerId}")
+    public ResponseEntity<ApiResponse<Void>> logout(@PathVariable Long travellerId) {
+        logger.info("Received request to logout traveller with ID: {}", travellerId);
+        try {
+            //delete jwt token
+            travellerService.logout(travellerId);
+            logger.info("Successfully logged out traveller with ID: {}", travellerId);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Traveller logged out successfully"));
+        }
+        catch (Exception e) {
+            logger.error("Error logging out traveller with ID {}: {}", travellerId, e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to logout traveller"));
+        }
+    }
 }

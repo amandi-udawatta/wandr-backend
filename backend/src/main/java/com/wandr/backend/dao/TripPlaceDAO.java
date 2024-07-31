@@ -5,6 +5,8 @@ import com.wandr.backend.mapper.TripPlaceRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public class TripPlaceDAO {
 
@@ -28,5 +30,11 @@ public class TripPlaceDAO {
     public boolean checkIfPlaceExists(Long tripId, Long placeId) {
         String sql = "SELECT EXISTS(SELECT 1 FROM trip_places WHERE trip_id = ? AND place_id = ?)";
         return jdbcTemplate.queryForObject(sql, new Object[]{tripId, placeId}, Boolean.class);
+    }
+
+    //get a long list of place ids by trip id
+    public List<Long> getPlaceIdsByTripId(Long tripId) {
+        String sql = "SELECT place_id FROM trip_places WHERE trip_id = ?";
+        return jdbcTemplate.queryForList(sql, new Object[]{tripId}, Long.class);
     }
 }

@@ -103,5 +103,11 @@ public class  AdminServiceImpl implements AdminService {
 //        return new ApiResponse<>(true, 200, "Profile updated successfully");
 //    }
 
+    @Override
+    public ApiResponse<Void> logout(Long adminId) {
+        adminDAO.deleteAdminJwt(adminId);
+        return new ApiResponse<>(true, 200, "Admin logged out successfully");
+    }
+
 
 }

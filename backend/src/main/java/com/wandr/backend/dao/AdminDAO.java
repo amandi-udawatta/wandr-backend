@@ -39,4 +39,10 @@ public class AdminDAO {
         String sql = "UPDATE admins SET jwt = ? WHERE admin_id = ?";
         jdbcTemplate.update(sql, jwt, adminId);
     }
+
+    //logout admin
+    public void deleteAdminJwt(Long adminId) {
+        String sql = "UPDATE admins SET jwt = null WHERE admin_id = ?";
+        jdbcTemplate.update(sql, adminId);
+    }
 }

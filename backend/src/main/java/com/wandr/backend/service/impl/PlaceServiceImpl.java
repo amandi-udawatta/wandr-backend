@@ -4,6 +4,7 @@ import com.wandr.backend.dao.ActivityDAO;
 import com.wandr.backend.dao.PlaceDAO;
 import com.wandr.backend.dao.CategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.place.UpdatePlaceDTO;
 import com.wandr.backend.entity.Category;
@@ -84,6 +85,7 @@ public class PlaceServiceImpl implements PlaceService {
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     public PlaceDTO update(long placeId, UpdatePlaceDTO updatePlaceDTO) {

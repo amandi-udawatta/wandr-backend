@@ -24,6 +24,8 @@ public interface BusinessService {
     ApiResponse<Void> approveBusiness(Long businessId);
     ApiResponse<Void> declineBusiness(Long businessId);
 
+    ApiResponse<Void> logout(Long businessId);
+
 
 
     }

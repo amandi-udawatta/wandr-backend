@@ -165,5 +165,11 @@ public class BusinessDAO {
         jdbcTemplate.update(sql, status, businessId);
     }
 
+    //logout business
+    public void deleteBusinessJwt(Long businessId) {
+        String sql = "UPDATE businesses SET jwt = NULL WHERE business_id = ?";
+        jdbcTemplate.update(sql, businessId);
+    }
+
 
 }
