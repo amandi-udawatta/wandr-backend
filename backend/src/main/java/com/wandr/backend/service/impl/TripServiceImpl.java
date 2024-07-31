@@ -6,6 +6,8 @@ import com.wandr.backend.dao.TripPlaceDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
 import com.wandr.backend.dto.trip.CreateTripDTO;
+import com.wandr.backend.dto.trip.PendingTripsDTO;
+import com.wandr.backend.dto.trip.TripPlaceDTO;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.entity.TripPlace;
@@ -51,7 +53,7 @@ public class TripServiceImpl implements TripService {
             //initialize estimated time by default to 0
             trip.setShortestTime(0);
             trip.setPreferredTime(0);
-            trip.setOrderedTime(0);
+            trip.setOrderTime(0);
             //get id returned by createTrip
             Long id = tripDAO.createTrip(trip);
 
@@ -133,4 +135,33 @@ public class TripServiceImpl implements TripService {
         tripDAO.updateTripPlaceOrder(tripId, orderedPlaceIds);
     }
 
+    @Override
+    public ApiResponse<List<PendingTripsDTO>> getPendingTrips(Long travellerId) {
+        try {
+            List<Trip> trips = tripDAO.getPendingTrips(travellerId);
+            List<PendingTripsDTO> pendingTripsDTOList = new ArrayList<>();
+
+            for (Trip trip : trips) {
+                List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(trip.getTripId());
+                PendingTripsDTO pendingTripDTO = new PendingTripsDTO();
+                pendingTripDTO.setTripId(trip.getTripId());
+                pendingTripDTO.setName(trip.getName());
+                pendingTripDTO.setRouteType(trip.getRouteType());
+                pendingTripDTO.setCreatedAt(trip.getCreatedAt());
+                pendingTripDTO.setUpdatedAt(trip.getUpdatedAt());
+                pendingTripDTO.setTripPlaces(tripPlaces);
+                pendingTripDTO.setShortestTime(trip.getShortestTime());
+                pendingTripDTO.setPreferredTime(trip.getPreferredTime());
+                pendingTripDTO.setOrderTime(trip.getOrderTime());
+
+
+                pendingTripsDTOList.add(pendingTripDTO);
+            }
+
+
+            return new ApiResponse<>(true, 200, "Pending trips retrieved successfully", pendingTripsDTOList);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while retrieving pending trips");
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.trip.TripPlaceDTO;
 import com.wandr.backend.entity.TripPlace;
-import com.wandr.backend.mapper.TripPlaceRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -36,5 +36,19 @@ public class TripPlaceDAO {
     public List<Long> getPlaceIdsByTripId(Long tripId) {
         String sql = "SELECT place_id FROM trip_places WHERE trip_id = ?";
         return jdbcTemplate.queryForList(sql, new Object[]{tripId}, Long.class);
+    }
+
+    public List<TripPlaceDTO> getTripPlaces(Long tripId) {
+        String sql = "SELECT tp.trip_place_id, tp.place_id, tp.title, tp.place_order, p.name AS place_name " +
+                "FROM trip_places tp JOIN places p ON tp.place_id = p.place_id WHERE tp.trip_id = ? ORDER BY tp.place_order ASC";
+
+        return jdbcTemplate.query(sql, new Object[]{tripId}, (rs, rowNum) -> {
+            TripPlaceDTO tripPlaceDTO = new TripPlaceDTO();
+            tripPlaceDTO.setTripPlaceId(rs.getLong("trip_place_id"));
+            tripPlaceDTO.setPlaceId(rs.getLong("place_id"));
+            tripPlaceDTO.setTitle(rs.getString("title"));
+            tripPlaceDTO.setPlaceOrder(rs.getInt("place_order"));
+            return tripPlaceDTO;
+        });
     }
 }
