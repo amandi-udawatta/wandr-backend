@@ -3,6 +3,7 @@ package com.wandr.backend.dao;
 
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.mapper.TripRowMapper;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -52,5 +53,19 @@ public class TripDAO {
     public List<Trip> getPendingTrips(Long travellerId) {
         String sql = "SELECT * FROM trips WHERE traveller_id = ? AND status = 'pending'";
         return jdbcTemplate.query(sql, new Object[]{travellerId}, new TripRowMapper());
+    }
+
+    public List<Trip> getFinalizedTrips(Long travellerId) {
+        String sql = "SELECT * FROM trips WHERE traveller_id = ? AND status = 'finalized'";
+        return jdbcTemplate.query(sql, new Object[]{travellerId}, new TripRowMapper());
+    }
+
+    public Trip getOngoingTrip(Long travellerId) {
+        String sql = "SELECT * FROM trips WHERE traveller_id = ? AND status = 'ongoing'";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{travellerId}, new TripRowMapper());
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 }

@@ -1,13 +1,11 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
 import com.wandr.backend.dto.trip.CreateTripDTO;
 
 import com.wandr.backend.dto.trip.PendingTripsDTO;
 import com.wandr.backend.service.TripService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,6 +70,30 @@ public class TripController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting pending trips: " + e.getMessage()));
+        }
+    }
+
+    //get finalized trips of the traveller
+    @GetMapping("/finalized/{travellerId}")
+    public ResponseEntity<ApiResponse<List<PendingTripsDTO>>> getFinalizedTrips(@PathVariable Long travellerId) {
+        try {
+            ApiResponse<List<PendingTripsDTO>> response = tripService.getFinalizedTrips(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting finalized trips: " + e.getMessage()));
+        }
+    }
+
+    //get finalized trips of the traveller
+    @GetMapping("/ongoing/{travellerId}")
+    public ResponseEntity<ApiResponse<PendingTripsDTO>> getOngoingTrip(@PathVariable Long travellerId) {
+        logger.info("Received request to get ongoing trips for travellerId: {}", travellerId);
+        try {
+            ApiResponse<PendingTripsDTO> response = tripService.getOngoingTrip(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.info("An error occurred while getting ongoing trips: " + e.getMessage());
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting ongoing trips: " + e.getMessage()));
         }
     }
 }
