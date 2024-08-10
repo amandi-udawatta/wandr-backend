@@ -5,6 +5,7 @@ import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
 import com.wandr.backend.dto.trip.CreateTripDTO;
 
 import com.wandr.backend.dto.trip.PendingTripsDTO;
+import com.wandr.backend.dto.trip.RatingDTO;
 import com.wandr.backend.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -94,6 +95,17 @@ public class TripController {
         } catch (Exception e) {
             logger.info("An error occurred while getting ongoing trips: " + e.getMessage());
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting ongoing trips: " + e.getMessage()));
+        }
+    }
+
+    //rating stars for trip place
+    @PostMapping("/rate-place")
+    public ResponseEntity<ApiResponse<Void>> ratePlace(@RequestBody RatingDTO rating) {
+        try {
+            ApiResponse<Void> response = tripService.ratePlace(rating.getTripPlaceId(), rating.getRating());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating place: " + e.getMessage()));
         }
     }
 }

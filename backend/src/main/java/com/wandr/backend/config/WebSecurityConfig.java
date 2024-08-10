@@ -23,6 +23,7 @@ public class WebSecurityConfig {
         http.csrf().disable()
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
                         .anyRequest().authenticated());
         return http.build();
     }

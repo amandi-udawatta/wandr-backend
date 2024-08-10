@@ -64,6 +64,7 @@ public class TripServiceImpl implements TripService {
             tripPlace.setPlaceId(createTripDTO.getPlaceId());
             tripPlace.setVisited(false);
             tripPlace.setPlaceOrder(1);
+            tripPlace.setRating(0);
 
             tripPlaceDAO.addTripPlace(tripPlace);
 
@@ -77,7 +78,7 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public ApiResponse<Void> addPlaceToTrip(AddPlaceToTripDTO addPlaceToTripDTO) {
-        if(tripPlaceDAO.checkIfPlaceExists(addPlaceToTripDTO.getTripId(), addPlaceToTripDTO.getPlaceId())) {
+        if (tripPlaceDAO.checkIfPlaceExists(addPlaceToTripDTO.getTripId(), addPlaceToTripDTO.getPlaceId())) {
             return new ApiResponse<>(false, 400, "Place already exists in the trip");
         }
         TripPlace tripPlace = new TripPlace();
@@ -227,5 +228,14 @@ public class TripServiceImpl implements TripService {
         }
     }
 
-
+    //Rating stars for a trip place
+    @Override
+    public ApiResponse<Void> ratePlace(Long tripPlaceId, int rating) {
+        try {
+            tripPlaceDAO.rateTripPlace(tripPlaceId, rating);
+            return new ApiResponse<>(true, 200, "Trip place rated successfully");
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while rating trip place");
+        }
     }
+}
