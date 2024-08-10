@@ -2,8 +2,8 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.business.*;
+import com.wandr.backend.dto.RatingDTO;
 import com.wandr.backend.service.BusinessService;
-import com.wandr.backend.util.FileUploadUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -200,6 +200,20 @@ public class BusinessController {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to logout business"));
         }
     }
+
+    //rate business
+    @PostMapping("/rate-business")
+    public ResponseEntity<ApiResponse<Void>> rateBusiness(@RequestBody RatingDTO rating) {
+        logger.info("Received request to rate business with businessId: {}", rating.getId());
+        try {
+            ApiResponse<Void> response = businessService.rateBusiness(rating.getId(), rating.getRating());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while rating business with businessId: {}", rating.getId(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating business"));
+        }
+    }
+
 
 
 }

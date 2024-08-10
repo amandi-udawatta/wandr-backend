@@ -5,7 +5,7 @@ import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
 import com.wandr.backend.dto.trip.CreateTripDTO;
 
 import com.wandr.backend.dto.trip.PendingTripsDTO;
-import com.wandr.backend.dto.trip.RatingDTO;
+import com.wandr.backend.dto.RatingDTO;
 import com.wandr.backend.service.TripService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -102,7 +102,7 @@ public class TripController {
     @PostMapping("/rate-place")
     public ResponseEntity<ApiResponse<Void>> ratePlace(@RequestBody RatingDTO rating) {
         try {
-            ApiResponse<Void> response = tripService.ratePlace(rating.getTripPlaceId(), rating.getRating());
+            ApiResponse<Void> response = tripService.ratePlace(rating.getId(), rating.getRating());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating place: " + e.getMessage()));

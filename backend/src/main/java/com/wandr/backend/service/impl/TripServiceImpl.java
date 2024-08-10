@@ -230,7 +230,7 @@ public class TripServiceImpl implements TripService {
 
     //Rating stars for a trip place
     @Override
-    public ApiResponse<Void> ratePlace(Long tripPlaceId, int rating) {
+    public ApiResponse<Void> ratePlace(Long tripPlaceId, Integer rating) {
         try {
             tripPlaceDAO.rateTripPlace(tripPlaceId, rating);
             return new ApiResponse<>(true, 200, "Trip place rated successfully");
