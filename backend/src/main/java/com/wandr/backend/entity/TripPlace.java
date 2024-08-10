@@ -12,4 +12,5 @@ public class TripPlace {
     private Integer placeOrder;
     private Boolean visited;
     private String imageName;
+    private Integer rating;
 }

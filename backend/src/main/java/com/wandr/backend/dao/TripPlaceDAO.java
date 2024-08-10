@@ -39,7 +39,7 @@ public class TripPlaceDAO {
     }
 
     public List<TripPlaceDTO> getTripPlaces(Long tripId) {
-        String sql = "SELECT tp.trip_place_id, tp.place_id, tp.title, tp.place_order, p.name AS place_name " +
+        String sql = "SELECT tp.trip_place_id, tp.place_id, tp.title, tp.place_order, tp.rating, p.name AS place_name " +
                 "FROM trip_places tp JOIN places p ON tp.place_id = p.place_id WHERE tp.trip_id = ? ORDER BY tp.place_order ASC";
 
         return jdbcTemplate.query(sql, new Object[]{tripId}, (rs, rowNum) -> {
@@ -48,7 +48,14 @@ public class TripPlaceDAO {
             tripPlaceDTO.setPlaceId(rs.getLong("place_id"));
             tripPlaceDTO.setTitle(rs.getString("title"));
             tripPlaceDTO.setPlaceOrder(rs.getInt("place_order"));
+            tripPlaceDTO.setRating(rs.getInt("rating"));
             return tripPlaceDTO;
         });
+    }
+
+    //rate trip place
+    public void rateTripPlace(Long tripPlaceId, Integer rating) {
+        String sql = "UPDATE trip_places SET rating = ? WHERE trip_place_id = ?";
+        jdbcTemplate.update(sql, rating, tripPlaceId);
     }
 }

@@ -19,6 +19,7 @@ public class TripPlaceRowMapper implements RowMapper<TripPlace> {
         tripPlace.setPlaceOrder(rs.getInt("place_order"));
         tripPlace.setVisited(rs.getBoolean("visited"));
         tripPlace.setImageName(rs.getString("image_name"));
+        tripPlace.setRating(rs.getInt("rating"));
         return tripPlace;
     }
 }

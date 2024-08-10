@@ -21,5 +21,7 @@ public interface TripService {
 
     ApiResponse<PendingTripsDTO> getOngoingTrip(Long travellerId);
 
+    ApiResponse<Void> ratePlace(Long tripPlaceId, int rating);
 
-    }
+
+}
