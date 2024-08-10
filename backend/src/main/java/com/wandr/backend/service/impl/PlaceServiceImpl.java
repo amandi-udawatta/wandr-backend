@@ -515,8 +515,10 @@ public class PlaceServiceImpl implements PlaceService {
         placeDTO.setDescription(place.getDescription());
         placeDTO.setLatitude(place.getLatitude());
         placeDTO.setLongitude(place.getLongitude());
-        placeDTO.setAddress(place.getAddress());
-        placeDTO.setImage(place.getImage());
+        placeDTO.setAddress(place.getAddress());//set image uri as image
+        if (place.getImage() != null) {
+            placeDTO.setImage(backendUrl + "/places/" + place.getImage());
+        }
         List<Category> categories = categoryDAO.findByCategoryIds(place.getCategories());
         List<Activity> activities = activityDAO.findByActivityIds(place.getActivities());
         //get a list of category and activity names

@@ -171,5 +171,11 @@ public class BusinessDAO {
         jdbcTemplate.update(sql, businessId);
     }
 
+    //rate business
+    public void rateBusiness(Long businessId, Integer rating) {
+        String sql = "UPDATE businesses SET rating = ? WHERE business_id = ?";
+        jdbcTemplate.update(sql, rating, businessId);
+    }
+
 
 }

@@ -4,6 +4,7 @@ import com.wandr.backend.dao.BusinessDAO;
 import com.wandr.backend.dao.BusinessPlanDAO;
 import com.wandr.backend.dao.ShopCategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.RatingDTO;
 import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.*;
@@ -307,6 +308,13 @@ public class BusinessServiceImpl implements BusinessService {
     public ApiResponse<Void> logout(Long businessId) {
         businessDAO.deleteBusinessJwt(businessId);
         return new ApiResponse<>(true, 200, "Business logged out successfully");
+    }
+
+    //rate business
+    @Override
+    public ApiResponse<Void> rateBusiness(Long businessId, Integer rating) {
+        businessDAO.rateBusiness(businessId, rating);
+        return new ApiResponse<>(true, 200, "Business rated successfully");
     }
 
 
