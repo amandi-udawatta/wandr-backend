@@ -1,5 +1,7 @@
 package com.wandr.backend.dao;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wandr.backend.dto.business.PaidBusinessDTO;
 import com.wandr.backend.dto.business.PopularStoreDTO;
 import com.wandr.backend.entity.Activity;
@@ -61,9 +63,16 @@ public class BusinessDAO {
 //    }
 
     public void save(Business business) {
-        System.out.println("business = " + business);
         String sql = "INSERT INTO businesses (name, email, password, description, services, address,latitude,longitude, languages, website_url, business_contact, business_type,shop_category, status, owner_name, owner_contact, owner_nic, jwt, salt, created_at, shop_image) VALUES (?, ?, ?, ?, ?::jsonb, ?,?,?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
-        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), business.getServices().toString(), business.getAddress(),business.getLatitude(),business.getLongitude(), business.getLanguages().toString(), business.getWebsiteUrl(), business.getBusinessContact(), business.getBusinessType(), business.getShopCategory(), business.getStatus(),business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
+        try {
+            // Convert the services and languages lists to JSON strings
+            String servicesJson = new ObjectMapper().writeValueAsString(business.getServices());
+            String languagesJson = new ObjectMapper().writeValueAsString(business.getLanguages());
+            jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), servicesJson, business.getAddress(),business.getLatitude(),business.getLongitude(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getBusinessType(), business.getShopCategory(), business.getStatus(),business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
+        } catch (JsonProcessingException e) {
+            logger.error("Error converting services or languages to JSON", e);
+            throw new RuntimeException("Failed to save business due to JSON processing error", e);
+        }
     }
 
     public Business findById(Long businessId) {
@@ -72,10 +81,16 @@ public class BusinessDAO {
     }
 
     public void updateProfile(Business business) {
-        String sql = "UPDATE businesses SET name = ?, email = ?, description = ?, services = ?::jsonb, address = ?, languages =?::jsonb, website_url = ?, business_contact = ?, shop_image = ?, business_type = ?, shop_category = ?, owner_name = ?, owner_contact = ?, owner_nic = ?, status = ?, plan_id=? , latitude=? , longitude=? WHERE business_id = ?";
-        logger.info("sql",sql);
-        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), business.getServices(), business.getAddress(), business.getLanguages(), business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(), business.getBusinessType(), business.getShopCategory(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getStatus(), business.getPlanId(), business.getLatitude(), business.getLongitude(), business.getBusinessId());
-    }
+        String sql = "UPDATE businesses SET name = ?, email = ?, description = ?, services = ?::jsonb, address = ?, languages = ?::jsonb, website_url = ?, business_contact = ?, shop_image = ?, profile_image = ?, business_type = ?, shop_category = ?, owner_name = ?, owner_contact = ?, owner_nic = ?, status = ?, plan_id=?, latitude=?, longitude=? WHERE business_id = ?";
+        try {
+            // Convert the services and languages lists to JSON strings
+            String servicesJson = new ObjectMapper().writeValueAsString(business.getServices());
+            String languagesJson = new ObjectMapper().writeValueAsString(business.getLanguages());
+        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), servicesJson, business.getAddress(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(),business.getProfileImage(), business.getBusinessType(), business.getShopCategory(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getStatus(), business.getPlanId(), business.getLatitude(), business.getLongitude(), business.getBusinessId());
+        } catch (JsonProcessingException e) {
+            logger.error("Error converting services or languages to JSON", e);
+            throw new RuntimeException("Failed to update profile due to JSON processing error", e);
+        }}
 
 
     public Optional<Business> findByEmail(String email) {
@@ -137,6 +152,7 @@ public class BusinessDAO {
             String businessType = business.getBusinessType() == 1 ? "Shop" : "Service";
             String shopCategory = jdbcTemplate.queryForObject("SELECT name FROM shop_categories WHERE category_id = ?", new Object[]{business.getShopCategory()}, String.class);
             String shopImage = business.getShopImage() == null ? null : backendUrl + "/business/shop_images/" + business.getShopImage();
+            String profileImage = business.getProfileImage() == null ? null : backendUrl + "/business/profile_images/" + business.getProfileImage();
 
             return new PaidBusinessDTO(
                     business.getBusinessId(),
@@ -149,6 +165,7 @@ public class BusinessDAO {
                     business.getWebsiteUrl(),
                     business.getBusinessContact(),
                     shopImage,
+                    profileImage,
                     businessType,
                     business.getOwnerName(),
                     business.getOwnerContact(),
@@ -160,7 +177,8 @@ public class BusinessDAO {
                     rs.getBigDecimal("payment_amount"),
                     rs.getTimestamp("paid_date"),
                     rs.getTimestamp("plan_end_date"),
-                    rs.getInt("remaining_days")
+                    rs.getInt("remaining_days"),
+                    business.getRating()
             );
         });
     }

@@ -20,6 +20,7 @@ public class PaidBusinessDTO {
     private String websiteUrl;
     private String businessContact;
     private String shopImage;
+    private String profileImage;
     private String businessType;
     private String ownerName;
     private String ownerContact;
@@ -33,5 +34,6 @@ public class PaidBusinessDTO {
     private Timestamp paidDate;
     private Timestamp planEndDate;
     private int remainingDays;
+    private Integer rating;
 
 }

@@ -13,7 +13,7 @@ public interface BusinessService {
 
     ApiResponse<UserDetailsDTO> loginBusiness(UserLoginDTO request);
     ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFileName, Integer shopCategory);
-    ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request);
+    ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request, MultipartFile shopImageFileName, MultipartFile profileImageFileName);
     ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId);
     public String getSalt(String email);
     ApiResponse<List<BusinessDTO>> getPendingBusinesses();

@@ -20,6 +20,7 @@ public class BusinessDTO {
     private String websiteUrl;
     private String businessContact;
     private String shopImage;
+    private String profileImage;
     private String businessType;
     private String ownerName;
     private String ownerContact;
@@ -29,5 +30,6 @@ public class BusinessDTO {
     private String shopCategory;
     private String plan;
     private String status;
+    private Integer rating;
 
 }

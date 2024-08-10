@@ -15,7 +15,6 @@ public class UpdateProfileDTO {
     private List<String> languages;
     private String websiteUrl;
     private String businessContact;
-    private String shopImage;
     private Integer businessType;
     private Integer shopCategory;
     private String ownerName;
@@ -23,4 +22,5 @@ public class UpdateProfileDTO {
     private String ownerNic;
     private String latitude;
     private String longitude;
+
 }
