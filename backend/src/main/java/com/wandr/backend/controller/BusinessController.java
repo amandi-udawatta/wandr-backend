@@ -35,8 +35,7 @@ public class BusinessController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while logging in business with email: {}", request.getEmail(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, 500, "An error occurred while logging in business"));
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while logging in business"));
         }
     }
 
@@ -45,6 +44,7 @@ public class BusinessController {
     public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@ModelAttribute BusinessSignupDTO request,
             @RequestParam("shopImage") MultipartFile shopImage, @RequestParam(value = "shopCategory", required = false) Integer shopCategory
     ) {
+        System.out.println("languages at controller: " + request.getLanguages());
         logger.info("Received request to register business with email: {}", request.getEmail());
 
         try{
@@ -53,17 +53,16 @@ public class BusinessController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while registering business with email: {}", request.getEmail(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, 500, "An error occurred while registering business"));
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while registering business"));
         }
     }
 
 
-    @PutMapping("/{businessId}/profile")
-    public ResponseEntity<ApiResponse<String>> updateProfile(@PathVariable Long businessId, @RequestBody UpdateProfileDTO request) {
+    @PutMapping(value = "/update", consumes = {"multipart/form-data"})
+    public ResponseEntity<ApiResponse<String>> updateProfile( @RequestParam(value = "businessId") Long businessId, @ModelAttribute UpdateProfileDTO request, @RequestParam(value = "shopImage", required = false) MultipartFile shopImage, @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {
         logger.info("Received request to update profile for business with ID: {}", businessId);
         try {
-            ApiResponse<String> response = businessService.updateProfile(businessId, request);
+            ApiResponse<String> response = businessService.updateProfile(businessId, request, shopImage, profileImage);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("An error occurred while updating profile for business with ID: {}", businessId, e);

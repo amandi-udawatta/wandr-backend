@@ -143,7 +143,7 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request) {
+    public ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request, MultipartFile shopImageFileName, MultipartFile profileImageFileName) {
         Business existingBusiness = businessDAO.findById(businessId);
         if (existingBusiness == null) {
             return new ApiResponse<>(false, 404, "Business not found");
@@ -194,6 +194,24 @@ public class BusinessServiceImpl implements BusinessService {
         if (request.getLongitude() != null) {
             existingBusiness.setLongitude(new BigDecimal(request.getLongitude()));
         }
+        if (shopImageFileName != null && !shopImageFileName.isEmpty()) {
+            String shopImg = FileUploadUtil.saveFile(shopImageFileName, "business/shop_images");
+            // Delete the old image
+            String oldImage = existingBusiness.getShopImage();
+            if (oldImage != null && !oldImage.isEmpty()) {
+                FileUploadUtil.deleteFile("business/shop_images", oldImage);
+            }
+            existingBusiness.setShopImage(shopImg);
+        }
+        if (profileImageFileName != null && !profileImageFileName.isEmpty()) {
+            String profileImg = FileUploadUtil.saveFile(profileImageFileName, "business/profile_images");
+            // Delete the old image
+            String oldImage = existingBusiness.getProfileImage();
+            if (oldImage != null && !oldImage.isEmpty()) {
+                FileUploadUtil.deleteFile("business/profile_images", oldImage);
+            }
+            existingBusiness.setProfileImage(profileImg);
+        }
 
         businessDAO.updateProfile(existingBusiness);
 
@@ -212,8 +230,14 @@ public class BusinessServiceImpl implements BusinessService {
         businessDTO.setLanguages(business.getLanguages());
         businessDTO.setWebsiteUrl(business.getWebsiteUrl());
         businessDTO.setBusinessContact(business.getBusinessContact());
-        String imageUri = backendUrl + "/business/shop_images/" + business.getShopImage();
-        businessDTO.setShopImage(imageUri);
+        if (business.getProfileImage() != null) {
+            String profileUri = backendUrl + "/business/profile_images/" + business.getProfileImage();
+            businessDTO.setProfileImage(profileUri);
+        }
+        if (business.getShopImage() != null) {
+            String imageUri = backendUrl + "/business/shop_images/" + business.getShopImage();
+            businessDTO.setShopImage(imageUri);
+        }
         businessDTO.setStatus(business.getStatus());
         businessDTO.setOwnerName(business.getOwnerName());
         businessDTO.setOwnerContact(business.getOwnerContact());
@@ -230,6 +254,7 @@ public class BusinessServiceImpl implements BusinessService {
         businessDTO.setShopCategory(shop_category);
         String business_plan = businessPlanDAO.findNameById(business.getPlanId());
         businessDTO.setPlan(business_plan);
+        businessDTO.setRating(business.getRating());
         return businessDTO;
     }
 

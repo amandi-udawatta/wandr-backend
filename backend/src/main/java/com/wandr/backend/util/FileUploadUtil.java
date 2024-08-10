@@ -50,5 +50,20 @@ public static String saveFile(MultipartFile file, String directory) {
             throw new RuntimeException("Failed to store file " + file.getOriginalFilename(), e);
         }
     }
+
+    // New deleteFile method
+    public static void deleteFile(String directory, String fileName) {
+        try {
+            Path filePath = Paths.get(UPLOAD_DIR + directory).resolve(fileName);
+
+            if (Files.exists(filePath)) {
+                Files.delete(filePath);
+            } else {
+                throw new IOException("File not found: " + fileName);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete file " + fileName, e);
+        }
+    }
 }
 

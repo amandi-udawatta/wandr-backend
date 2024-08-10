@@ -23,6 +23,7 @@ public class BusinessRowMapper implements RowMapper<Business> {
         business.setAddress(rs.getString("address"));
         business.setWebsiteUrl(rs.getString("website_url"));
         business.setShopImage(rs.getString("shop_image"));
+        business.setProfileImage(rs.getString("profile_image"));
         business.setBusinessContact(rs.getString("business_contact"));
         business.setBusinessType(rs.getInt("business_type"));
         business.setShopCategory(rs.getInt("shop_category"));
@@ -39,6 +40,7 @@ public class BusinessRowMapper implements RowMapper<Business> {
         business.setPlanEndDate(rs.getTimestamp("plan_end_date"));
         business.setLatitude(rs.getBigDecimal("latitude"));
         business.setLongitude(rs.getBigDecimal("longitude"));
+        business.setRating(rs.getInt("rating"));
 
         String services = rs.getString("services");
         if (services != null && !services.trim().isEmpty()) {

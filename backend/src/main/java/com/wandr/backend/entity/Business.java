@@ -21,6 +21,7 @@ public class Business {
         private String websiteUrl;
         private String businessContact;
         private String shopImage;
+        private String profileImage;
         private Integer businessType;
         private Integer shopCategory;
         private String ownerName;
@@ -33,5 +34,6 @@ public class Business {
         private Integer planId;
         private Timestamp paidDate;
         private Timestamp planEndDate;
+        private Integer rating;
 
 }
