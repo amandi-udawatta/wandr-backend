@@ -173,9 +173,6 @@ public class BusinessServiceImpl implements BusinessService {
         if (request.getBusinessContact() != null) {
             existingBusiness.setBusinessContact(request.getBusinessContact());
         }
-        if (request.getShopImage() != null) {
-            existingBusiness.setShopImage(request.getShopImage());
-        }
         if (request.getBusinessType() != null) {
             existingBusiness.setBusinessType(request.getBusinessType());
         }

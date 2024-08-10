@@ -5,6 +5,7 @@ import com.wandr.backend.entity.Activity;
 import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.mapper.TravellerRowMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -16,6 +17,9 @@ import java.util.stream.Collectors;
 
 @Repository
 public class TravellerDAO {
+
+    @Value("${core.backend.url}")
+    private String backendUrl;
 
     private final JdbcTemplate jdbcTemplate;
     private final CategoryDAO categoryDAO;
@@ -90,7 +94,7 @@ public class TravellerDAO {
             dto.setLatitude(rs.getDouble("latitude"));
             dto.setLongitude(rs.getDouble("longitude"));
             dto.setAddress(rs.getString("address"));
-            dto.setImage(rs.getString("image"));
+            dto.setImage(backendUrl + "/places/" + rs.getString("image"));
             // Parse categories
             String categories = rs.getString("categories");
             if (categories != null && !categories.trim().isEmpty()) {
@@ -142,7 +146,7 @@ public class TravellerDAO {
             dto.setLatitude(rs.getDouble("latitude"));
             dto.setLongitude(rs.getDouble("longitude"));
             dto.setAddress(rs.getString("address"));
-            dto.setImage(rs.getString("image"));
+            dto.setImage(backendUrl + "/places/" + rs.getString("image"));
             // Parse categories
             String categories = rs.getString("categories");
             if (categories != null && !categories.trim().isEmpty()) {
@@ -193,7 +197,7 @@ public class TravellerDAO {
             dto.setLatitude(rs.getDouble("latitude"));
             dto.setLongitude(rs.getDouble("longitude"));
             dto.setAddress(rs.getString("address"));
-            dto.setImage(rs.getString("image"));
+            dto.setImage(backendUrl + "/places/" + rs.getString("image"));
             // Parse categories
             String categories = rs.getString("categories");
             if (categories != null && !categories.trim().isEmpty()) {

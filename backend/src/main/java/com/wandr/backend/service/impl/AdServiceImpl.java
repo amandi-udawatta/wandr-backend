@@ -99,7 +99,7 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
-        String imageUri = backendUrl + "/ads/" + ad.getImage();
+        String imageUri = backendUrl + "/business/ads/" + ad.getImage();
         adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
         Business business = businessDAO.findById(ad.getBusinessId());
@@ -116,7 +116,7 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
-        String imageUri = backendUrl + "/ads/" + ad.getImage();
+        String imageUri = backendUrl + "/business/ads/" + ad.getImage();
         adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
         Business business = businessDAO.findById(ad.getBusinessId());

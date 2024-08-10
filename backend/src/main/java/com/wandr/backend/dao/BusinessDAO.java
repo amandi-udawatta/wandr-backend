@@ -7,6 +7,7 @@ import com.wandr.backend.entity.Business;
 import com.wandr.backend.entity.Category;
 import com.wandr.backend.mapper.BusinessRowMapper;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -19,6 +20,9 @@ import java.util.stream.Collectors;
 import org.slf4j.LoggerFactory;
 @Repository
 public class BusinessDAO {
+
+    @Value("${core.backend.url}")
+    private String backendUrl;
 
     private final JdbcTemplate jdbcTemplate;
     Logger logger = LoggerFactory.getLogger(BusinessDAO.class);
@@ -132,6 +136,7 @@ public class BusinessDAO {
             Business business = new BusinessRowMapper().mapRow(rs, rowNum);
             String businessType = business.getBusinessType() == 1 ? "Shop" : "Service";
             String shopCategory = jdbcTemplate.queryForObject("SELECT name FROM shop_categories WHERE category_id = ?", new Object[]{business.getShopCategory()}, String.class);
+            String shopImage = business.getShopImage() == null ? null : backendUrl + "/business/shop_images/" + business.getShopImage();
 
             return new PaidBusinessDTO(
                     business.getBusinessId(),
@@ -143,7 +148,7 @@ public class BusinessDAO {
                     business.getLanguages(),
                     business.getWebsiteUrl(),
                     business.getBusinessContact(),
-                    business.getShopImage(),
+                    shopImage,
                     businessType,
                     business.getOwnerName(),
                     business.getOwnerContact(),
