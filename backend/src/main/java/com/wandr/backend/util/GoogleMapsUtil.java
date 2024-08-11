@@ -1,13 +1,18 @@
-// GoogleMapsUtil.java
 package com.wandr.backend.util;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Component
 public class GoogleMapsUtil {
@@ -15,49 +20,64 @@ public class GoogleMapsUtil {
     @Value("${google.api.key}")
     private String apiKey;
 
+    private static final String ROUTE_OPTIMIZATION_URL = "https://routes.googleapis.com/directions/v2:computeRoutes";
     private final RestTemplate restTemplate;
-
-    public GoogleMapsUtil() {
-        this.restTemplate = new RestTemplate();
+    public GoogleMapsUtil(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
     }
 
-    public List<String> getShortestRoute(List<String> coordinates) {
-        String url = buildDirectionsUrl(coordinates);
+    public List<Integer> optimizeRoute(String origin,String destination, List<String> waypoints) {
 
-        // Make the API call
-        DirectionsResponse response = restTemplate.getForObject(url, DirectionsResponse.class);
-        System.out.println("response in getShortestRoute: " + response);
+        String jsonRequest = buildGoogleMapsRequest(origin,destination, waypoints);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+        headers.set("X-Goog-Api-Key", apiKey);
+        headers.set("X-Goog-FieldMask", "routes.optimizedIntermediateWaypointIndex");
 
-        // Process the response to get the ordered coordinates
-        return processDirectionsResponse(coordinates, response);
+        HttpEntity<String> entity = new HttpEntity<>(jsonRequest, headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                ROUTE_OPTIMIZATION_URL,
+                HttpMethod.POST,
+                entity,
+                String.class
+        );
+
+        return extractOptimizedOrderFromResponse(response.getBody());
     }
 
-    private String buildDirectionsUrl(List<String> coordinates) {
-        StringBuilder url = new StringBuilder("https://maps.googleapis.com/maps/api/directions/json?origin=");
-        url.append(coordinates.get(0));
-        url.append("&destination=").append(coordinates.get(coordinates.size() - 1));
-        url.append("&waypoints=optimize:true");
-
-        for (int i = 1; i < coordinates.size() - 1; i++) {
-            url.append("|").append(coordinates.get(i));
-        }
-
-        url.append("&key=").append(apiKey);
-        return url.toString();
+    private String buildGoogleMapsRequest(String origin,String destination, List<String> waypoints) {
+        return "{ " +
+                "\"origin\": { \"location\": { \"latLng\": { \"latitude\": " + origin.split(",")[0] + ", \"longitude\": " + origin.split(",")[1] + " } } }, " +
+                "\"destination\": { \"location\": { \"latLng\": { \"latitude\": " + destination.split(",")[0] + ", \"longitude\": " + destination.split(",")[1] + " } } }, " +
+                "\"intermediates\": " + waypoints.stream()
+                .map(wp -> "{ \"location\": { \"latLng\": { \"latitude\": " + wp.split(",")[0] + ", \"longitude\": " + wp.split(",")[1] + " } } }")
+                .collect(Collectors.joining(",", "[", "]")) + ", " +
+                "\"travelMode\": \"DRIVE\", " +
+                "\"optimizeWaypointOrder\": true " +
+                "}";
     }
 
-    private List<String> processDirectionsResponse(List<String> originalCoordinates, DirectionsResponse response) {
-        if (response != null && !response.getRoutes().isEmpty()) {
-            List<Integer> waypointOrder = response.getRoutes().get(0).getWaypointOrder();
+    private List<Integer> extractOptimizedOrderFromResponse(String response) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(response);
+            JsonNode waypointIndexNode = rootNode
+                    .path("routes")
+                    .get(0)
+                    .path("optimizedIntermediateWaypointIndex");
 
-            // Original coordinates contain origin and destination as well, so we need to adjust the index.
-            return IntStream.concat(IntStream.of(0), IntStream.concat(
-                            waypointOrder.stream().mapToInt(i -> i + 1), IntStream.of(originalCoordinates.size() - 1)))
-                    .mapToObj(originalCoordinates::get)
-                    .collect(Collectors.toList());
-        } else {
-            // If no route found, return the original order
-            return originalCoordinates;
+            List<Integer> optimizedOrder = new ArrayList<>();
+            if (waypointIndexNode.isArray()) {
+                for (JsonNode node : waypointIndexNode) {
+                    optimizedOrder.add(node.asInt());
+                }
+            }
+
+            return optimizedOrder;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
         }
     }
 }

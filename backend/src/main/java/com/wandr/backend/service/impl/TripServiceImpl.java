@@ -4,10 +4,7 @@ import com.wandr.backend.dao.PlaceDAO;
 import com.wandr.backend.dao.TripDAO;
 import com.wandr.backend.dao.TripPlaceDAO;
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
-import com.wandr.backend.dto.trip.CreateTripDTO;
-import com.wandr.backend.dto.trip.PendingTripsDTO;
-import com.wandr.backend.dto.trip.TripPlaceDTO;
+import com.wandr.backend.dto.trip.*;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.entity.TripPlace;
@@ -21,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class TripServiceImpl implements TripService {
@@ -98,43 +96,6 @@ public class TripServiceImpl implements TripService {
     }
 
 
-    //update trip order with route type
-    @Override
-    public ApiResponse<Void> updateTripOrder(Long tripId, String orderType) {
-        try {
-            List<Long> placeIds = tripPlaceDAO.getPlaceIdsByTripId(tripId);
-            System.out.println("placeIds: " + placeIds);
-            //check if ordertype is shortest
-            //methana indn wada naa check!
-            if (Objects.equals(orderType, "shortest")) {
-                System.out.println("shortest");
-                // Convert placeIds to coordinates
-                List<String> coordinates = getCoordinatesFromPlaceIds(placeIds);
-                System.out.println("coordinates: " + coordinates);
-                List<String> orderedCoordinates = googleMapsUtil.getShortestRoute(coordinates);
-                System.out.println("orderedCoordinates: " + orderedCoordinates);
-
-                // Update trip place order based on orderedCoordinates
-                updateTripPlaceOrder(tripId, orderedCoordinates);
-            }
-            return new ApiResponse<>(true, 200, "Trip order updated successfully");
-        } catch (Exception e) {
-            return new ApiResponse<>(false, 500, "Error updating trip order: " + e.getMessage());
-        }
-    }
-
-    private List<String> getCoordinatesFromPlaceIds(List<Long> placeIds) {
-        return tripDAO.getCoordinatesFromPlaceIds(placeIds);
-    }
-
-    private void updateTripPlaceOrder(Long tripId, List<String> orderedCoordinates) {
-        List<Long> orderedPlaceIds = new ArrayList<>();
-        for (String orderedCoordinate : orderedCoordinates) {
-            Long placeId = placeDAO.getPlaceIdFromCoordinate(orderedCoordinate);
-            orderedPlaceIds.add(placeId);
-        }
-        tripDAO.updateTripPlaceOrder(tripId, orderedPlaceIds);
-    }
 
     @Override
     public ApiResponse<List<PendingTripsDTO>> getPendingTrips(Long travellerId) {
@@ -237,5 +198,48 @@ public class TripServiceImpl implements TripService {
         } catch (Exception e) {
             return new ApiResponse<>(false, 500, "An error occurred while rating trip place");
         }
+    }
+
+
+    @Transactional
+    @Override
+    public ApiResponse<Void> optimizeTrip(Long tripId, double startLat, double startLng, double endLat, double endLng) {
+        Trip trip = tripDAO.findById(tripId);
+        List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripId(tripId);
+
+        String origin = formatLatLong(startLat, startLng);
+        String destination = formatLatLong(endLat, endLng);
+
+        // Prepare the waypoints for Google Maps API (intermediates)
+        List<String> intermediates = tripPlaces.stream()
+                .map(this::formatLatLong)
+                .collect(Collectors.toList());
+
+        List<Integer> optimizedOrder = googleMapsUtil.optimizeRoute(origin, destination, intermediates);
+
+        // Update the trip places in the database based on the optimized order
+        for (int i = 0; i < optimizedOrder.size(); i++) {
+            TripPlace tripPlace = tripPlaces.get(optimizedOrder.get(i));
+            tripPlace.setOptimizedOrder(i + 1);
+            tripPlaceDAO.updateOptimizedOrder(tripPlace);
+        }
+
+        // Update the trip's updated_at timestamp
+        trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+        tripDAO.update(trip);
+
+        return new ApiResponse<>(true, 200, "Trip optimized successfully");
+    }
+
+    private String formatLatLong(double latitude, double longitude) {
+        return latitude + "," + longitude;
+    }
+
+    private String formatLatLong(TripPlace tripPlace) {
+        String latLong = placeDAO.getLatLongByPlaceId(tripPlace.getPlaceId());
+        if (latLong == null || latLong.isEmpty()) {
+            throw new RuntimeException("Latitude and longitude not found for place ID: " + tripPlace.getPlaceId());
+        }
+        return latLong;
     }
 }

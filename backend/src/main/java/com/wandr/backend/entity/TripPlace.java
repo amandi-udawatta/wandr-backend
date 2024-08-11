@@ -10,7 +10,9 @@ public class TripPlace {
     private String title;
     private String description;
     private Integer placeOrder;
+    private Integer optimizedOrder;
     private Boolean visited;
     private String imageName;
     private Integer rating;
 }
+
