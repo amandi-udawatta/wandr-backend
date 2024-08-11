@@ -6,7 +6,9 @@ import com.wandr.backend.dto.trip.CreateTripDTO;
 
 import com.wandr.backend.dto.trip.PendingTripsDTO;
 import com.wandr.backend.dto.RatingDTO;
+import com.wandr.backend.dto.trip.ShortestTripDTO;
 import com.wandr.backend.service.TripService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,16 +55,6 @@ public class TripController {
 
     }
 
-    @PutMapping("/update-order/{tripId}")
-    public ResponseEntity<ApiResponse<Void>> updateTripOrder(@PathVariable Long tripId, @RequestBody String orderType) {
-        try {
-            ApiResponse<Void> response = tripService.updateTripOrder(tripId, orderType);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating trip order: " + e.getMessage()));
-        }
-    }
-
     //get pending trips of the traveller
     @GetMapping("/pending/{travellerId}")
     public ResponseEntity<ApiResponse<List<PendingTripsDTO>>> getPendingTrips(@PathVariable Long travellerId) {
@@ -106,6 +98,20 @@ public class TripController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating place: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/shortest-route")
+    public ApiResponse<Void> optimizeTrip(@RequestBody ShortestTripDTO shortestTripDTO) {
+        logger.info("Received request to optimize trip with tripId: {}", shortestTripDTO.getTripId());
+        try{
+            ApiResponse<Void> response = tripService.optimizeTrip(shortestTripDTO.getTripId(), shortestTripDTO.getStartLat(), shortestTripDTO.getStartLng(), shortestTripDTO.getEndLat(), shortestTripDTO.getEndLng());
+            logger.info("Successfully optimized trip with tripId: {}", shortestTripDTO.getTripId());
+            return response;
+        }
+        catch (Exception e) {
+            logger.error("An error occurred while optimizing trip with tripId: {}", shortestTripDTO.getTripId(), e);
+            return new ApiResponse<>(false, 500, "An error occurred while optimizing trip");
         }
     }
 }

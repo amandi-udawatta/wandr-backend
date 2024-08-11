@@ -32,8 +32,8 @@ public class TripDAO {
     }
 
     public void update(Trip trip) {
-        String sql = "UPDATE trips SET name = ?, updated_at = ?, status = ? WHERE trip_id = ?";
-        jdbcTemplate.update(sql, trip.getName(), trip.getUpdatedAt(), trip.getStatus(), trip.getTripId());
+        String sql = "UPDATE trips SET name = ?, updated_at = ?, status = ?, order_time = ? WHERE trip_id = ?";
+        jdbcTemplate.update(sql, trip.getName(), trip.getUpdatedAt(), trip.getStatus(),trip.getOrderTime(), trip.getTripId());
     }
 
     // Method to get coordinates from place IDs (as shown above)
@@ -68,4 +68,5 @@ public class TripDAO {
             return null;
         }
     }
+
 }

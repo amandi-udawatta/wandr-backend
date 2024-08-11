@@ -17,6 +17,7 @@ public class TripPlaceRowMapper implements RowMapper<TripPlace> {
         tripPlace.setTitle(rs.getString("title"));
         tripPlace.setDescription(rs.getString("description"));
         tripPlace.setPlaceOrder(rs.getInt("place_order"));
+        tripPlace.setOptimizedOrder(rs.getInt("optimized_order"));
         tripPlace.setVisited(rs.getBoolean("visited"));
         tripPlace.setImageName(rs.getString("image_name"));
         tripPlace.setRating(rs.getInt("rating"));

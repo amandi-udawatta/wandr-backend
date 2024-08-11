@@ -77,6 +77,13 @@ public class PlaceDAO {
         return count != null && count > 0;
     }
 
+    public String getLatLongByPlaceId(Long placeId) {
+        String sql = "SELECT latitude, longitude FROM places WHERE place_id = ?";
+        return jdbcTemplate.queryForObject(sql, new Object[]{placeId}, (rs, rowNum) ->
+                rs.getDouble("latitude") + "," + rs.getDouble("longitude")
+        );
+    }
+
 
 
 }

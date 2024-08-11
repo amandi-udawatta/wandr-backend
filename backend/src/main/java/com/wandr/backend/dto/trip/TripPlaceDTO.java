@@ -8,5 +8,6 @@ public class TripPlaceDTO {
     private Long placeId;
     private String title;
     private Integer placeOrder;
+    private Integer optimizedOrder;
     private Integer rating;
 }
