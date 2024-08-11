@@ -3,6 +3,7 @@ package com.wandr.backend.dao;
 import com.wandr.backend.dto.trip.TripPlaceDTO;
 import com.wandr.backend.entity.TripPlace;
 import com.wandr.backend.mapper.TripPlaceRowMapper;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -69,6 +70,15 @@ public class TripPlaceDAO {
     public void updateOptimizedOrder(TripPlace tripPlace) {
         String sql = "UPDATE trip_places SET optimized_order = ? WHERE trip_place_id = ?";
         jdbcTemplate.update(sql, tripPlace.getOptimizedOrder(), tripPlace.getTripPlaceId());
+    }
+
+    public TripPlace findByTripPlaceId(Long tripPlaceId) {
+        String sql = "SELECT * FROM trip_places WHERE trip_place_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{tripPlaceId}, new TripPlaceRowMapper());
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
 }
