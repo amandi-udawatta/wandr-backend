@@ -404,7 +404,6 @@ public class ProxyController {
         }
 
         String requestUri = request.getRequestURI().replace("/api/proxy/forward", "");
-        System.out.println("requestUri: " + requestUri);
         return forwardRequestWithToken(requestUri, token, requestBody, HttpMethod.POST);
     }
 

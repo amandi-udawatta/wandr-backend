@@ -1,12 +1,9 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.trip.AddPlaceToTripDTO;
-import com.wandr.backend.dto.trip.CreateTripDTO;
+import com.wandr.backend.dto.trip.*;
 
-import com.wandr.backend.dto.trip.PendingTripsDTO;
 import com.wandr.backend.dto.RatingDTO;
-import com.wandr.backend.dto.trip.ShortestTripDTO;
 import com.wandr.backend.service.TripService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,8 +31,7 @@ public class TripController {
         try {
             ApiResponse<Void> response = tripService.createTrip(createTripDTO);
             return ResponseEntity.ok(response);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while creating trip"));
         }
     }
@@ -43,12 +39,11 @@ public class TripController {
     @PostMapping("/add-place")
     public ResponseEntity<ApiResponse<Void>> addPlaceToTrip(@RequestBody AddPlaceToTripDTO addPlaceToTripDTO) {
         logger.info("Received request to add place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
-        try{
+        try {
             ApiResponse<Void> response = tripService.addPlaceToTrip(addPlaceToTripDTO);
             logger.info("Successfully added place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
             return ResponseEntity.ok(response);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("An error occurred while adding place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while adding place to trip"));
         }
@@ -104,14 +99,29 @@ public class TripController {
     @PostMapping("/shortest-route")
     public ApiResponse<Void> optimizeTrip(@RequestBody ShortestTripDTO shortestTripDTO) {
         logger.info("Received request to optimize trip with tripId: {}", shortestTripDTO.getTripId());
-        try{
+        try {
             ApiResponse<Void> response = tripService.optimizeTrip(shortestTripDTO.getTripId(), shortestTripDTO.getStartLat(), shortestTripDTO.getStartLng(), shortestTripDTO.getEndLat(), shortestTripDTO.getEndLng());
             logger.info("Successfully optimized trip with tripId: {}", shortestTripDTO.getTripId());
             return response;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("An error occurred while optimizing trip with tripId: {}", shortestTripDTO.getTripId(), e);
             return new ApiResponse<>(false, 500, "An error occurred while optimizing trip");
         }
     }
+
+    //change the current trip place orders with new orders given
+    @PostMapping("/reorder-route")
+    public ApiResponse<Void> reorderTrip(@RequestBody ReorderTripDTO reorderedTrip) {
+        Long tripId = reorderedTrip.getTripId();
+        logger.info("Received request to reorder trip with tripId: {}", tripId);
+        try {
+            ApiResponse<Void> response = tripService.reorderTrip(tripId, reorderedTrip.getPlaceList());
+            logger.info("Successfully reordered trip with tripId: {}", tripId);
+            return response;
+        } catch (Exception e) {
+            logger.error("An error occurred while reordering trip with tripId: {}", tripId, e);
+            return new ApiResponse<>(false, 500, "An error occurred while reordering trip");
+        }
+    }
+
 }

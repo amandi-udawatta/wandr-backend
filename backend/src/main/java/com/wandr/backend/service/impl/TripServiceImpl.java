@@ -200,6 +200,31 @@ public class TripServiceImpl implements TripService {
         }
     }
 
+    //reorder places
+    @Override
+    public ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList) {
+
+        try {
+            for (PlaceOrderDTO placeOrder : placeOrderList) {
+                TripPlace tripPlace = tripPlaceDAO.findByTripPlaceId(placeOrder.getTripPlaceId());
+                if (Objects.isNull(tripPlace)) {
+                    //return trip place with this trip place id not found
+                    return new ApiResponse<>(false, 404, "Trip place with ID " + placeOrder.getTripPlaceId() + " not found");
+                }
+                tripPlace.setPlaceOrder(placeOrder.getOrder());
+                tripPlaceDAO.updateTripPlaceOrder(tripPlace);
+            }
+
+            // Update trip's updated_at timestamp to reflect the change
+            Trip trip = tripDAO.findById(tripId);
+            trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            tripDAO.update(trip);
+            return new ApiResponse<>(true, 200, "Trip places reordered successfully");
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while reordering trip places");
+        }
+    }
+
 
     @Transactional
     @Override
