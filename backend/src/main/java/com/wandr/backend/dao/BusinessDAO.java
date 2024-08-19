@@ -194,11 +194,21 @@ public class BusinessDAO {
         jdbcTemplate.update(sql, businessId);
     }
 
-    //rate business
-    public void rateBusiness(Long businessId, Integer rating) {
-        String sql = "UPDATE businesses SET rating = ? WHERE business_id = ?";
-        jdbcTemplate.update(sql, rating, businessId);
+    // Insert or update rating
+    public void upsertBusinessRating(Long travellerId, Long businessId, Integer rating) {
+        String sql = "INSERT INTO business_ratings (traveller_id, business_id, rating) " +
+                "VALUES (?, ?, ?) " +
+                "ON CONFLICT (traveller_id, business_id) " +
+                "DO UPDATE SET rating = EXCLUDED.rating";
+        jdbcTemplate.update(sql, travellerId, businessId, rating);
     }
 
+    // Calculate and update average rating
+    public void updateAverageRating(Long businessId) {
+        String sql = "UPDATE businesses " +
+                "SET rating = (SELECT AVG(rating) FROM business_ratings WHERE business_id = ?) " +
+                "WHERE business_id = ?";
+        jdbcTemplate.update(sql, businessId, businessId);
+    }
 
 }

@@ -4,9 +4,7 @@ import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.PlaceRatingDTO;
 import com.wandr.backend.dto.trip.*;
 
-import com.wandr.backend.dto.RatingDTO;
 import com.wandr.backend.service.TripService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

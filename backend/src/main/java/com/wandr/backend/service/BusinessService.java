@@ -1,7 +1,6 @@
 package com.wandr.backend.service;
 
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.RatingDTO;
 import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.*;
@@ -27,7 +26,7 @@ public interface BusinessService {
 
     ApiResponse<Void> logout(Long businessId);
 
-    ApiResponse<Void> rateBusiness(Long businessId, Integer rating);
+    ApiResponse<Void> rateBusiness(Long travellerId, Long businessId, Integer rating);
 
 
 

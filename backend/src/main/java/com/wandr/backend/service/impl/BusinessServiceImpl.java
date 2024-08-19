@@ -4,7 +4,6 @@ import com.wandr.backend.dao.BusinessDAO;
 import com.wandr.backend.dao.BusinessPlanDAO;
 import com.wandr.backend.dao.ShopCategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.RatingDTO;
 import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.*;
@@ -334,8 +333,9 @@ public class BusinessServiceImpl implements BusinessService {
 
     //rate business
     @Override
-    public ApiResponse<Void> rateBusiness(Long businessId, Integer rating) {
-        businessDAO.rateBusiness(businessId, rating);
+    public ApiResponse<Void> rateBusiness(Long travellerId, Long businessId, Integer rating) {
+        businessDAO.upsertBusinessRating(travellerId,businessId, rating);
+        businessDAO.updateAverageRating(businessId);
         return new ApiResponse<>(true, 200, "Business rated successfully");
     }
 
