@@ -25,6 +25,10 @@ public class TripRowMapper implements RowMapper<Trip> {
         trip.setOrderedDistance(rs.getInt("ordered_distance"));
         trip.setStartTime(rs.getTimestamp("start_time"));
         trip.setEndTime(rs.getTimestamp("end_time"));
+        trip.setStart_lat(rs.getDouble("start_lat"));
+        trip.setStart_lng(rs.getDouble("start_lng"));
+        trip.setEnd_lat(rs.getDouble("end_lat"));
+        trip.setEnd_lng(rs.getDouble("end_lng"));
         return trip;
     }
 }

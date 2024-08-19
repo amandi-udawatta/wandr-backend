@@ -24,11 +24,6 @@ public class TripPlaceDAO {
         jdbcTemplate.update(sql, tripPlace.getTripId(), tripPlace.getPlaceId(), tripPlace.getTitle(), tripPlace.getDescription(), tripPlace.getPlaceOrder(), tripPlace.getVisited(), tripPlace.getImageName());
     }
 
-    public List<TripPlace> getTripPlacesByTripId(Long tripId) {
-        String sql = "SELECT * FROM trip_places WHERE trip_id = ? ORDER BY place_order";
-        return jdbcTemplate.query(sql, new Object[]{tripId}, new TripPlaceRowMapper());
-    }
-
     public Integer getNextPlaceOrder(Long tripId) {
         String sql = "SELECT COALESCE(MAX(place_order), 0) + 1 FROM trip_places WHERE trip_id = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{tripId}, Integer.class);

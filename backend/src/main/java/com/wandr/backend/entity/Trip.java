@@ -1,6 +1,8 @@
 package com.wandr.backend.entity;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Duration;
 
@@ -19,5 +21,9 @@ public class Trip {
     private Integer optimizedDistance;
     private Timestamp startTime;
     private Timestamp endTime;
+    private double start_lat;
+    private double start_lng;
+    private double end_lat;
+    private double end_lng;
 
 }

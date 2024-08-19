@@ -16,7 +16,11 @@ public class PendingTripsDTO {
     private List<TripPlaceDTO> tripPlaces;
     private Integer orderedTime;
     private Integer optimizedTime;
-    private Double orderedDistance;
-    private Double optimizedDistance;
+    private Integer orderedDistance;
+    private Integer optimizedDistance;
+    private double start_lat;
+    private double start_lng;
+    private double end_lat;
+    private double end_lng;
 
 }
