@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
-public class GoogleMapsUtil {
+public class RouteOptimizationUtil {
 
     @Value("${google.api.key}")
     private String apiKey;
 
     private static final String ROUTE_OPTIMIZATION_URL = "https://routes.googleapis.com/directions/v2:computeRoutes";
     private final RestTemplate restTemplate;
-    public GoogleMapsUtil(RestTemplate restTemplate) {
+    public RouteOptimizationUtil(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 

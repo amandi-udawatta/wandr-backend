@@ -9,7 +9,8 @@ import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.entity.TripPlace;
 import com.wandr.backend.service.TripService;
-import com.wandr.backend.util.GoogleMapsUtil;
+import com.wandr.backend.util.GoogleMapsDistanceMatrixUtil;
+import com.wandr.backend.util.RouteOptimizationUtil;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,16 +27,19 @@ public class TripServiceImpl implements TripService {
     private final TripDAO tripDAO;
     private final TripPlaceDAO tripPlaceDAO;
 
-    private final GoogleMapsUtil googleMapsUtil;
+    private final RouteOptimizationUtil routeOptimizationUtil;
+
+    private final GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil;
 
 
     private final PlaceDAO placeDAO;
 
-    public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, GoogleMapsUtil googleMapsUtil) {
+    public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, RouteOptimizationUtil routeOptimizationUtil, GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil) {
         this.tripDAO = tripDAO;
         this.tripPlaceDAO = tripPlaceDAO;
         this.placeDAO = placeDAO;
-        this.googleMapsUtil = googleMapsUtil;
+        this.routeOptimizationUtil = routeOptimizationUtil;
+        this.googleMapsDistanceMatrixUtil = googleMapsDistanceMatrixUtil;
     }
 
     @Override
@@ -49,9 +53,8 @@ public class TripServiceImpl implements TripService {
             trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             trip.setStatus("pending");
             //initialize estimated time by default to 0
-            trip.setShortestTime(0);
-            trip.setPreferredTime(0);
-            trip.setOrderTime(0);
+            trip.setOrderedTime(0);
+            trip.setOptimizedTime(0);
             //get id returned by createTrip
             Long id = tripDAO.createTrip(trip);
 
@@ -115,9 +118,8 @@ public class TripServiceImpl implements TripService {
                 pendingTripDTO.setCreatedAt(trip.getCreatedAt());
                 pendingTripDTO.setUpdatedAt(trip.getUpdatedAt());
                 pendingTripDTO.setTripPlaces(tripPlaces);
-                pendingTripDTO.setShortestTime(trip.getShortestTime());
-                pendingTripDTO.setPreferredTime(trip.getPreferredTime());
-                pendingTripDTO.setOrderTime(trip.getOrderTime());
+                pendingTripDTO.setOrderedTime(trip.getOrderedTime());
+                pendingTripDTO.setOptimizedTime(trip.getOptimizedTime());
 
 
                 pendingTripsDTOList.add(pendingTripDTO);
@@ -148,14 +150,11 @@ public class TripServiceImpl implements TripService {
                 finalizedTripDTO.setCreatedAt(trip.getCreatedAt());
                 finalizedTripDTO.setUpdatedAt(trip.getUpdatedAt());
                 finalizedTripDTO.setTripPlaces(tripPlaces);
-                finalizedTripDTO.setShortestTime(trip.getShortestTime());
-                finalizedTripDTO.setPreferredTime(trip.getPreferredTime());
-                finalizedTripDTO.setOrderTime(trip.getOrderTime());
-
+                finalizedTripDTO.setOrderedTime(trip.getOrderedTime());
+                finalizedTripDTO.setOptimizedTime(trip.getOptimizedTime());
 
                 finalizedTripsDTOList.add(finalizedTripDTO);
             }
-
 
             return new ApiResponse<>(true, 200, "Finalized trips retrieved successfully", finalizedTripsDTOList);
         } catch (Exception e) {
@@ -179,9 +178,8 @@ public class TripServiceImpl implements TripService {
             ongoingTripDTO.setCreatedAt(trip.getCreatedAt());
             ongoingTripDTO.setUpdatedAt(trip.getUpdatedAt());
             ongoingTripDTO.setTripPlaces(tripPlaces);
-            ongoingTripDTO.setShortestTime(trip.getShortestTime());
-            ongoingTripDTO.setPreferredTime(trip.getPreferredTime());
-            ongoingTripDTO.setOrderTime(trip.getOrderTime());
+            ongoingTripDTO.setOrderedTime(trip.getOrderedTime());
+            ongoingTripDTO.setOptimizedTime(trip.getOptimizedTime());
 
             return new ApiResponse<>(true, 200, "Ongoing trip retrieved successfully", ongoingTripDTO);
         } catch (Exception e) {
@@ -202,7 +200,7 @@ public class TripServiceImpl implements TripService {
 
     //reorder places
     @Override
-    public ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList) {
+    public ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList,double startLat, double startLng, double endLat, double endLng ) {
 
         try {
             for (PlaceOrderDTO placeOrder : placeOrderList) {
@@ -215,22 +213,46 @@ public class TripServiceImpl implements TripService {
                 tripPlaceDAO.updateTripPlaceOrder(tripPlace);
             }
 
+            String routeOrder = "place_order";
+            TripDurationAndDistanceDTO result = calculateTimeAndDistance(tripId, startLat, startLng, endLat, endLng, routeOrder );
             // Update trip's updated_at timestamp to reflect the change
             Trip trip = tripDAO.findById(tripId);
+            trip.setOrderedDistance(result.getTotalDistance());
+            trip.setOrderedTime(result.getTotalDuration());
             trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
             tripDAO.update(trip);
-            return new ApiResponse<>(true, 200, "Trip places reordered successfully");
+
+            return new ApiResponse<>(true, 200, "Trip reordered successfully");
         } catch (Exception e) {
             return new ApiResponse<>(false, 500, "An error occurred while reordering trip places");
         }
     }
 
+    private TripDurationAndDistanceDTO calculateTimeAndDistance(Long tripId, double startLat, double startLng, double endLat, double endLng, String routeOrder) {
+        String origin = startLat + "," + startLng;
+        String destination = endLat + "," + endLng;
+        List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripIdForRoute(tripId, routeOrder);
+
+        // Prepare the waypoints for Google Maps API (intermediates)
+        List<String> intermediates = tripPlaces.stream()
+                .map(this::formatLatLong)
+                .collect(Collectors.toList());
+
+        // Calculate duration and distance
+        TripDurationAndDistanceDTO result = googleMapsDistanceMatrixUtil.calculateTripDurationAndDistance(origin, destination, intermediates);
+
+        return result;
+
+    }
+
+
 
     @Transactional
     @Override
     public ApiResponse<Void> optimizeTrip(Long tripId, double startLat, double startLng, double endLat, double endLng) {
-        Trip trip = tripDAO.findById(tripId);
-        List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripId(tripId);
+        String routeOrder = "optimized_order";
+        List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripIdForRoute(tripId, routeOrder);
 
         String origin = formatLatLong(startLat, startLng);
         String destination = formatLatLong(endLat, endLng);
@@ -240,7 +262,7 @@ public class TripServiceImpl implements TripService {
                 .map(this::formatLatLong)
                 .collect(Collectors.toList());
 
-        List<Integer> optimizedOrder = googleMapsUtil.optimizeRoute(origin, destination, intermediates);
+        List<Integer> optimizedOrder = routeOptimizationUtil.optimizeRoute(origin, destination, intermediates);
 
         // Update the trip places in the database based on the optimized order
         for (int i = 0; i < optimizedOrder.size(); i++) {
@@ -249,8 +271,13 @@ public class TripServiceImpl implements TripService {
             tripPlaceDAO.updateOptimizedOrder(tripPlace);
         }
 
-        // Update the trip's updated_at timestamp
+        TripDurationAndDistanceDTO result = calculateTimeAndDistance(tripId, startLat, startLng, endLat, endLng, routeOrder );
+        // Update trip's updated_at timestamp to reflect the change
+        Trip trip = tripDAO.findById(tripId);
+        trip.setOptimizedDistance(result.getTotalDistance());
+        trip.setOptimizedTime(result.getTotalDuration());
         trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+
         tripDAO.update(trip);
 
         return new ApiResponse<>(true, 200, "Trip optimized successfully");

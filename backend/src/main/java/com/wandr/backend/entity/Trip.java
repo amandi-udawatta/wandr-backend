@@ -13,7 +13,11 @@ public class Trip {
     private Timestamp updatedAt;
     private String status;
     private Long routeType;
-    private Integer shortestTime;
-    private Integer preferredTime;
-    private Integer orderTime;
+    private Integer orderedTime;
+    private Integer optimizedTime;
+    private Integer orderedDistance;
+    private Integer optimizedDistance;
+    private Timestamp startTime;
+    private Timestamp endTime;
+
 }

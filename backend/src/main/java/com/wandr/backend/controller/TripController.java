@@ -115,7 +115,7 @@ public class TripController {
         Long tripId = reorderedTrip.getTripId();
         logger.info("Received request to reorder trip with tripId: {}", tripId);
         try {
-            ApiResponse<Void> response = tripService.reorderTrip(tripId, reorderedTrip.getPlaceList());
+            ApiResponse<Void> response = tripService.reorderTrip(tripId, reorderedTrip.getPlaceList(), reorderedTrip.getStartLat(), reorderedTrip.getStartLng(), reorderedTrip.getEndLat(), reorderedTrip.getEndLng());
             logger.info("Successfully reordered trip with tripId: {}", tripId);
             return response;
         } catch (Exception e) {

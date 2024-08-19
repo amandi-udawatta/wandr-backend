@@ -20,7 +20,7 @@ public interface TripService {
 
     ApiResponse<Void> ratePlace(Long tripPlaceId, Integer rating);
 
-    ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList);
+    ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList, double startLat, double startLng, double endLat, double endLng);
 
     ApiResponse<Void> optimizeTrip(Long tripId, double startLat, double startLng, double endLat, double endLng);
 
