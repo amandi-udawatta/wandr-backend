@@ -31,7 +31,6 @@ public class TripServiceImpl implements TripService {
 
     private final GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil;
 
-
     private final PlaceDAO placeDAO;
 
     public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, RouteOptimizationUtil routeOptimizationUtil, GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil) {
