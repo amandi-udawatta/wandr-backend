@@ -1,6 +1,7 @@
 package com.wandr.backend.service.impl;
 
 import com.wandr.backend.dao.PlaceDAO;
+import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dao.TripDAO;
 import com.wandr.backend.dao.TripPlaceDAO;
 import com.wandr.backend.dto.ApiResponse;
@@ -33,9 +34,12 @@ public class TripServiceImpl implements TripService {
 
     private final PlaceDAO placeDAO;
 
-    public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, RouteOptimizationUtil routeOptimizationUtil, GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil) {
+    private final TravellerDAO travellerDAO;
+
+    public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, TravellerDAO travellerDAO, RouteOptimizationUtil routeOptimizationUtil, GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil) {
         this.tripDAO = tripDAO;
         this.tripPlaceDAO = tripPlaceDAO;
+        this.travellerDAO = travellerDAO;
         this.placeDAO = placeDAO;
         this.routeOptimizationUtil = routeOptimizationUtil;
         this.googleMapsDistanceMatrixUtil = googleMapsDistanceMatrixUtil;
@@ -206,14 +210,17 @@ public class TripServiceImpl implements TripService {
 
     //Rating stars for a trip place
     @Override
-    public ApiResponse<Void> ratePlace(Long tripPlaceId, Integer rating) {
+    public ApiResponse<Void> ratePlace(Long travellerId, Long placeId, Integer rating) {
         try {
-            tripPlaceDAO.rateTripPlace(tripPlaceId, rating);
+            travellerDAO.upsertPlaceRating(travellerId, placeId, rating);
+            travellerDAO.updateAverageRating(placeId);
+            System.out.println("Rating updated successfully");
             return new ApiResponse<>(true, 200, "Trip place rated successfully");
         } catch (Exception e) {
             return new ApiResponse<>(false, 500, "An error occurred while rating trip place");
         }
     }
+
 
     //reorder places
     @Override

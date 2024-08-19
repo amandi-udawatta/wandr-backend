@@ -15,4 +15,5 @@ public class Places {
     private List<Long> categories;
     private List<Long> activities;
     private String image;
+    private Integer rating;
 }

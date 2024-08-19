@@ -43,6 +43,7 @@ public class PlaceRowMapper implements RowMapper<Places> {
         } else {
             place.setActivities(Collections.emptyList());
         }
+        place.setRating(rs.getInt("rating"));
         return place;
     }
 }

@@ -530,6 +530,7 @@ public class PlaceServiceImpl implements PlaceService {
                 .collect(Collectors.toList());
         placeDTO.setCategories(categoryNames);
         placeDTO.setActivities(activityNames);
+        placeDTO.setRating(place.getRating());
         return placeDTO;
     }
 

@@ -18,7 +18,7 @@ public interface TripService {
 
     ApiResponse<PendingTripsDTO> getOngoingTrip(Long travellerId);
 
-    ApiResponse<Void> ratePlace(Long tripPlaceId, Integer rating);
+    ApiResponse<Void> ratePlace(Long travellerId, Long placeId, Integer rating);
 
     ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList, double startLat, double startLng, double endLat, double endLng);
 

@@ -1,6 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.PlaceRatingDTO;
 import com.wandr.backend.dto.trip.*;
 
 import com.wandr.backend.dto.RatingDTO;
@@ -87,9 +88,9 @@ public class TripController {
 
     //rating stars for trip place
     @PostMapping("/rate-place")
-    public ResponseEntity<ApiResponse<Void>> ratePlace(@RequestBody RatingDTO rating) {
+    public ResponseEntity<ApiResponse<Void>> ratePlace(@RequestBody PlaceRatingDTO rating) {
         try {
-            ApiResponse<Void> response = tripService.ratePlace(rating.getId(), rating.getRating());
+            ApiResponse<Void> response = tripService.ratePlace(rating.getTravellerId(), rating.getPlaceId(), rating.getRating());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating place: " + e.getMessage()));

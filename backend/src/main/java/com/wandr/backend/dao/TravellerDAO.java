@@ -6,6 +6,7 @@ import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.mapper.TravellerRowMapper;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -73,18 +74,13 @@ public class TravellerDAO {
     }
 
 
-    //get popular places
     public List<DashboardPlaceDTO> getPopularPlaces(Long travellerId) {
         String sql = "SELECT p.*, " +
-                "COUNT(l.place_id) AS like_count, " +
                 "EXISTS (SELECT 1 FROM likes l2 WHERE l2.place_id = p.place_id AND l2.traveller_id = ?) AS liked " +
                 "FROM places p " +
-                "JOIN likes l ON p.place_id = l.place_id " +
-                "GROUP BY p.place_id " +
-                "HAVING COUNT(l.place_id) > 0 " +
-                "ORDER BY like_count DESC " +
+                "WHERE p.rating IS NOT NULL " +
+                "ORDER BY p.rating DESC " +
                 "LIMIT 10";
-
 
         return jdbcTemplate.query(sql, new Object[]{travellerId}, (rs, rowNum) -> {
             DashboardPlaceDTO dto = new DashboardPlaceDTO();
@@ -95,6 +91,7 @@ public class TravellerDAO {
             dto.setLongitude(rs.getDouble("longitude"));
             dto.setAddress(rs.getString("address"));
             dto.setImage(backendUrl + "/places/" + rs.getString("image"));
+
             // Parse categories
             String categories = rs.getString("categories");
             if (categories != null && !categories.trim().isEmpty()) {
@@ -109,6 +106,7 @@ public class TravellerDAO {
             } else {
                 dto.setCategories(Collections.emptyList());
             }
+
             // Parse activities
             String activities = rs.getString("activities");
             if (activities != null && !activities.trim().isEmpty()) {
@@ -123,10 +121,13 @@ public class TravellerDAO {
             } else {
                 dto.setActivities(Collections.emptyList());
             }
+
             dto.setLiked(rs.getBoolean("liked"));
+            dto.setRating(rs.getInt("rating"));
             return dto;
         });
     }
+
 
     //get favourite places
     public List<DashboardPlaceDTO> getFavouritePlaces(Long travellerId) {
@@ -176,6 +177,7 @@ public class TravellerDAO {
                 dto.setActivities(Collections.emptyList());
             }
             dto.setLiked(rs.getBoolean("liked"));
+            dto.setRating(rs.getInt("rating"));
             return dto;
         });
     }
@@ -227,6 +229,7 @@ public class TravellerDAO {
                 dto.setActivities(Collections.emptyList());
             }
             dto.setLiked(rs.getBoolean("liked"));
+            dto.setRating(rs.getInt("rating"));
             return dto;
         });
     }
@@ -235,6 +238,34 @@ public class TravellerDAO {
     public void deleteTravellerJwt(Long travellerId) {
         String sql = "UPDATE travellers SET jwt = NULL WHERE traveller_id = ?";
         jdbcTemplate.update(sql, travellerId);
+    }
+
+
+    // Insert or update rating
+    public void upsertPlaceRating(Long travellerId, Long placeId, Integer rating) {
+        String sql = "INSERT INTO place_ratings (traveller_id, place_id, rating) " +
+                "VALUES (?, ?, ?) " +
+                "ON CONFLICT (traveller_id, place_id) " +
+                "DO UPDATE SET rating = EXCLUDED.rating";
+        jdbcTemplate.update(sql, travellerId, placeId, rating);
+    }
+
+    // Calculate and update average rating
+    public void updateAverageRating(Long placeId) {
+        String sql = "UPDATE places " +
+                "SET rating = (SELECT AVG(rating) FROM place_ratings WHERE place_id = ?) " +
+                "WHERE place_id = ?";
+        jdbcTemplate.update(sql, placeId, placeId);
+    }
+
+    // Get the rating given by the user for a specific place
+    public Integer getUserRatingForPlace(Long travellerId, Long placeId) {
+        String sql = "SELECT rating FROM place_ratings WHERE traveller_id = ? AND place_id = ?";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{travellerId, placeId}, Integer.class);
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
 }
