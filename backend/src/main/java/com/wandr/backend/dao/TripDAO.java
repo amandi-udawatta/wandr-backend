@@ -32,8 +32,8 @@ public class TripDAO {
     }
 
     public void update(Trip trip) {
-        String sql = "UPDATE trips SET name = ?, updated_at = ?, status = ?, optimized_time = ?, ordered_time = ?, ordered_distance = ?, optimized_distance = ?, start_time = ?, end_time = ? WHERE trip_id = ?";
-        jdbcTemplate.update(sql, trip.getName(), trip.getUpdatedAt(), trip.getStatus(),trip.getOptimizedTime(), trip.getOrderedTime(), trip.getOrderedDistance(), trip.getOptimizedDistance(), trip.getStartTime(), trip.getEndTime(), trip.getTripId());
+        String sql = "UPDATE trips SET name = ?, updated_at = ?, status = ?, optimized_time = ?, ordered_time = ?, ordered_distance = ?, optimized_distance = ?, start_time = ?, end_time = ?, start_lat = ?, start_lng = ?, end_lat = ?, end_lng = ? WHERE trip_id = ?";
+        jdbcTemplate.update(sql, trip.getName(), trip.getUpdatedAt(), trip.getStatus(),trip.getOptimizedTime(), trip.getOrderedTime(), trip.getOrderedDistance(), trip.getOptimizedDistance(), trip.getStartTime(), trip.getEndTime(), trip.getStart_lat(), trip.getStart_lng(), trip.getEnd_lat(), trip.getEnd_lng(), trip.getTripId());
     }
 
     public List<Trip> getPendingTrips(Long travellerId) {

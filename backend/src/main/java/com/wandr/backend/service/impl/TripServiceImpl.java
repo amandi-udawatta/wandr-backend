@@ -119,7 +119,12 @@ public class TripServiceImpl implements TripService {
                 pendingTripDTO.setTripPlaces(tripPlaces);
                 pendingTripDTO.setOrderedTime(trip.getOrderedTime());
                 pendingTripDTO.setOptimizedTime(trip.getOptimizedTime());
-
+                pendingTripDTO.setOrderedDistance(trip.getOrderedDistance());
+                pendingTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+                pendingTripDTO.setStart_lat(trip.getStart_lat());
+                pendingTripDTO.setStart_lng(trip.getStart_lng());
+                pendingTripDTO.setEnd_lat(trip.getEnd_lat());
+                pendingTripDTO.setEnd_lng(trip.getEnd_lng());
 
                 pendingTripsDTOList.add(pendingTripDTO);
             }
@@ -151,6 +156,12 @@ public class TripServiceImpl implements TripService {
                 finalizedTripDTO.setTripPlaces(tripPlaces);
                 finalizedTripDTO.setOrderedTime(trip.getOrderedTime());
                 finalizedTripDTO.setOptimizedTime(trip.getOptimizedTime());
+                finalizedTripDTO.setOrderedDistance(trip.getOrderedDistance());
+                finalizedTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+                finalizedTripDTO.setStart_lat(trip.getStart_lat());
+                finalizedTripDTO.setStart_lng(trip.getStart_lng());
+                finalizedTripDTO.setEnd_lat(trip.getEnd_lat());
+                finalizedTripDTO.setEnd_lng(trip.getEnd_lng());
 
                 finalizedTripsDTOList.add(finalizedTripDTO);
             }
@@ -179,6 +190,13 @@ public class TripServiceImpl implements TripService {
             ongoingTripDTO.setTripPlaces(tripPlaces);
             ongoingTripDTO.setOrderedTime(trip.getOrderedTime());
             ongoingTripDTO.setOptimizedTime(trip.getOptimizedTime());
+            ongoingTripDTO.setOrderedDistance(trip.getOrderedDistance());
+            ongoingTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+            ongoingTripDTO.setStart_lat(trip.getStart_lat());
+            ongoingTripDTO.setStart_lng(trip.getStart_lng());
+            ongoingTripDTO.setEnd_lat(trip.getEnd_lat());
+            ongoingTripDTO.setEnd_lng(trip.getEnd_lng());
+
 
             return new ApiResponse<>(true, 200, "Ongoing trip retrieved successfully", ongoingTripDTO);
         } catch (Exception e) {
@@ -219,6 +237,10 @@ public class TripServiceImpl implements TripService {
             trip.setOrderedDistance(result.getTotalDistance());
             trip.setOrderedTime(result.getTotalDuration());
             trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            trip.setStart_lat(startLat);
+            trip.setStart_lng(startLng);
+            trip.setEnd_lat(endLat);
+            trip.setEnd_lng(endLng);
 
             tripDAO.update(trip);
 
@@ -275,6 +297,10 @@ public class TripServiceImpl implements TripService {
         Trip trip = tripDAO.findById(tripId);
         trip.setOptimizedDistance(result.getTotalDistance());
         trip.setOptimizedTime(result.getTotalDuration());
+        trip.setStart_lat(startLat);
+        trip.setStart_lng(startLng);
+        trip.setEnd_lat(endLat);
+        trip.setEnd_lng(endLng);
         trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
         tripDAO.update(trip);
