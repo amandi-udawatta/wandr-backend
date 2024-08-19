@@ -2,7 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.business.*;
-import com.wandr.backend.dto.RatingDTO;
+import com.wandr.backend.dto.BusinessRatingDTO;
 import com.wandr.backend.service.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -202,13 +202,13 @@ public class BusinessController {
 
     //rate business
     @PostMapping("/rate-business")
-    public ResponseEntity<ApiResponse<Void>> rateBusiness(@RequestBody RatingDTO rating) {
-        logger.info("Received request to rate business with businessId: {}", rating.getId());
+    public ResponseEntity<ApiResponse<Void>> rateBusiness(@RequestBody BusinessRatingDTO rating) {
+        logger.info("Received request to rate business with businessId: {}", rating.getBusinessId());
         try {
-            ApiResponse<Void> response = businessService.rateBusiness(rating.getId(), rating.getRating());
+            ApiResponse<Void> response = businessService.rateBusiness(rating.getTravellerId(), rating.getBusinessId(), rating.getRating());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("An error occurred while rating business with businessId: {}", rating.getId(), e);
+            logger.error("An error occurred while rating business with businessId: {}", rating.getBusinessId(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating business"));
         }
     }
