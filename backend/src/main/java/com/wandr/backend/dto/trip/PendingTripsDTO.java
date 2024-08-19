@@ -14,7 +14,9 @@ public class PendingTripsDTO {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private List<TripPlaceDTO> tripPlaces;
-    private Integer shortestTime;
-    private Integer preferredTime;
-    private Integer orderTime;
+    private Integer orderedTime;
+    private Integer optimizedTime;
+    private Double orderedDistance;
+    private Double optimizedDistance;
+
 }

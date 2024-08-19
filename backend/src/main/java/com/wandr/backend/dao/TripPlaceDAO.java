@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 public class TripPlaceDAO {
@@ -27,7 +28,6 @@ public class TripPlaceDAO {
         String sql = "SELECT * FROM trip_places WHERE trip_id = ? ORDER BY place_order";
         return jdbcTemplate.query(sql, new Object[]{tripId}, new TripPlaceRowMapper());
     }
-
 
     public Integer getNextPlaceOrder(Long tripId) {
         String sql = "SELECT COALESCE(MAX(place_order), 0) + 1 FROM trip_places WHERE trip_id = ?";
@@ -56,7 +56,6 @@ public class TripPlaceDAO {
         });
     }
 
-    //rate trip place
     public void rateTripPlace(Long tripPlaceId, Integer rating) {
         String sql = "UPDATE trip_places SET rating = ? WHERE trip_place_id = ?";
         jdbcTemplate.update(sql, rating, tripPlaceId);
@@ -79,6 +78,11 @@ public class TripPlaceDAO {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public List<TripPlace> getTripPlacesByTripIdForRoute(Long tripId, String routeOrder) {
+        String sql = "SELECT * FROM trip_places WHERE trip_id = ? ORDER BY " + (Objects.equals(routeOrder, "place_order") ? "place_order" : "optimized_order");
+        return jdbcTemplate.query(sql, new Object[]{tripId}, new TripPlaceRowMapper());
     }
 
 }
