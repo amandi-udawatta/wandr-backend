@@ -17,4 +17,5 @@ public class DashboardPlaceDTO {
     private List<String> activities;
     //liked or not
     private boolean liked;
+    private Integer rating;
 }

@@ -15,4 +15,5 @@ public class PlaceDTO {
     private String image;
     private List<String> categories;
     private List<String> activities;
+    private Integer rating;
 }
