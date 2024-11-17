@@ -10,7 +10,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -21,6 +24,8 @@ public class GoogleMapsDistanceMatrixUtil {
 
     private static final String DISTANCE_MATRIX_URL = "https://maps.googleapis.com/maps/api/distancematrix/json";
     private final RestTemplate restTemplate;
+
+    private static final Logger logger = LoggerFactory.getLogger(GoogleMapsDistanceMatrixUtil.class);
 
     public GoogleMapsDistanceMatrixUtil(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -95,4 +100,75 @@ public class GoogleMapsDistanceMatrixUtil {
             return new TripDurationAndDistanceDTO(0, 0);
         }
     }
+
+    public List<Long> filterPlacesWithinRadius(List<String> tripPlaceCoordinates, List<Long> recommendedPlaceIds,
+                                               List<String> recommendedPlaceCoordinates, int radiusMeters) {
+        try {
+            logger.info("Filtering recommended places within {} meters of trip places", radiusMeters);
+            // Build the API URL
+            String origins = String.join("|", tripPlaceCoordinates);
+            String destinations = String.join("|", recommendedPlaceCoordinates);
+
+            String url = DISTANCE_MATRIX_URL + "?origins=" + origins + "&destinations=" + destinations +
+                    "&mode=driving&key=" + apiKey;
+
+            // Make the API request
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-Type", "application/json");
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    entity,
+                    String.class
+            );
+
+            // Parse the API response
+            return extractPlacesWithinRadius(response.getBody(), recommendedPlaceIds, radiusMeters);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of(); // Return an empty list on failure
+        }
+    }
+
+    private List<Long> extractPlacesWithinRadius(String response, List<Long> recommendedPlaceIds, int radiusMeters) {
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode rootNode = objectMapper.readTree(response);
+            JsonNode rowsNode = rootNode.path("rows");
+
+            List<Long> placesWithinRadius = new ArrayList<>();
+
+            // Iterate over each row (one row per trip place)
+            for (int i = 0; i < rowsNode.size(); i++) {
+                JsonNode elementsNode = rowsNode.get(i).path("elements");
+
+                // Check each destination (one element per recommended place)
+                for (int j = 0; j < elementsNode.size(); j++) {
+                    JsonNode elementNode = elementsNode.get(j);
+                    if (elementNode.path("status").asText().equals("ZERO_RESULTS")) {
+                        logger.info("No valid distance for Origin {} to Destination {}", i, j);
+                        continue; // Skip to the next element
+                    }
+                    int distanceMeters = elementNode.path("distance").path("value").asInt();
+
+                    // If the distance is within the radius, add the place ID
+                    if (distanceMeters <= radiusMeters && distanceMeters > 0) {
+                        logger.info("Filtered Place: {}, Distance: {}", recommendedPlaceIds.get(j), distanceMeters);
+                        placesWithinRadius.add(recommendedPlaceIds.get(j));
+                    }
+                }
+            }
+
+            return placesWithinRadius;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return List.of(); // Return an empty list on failure
+        }
+    }
+
+
 }
