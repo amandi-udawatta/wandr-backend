@@ -1,16 +1,14 @@
 package com.wandr.backend.service;
 
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.ads.AdDTO;
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
-import com.wandr.backend.dto.statistics.RevenueDTO;
-import com.wandr.backend.dto.statistics.StatisticsDTO;
-import java.math.BigDecimal;
+import com.wandr.backend.dto.admin.CountryStatisticsDTO;
+import com.wandr.backend.dto.admin.RevenueDTO;
+import com.wandr.backend.dto.admin.StatisticsDTO;
 
 
 import java.util.List;
 
-public interface StatisticsService {
+public interface AdminStatsService {
 
     ApiResponse<StatisticsDTO> getStatistics();
     ApiResponse<List<CountryStatisticsDTO>> getUserCountryStatistics();

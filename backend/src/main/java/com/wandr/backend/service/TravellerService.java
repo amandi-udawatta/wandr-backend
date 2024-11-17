@@ -2,9 +2,8 @@ package com.wandr.backend.service;
 
 import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
+import com.wandr.backend.dto.recommendation.RecommendedPlaceDTO;
 import com.wandr.backend.dto.traveller.*;
-import com.wandr.backend.entity.Traveller;
 
 import java.util.List;
 
@@ -31,10 +30,18 @@ public interface TravellerService {
 
     TravellerDTO getById(Long travellerId);
 
+    List<RecommendedPlaceDTO> getRecommendedPlaces(Long travellerId);
+
+    ApiResponse<List<DashboardPlaceDTO>> getRecommendedPlacesForDashboard(Long travellerId);
 
 
 
 
 
 
-}
+
+
+
+
+
+    }

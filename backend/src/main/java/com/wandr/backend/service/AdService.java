@@ -13,6 +13,7 @@ public interface AdService {
     ApiResponse<Void> approveAd(Long adId);
     ApiResponse<Void> declineAd(Long adId);
 
+//    public void approvePendingAds();
 
 
 

@@ -2,8 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
-import com.wandr.backend.dto.place.PlaceDTO;
-import com.wandr.backend.dto.place.UpdatePlaceDTO;
+import com.wandr.backend.dto.recommendation.RecommendedPlaceDTO;
 import com.wandr.backend.dto.traveller.*;
 import com.wandr.backend.service.TravellerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import java.util.Map;
 public class TravellerController {
 
     private final TravellerService travellerService;
+
     private static final Logger logger = LoggerFactory.getLogger(TravellerController.class);
 
     @Autowired
@@ -102,8 +102,7 @@ public class TravellerController {
             travellerService.updateTravellerJwt(jwtToken, travellerId);
             logger.info("Successfully saved JWT token for traveller with ID: {}", travellerId);
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "JWT token saved", null));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error saving JWT token for traveller with ID {}: {}", travellerId, e.getMessage(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to save JWT token", null));
         }
@@ -118,8 +117,7 @@ public class TravellerController {
             String salt = travellerService.getSalt(userEmail);
             logger.info("Successfully retrieved salt for traveller with email: {}", userEmail);
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "Salt retrieved", salt));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error retrieving salt for traveller with email {}: {}", userEmail, e.getMessage(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
         }
@@ -165,6 +163,17 @@ public class TravellerController {
         }
     }
 
+    @GetMapping("/recommended-places/{travellerId}")
+    public ResponseEntity<ApiResponse<List<DashboardPlaceDTO>>> getRecommendedPlaces(@PathVariable Long travellerId) {
+        try {
+            ApiResponse<List<DashboardPlaceDTO>> response = travellerService.getRecommendedPlacesForDashboard(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting recommended places for traveller with ID: {}", travellerId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting recommended places for traveller"));
+        }
+    }
+
     //logout traveller
     @GetMapping("/logout/{travellerId}")
     public ResponseEntity<ApiResponse<Void>> logout(@PathVariable Long travellerId) {
@@ -174,10 +183,22 @@ public class TravellerController {
             travellerService.logout(travellerId);
             logger.info("Successfully logged out traveller with ID: {}", travellerId);
             return ResponseEntity.ok(new ApiResponse<>(true, 200, "Traveller logged out successfully"));
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Error logging out traveller with ID {}: {}", travellerId, e.getMessage(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to logout traveller"));
+        }
+    }
+
+    //fill recommended places manually
+    @GetMapping("/fill-recommended-places/{travellerId}")
+    public ResponseEntity<ApiResponse<List<RecommendedPlaceDTO>>> fillRecommendedPlaces(@PathVariable Long travellerId) {
+        logger.info("Received request to fill recommended places for traveller with ID: {}", travellerId);
+        try {
+            List<RecommendedPlaceDTO> recommendedPlaces = travellerService.getRecommendedPlaces(travellerId);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Recommended places filled successfully", recommendedPlaces));
+        } catch (Exception e) {
+            logger.error("An error occurred while filling recommended places for traveller with ID: {}", travellerId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while filling recommended places"));
         }
     }
 }

@@ -129,6 +129,62 @@ public class TravellerDAO {
     }
 
 
+    //get recommended places from traveller table
+    public List<DashboardPlaceDTO> getRecommendedPlaces(Long travellerId) {
+        String sql = "SELECT p.*, " +
+                "EXISTS (SELECT 1 FROM likes l WHERE l.place_id = p.place_id AND l.traveller_id = ?) AS liked " +
+                "FROM places p " +
+        "JOIN (" +
+            "SELECT jsonb_array_elements_text(recommended_places)::BIGINT AS place_id" +
+            "FROM travellers WHERE traveller_id = ?) r ON p.place_id = r.place_id";
+
+        return jdbcTemplate.query(sql, new Object[]{travellerId, travellerId}, (rs, rowNum) -> {
+            DashboardPlaceDTO dto = new DashboardPlaceDTO();
+            dto.setId(rs.getLong("place_id"));
+            dto.setName(rs.getString("name"));
+            dto.setDescription(rs.getString("description"));
+            dto.setLatitude(rs.getDouble("latitude"));
+            dto.setLongitude(rs.getDouble("longitude"));
+            dto.setAddress(rs.getString("address"));
+            dto.setImage(backendUrl + "/places/" + rs.getString("image"));
+
+            // Parse categories
+            String categories = rs.getString("categories");
+            if (categories != null && !categories.trim().isEmpty()) {
+                List<Long> categoryIds = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))
+                        .filter(str -> !str.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                dto.setCategories(categoryDAO.findByCategoryIds(categoryIds)
+                        .stream()
+                        .map(Category::getName)
+                        .collect(Collectors.toList()));
+            } else {
+                dto.setCategories(Collections.emptyList());
+            }
+
+            // Parse activities
+            String activities = rs.getString("activities");
+            if (activities != null && !activities.trim().isEmpty()) {
+                List<Long> activityIds = Arrays.stream(activities.replaceAll("[\\[\\]\\s]", "").split(","))
+                        .filter(str -> !str.isEmpty())
+                        .map(Long::parseLong)
+                        .collect(Collectors.toList());
+                dto.setActivities(activityDAO.findByActivityIds(activityIds)
+                        .stream()
+                        .map(Activity::getName)
+                        .collect(Collectors.toList()));
+            } else {
+                dto.setActivities(Collections.emptyList());
+            }
+
+            dto.setLiked(rs.getBoolean("liked"));
+            dto.setRating(rs.getInt("rating"));
+            return dto;
+        });
+    }
+
+
     //get favourite places
     public List<DashboardPlaceDTO> getFavouritePlaces(Long travellerId) {
         String sql = "SELECT p.*, " +
@@ -267,5 +323,17 @@ public class TravellerDAO {
             return null;
         }
     }
+
+    //save recommended places in traveller table
+    public void saveRecommendedPlaces(Long travellerId, List<Long> placeIds) {
+        String sql = "UPDATE travellers " +
+                "SET recommended_places = ?::jsonb " +
+                "WHERE traveller_id = ?";
+        jdbcTemplate.update(sql, placeIds.toString(), travellerId);
+    }
+
+
+
+
 
 }

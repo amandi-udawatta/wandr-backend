@@ -131,6 +131,15 @@ public class AdServiceImpl implements AdService {
         return adDto;
     }
 
+//    public void approvePendingAds() {
+//        int rowsUpdated = adDAO.approvePendingAds();
+//        if (rowsUpdated > 0) {
+//            System.out.println(rowsUpdated + " ad(s) updated to 'approved' status.");
+//        } else {
+//            System.out.println("No pending ads to approve.");
+//        }
+//    }
+
 
 
 }

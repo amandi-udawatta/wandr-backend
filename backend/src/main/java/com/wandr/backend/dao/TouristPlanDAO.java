@@ -2,9 +2,7 @@ package com.wandr.backend.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.wandr.backend.entity.BusinessPlan;
 import com.wandr.backend.entity.TouristPlan;
-import com.wandr.backend.mapper.BusinessPlanRowMapper;
 import com.wandr.backend.mapper.TouristPlanRowMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +18,7 @@ public class TouristPlanDAO {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
 
-    Logger logger = LoggerFactory.getLogger(StatisticsDAO.class);
+    Logger logger = LoggerFactory.getLogger(AdminStatsDAO.class);
 
     public TouristPlanDAO(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
         this.jdbcTemplate = jdbcTemplate;
