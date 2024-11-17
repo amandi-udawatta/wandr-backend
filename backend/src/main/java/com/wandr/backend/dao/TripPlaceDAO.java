@@ -77,6 +77,8 @@ public class TripPlaceDAO {
 
     public List<TripPlace> getTripPlacesByTripIdForRoute(Long tripId, String routeOrder) {
         String sql = "SELECT * FROM trip_places WHERE trip_id = ? ORDER BY " + (Objects.equals(routeOrder, "place_order") ? "place_order" : "optimized_order");
+        System.out.println("Executing SQL: " + sql + " with tripId: " + tripId);
+
         return jdbcTemplate.query(sql, new Object[]{tripId}, new TripPlaceRowMapper());
     }
 

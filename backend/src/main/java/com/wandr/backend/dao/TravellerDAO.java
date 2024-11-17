@@ -332,6 +332,11 @@ public class TravellerDAO {
         jdbcTemplate.update(sql, placeIds.toString(), travellerId);
     }
 
+    //  get recommended place ids from traveller table
+    public List<Long> getRecommendedPlaceIds(Long travellerId) {
+        String sql = "SELECT jsonb_array_elements_text(recommended_places)::BIGINT AS place_id FROM travellers WHERE traveller_id = ?";
+        return jdbcTemplate.queryForList(sql, new Object[]{travellerId}, Long.class);
+    }
 
 
 
