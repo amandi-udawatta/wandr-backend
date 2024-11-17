@@ -1,15 +1,16 @@
 package com.wandr.backend.dao;
 
-import com.wandr.backend.dto.place.Coordinates;
+import com.wandr.backend.entity.Activity;
+import com.wandr.backend.entity.Category;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.mapper.PlaceRowMapper;
+import com.wandr.backend.util.BoundingBox;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,8 +19,13 @@ public class PlaceDAO {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public PlaceDAO(JdbcTemplate jdbcTemplate) {
+    private final CategoryDAO categoryDAO;
+    private final ActivityDAO activityDAO;
+
+    public PlaceDAO(JdbcTemplate jdbcTemplate, CategoryDAO categoryDAO, ActivityDAO activityDAO) {
         this.jdbcTemplate = jdbcTemplate;
+        this.categoryDAO = categoryDAO;
+        this.activityDAO = activityDAO;
     }
 
     public Long save(Places place) {
@@ -84,6 +90,74 @@ public class PlaceDAO {
         );
     }
 
+    public List<DashboardPlaceDTO> getDashboardPlacesWithinBoundingBox(List<Long> placeIds, BoundingBox boundingBox, Long travellerId) {
+        // Convert the List<Long> to a PostgreSQL array string
+        String placeIdsArray = placeIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(",", "{", "}")); // Formats like {1,2,3}
 
+        String sql = " SELECT p.*, EXISTS (SELECT 1 FROM likes l WHERE l.place_id = p.place_id AND l.traveller_id = ?) AS liked" +
+                " FROM places p" +
+                " WHERE p.place_id = ANY(?::bigint[])" +
+                " AND p.latitude BETWEEN ? AND ?" +
+                " AND p.longitude BETWEEN ? AND ?";
+
+        return jdbcTemplate.query(
+                sql,
+                new Object[]{
+                        travellerId, // To check if the place is liked by the traveller
+                        placeIdsArray, // Pass the PostgreSQL array string
+                        boundingBox.getMinLat(),
+                        boundingBox.getMaxLat(),
+                        boundingBox.getMinLng(),
+                        boundingBox.getMaxLng()
+                },
+                (rs, rowNum) -> {
+                    DashboardPlaceDTO dto = new DashboardPlaceDTO();
+                    dto.setId(rs.getLong("place_id"));
+                    dto.setName(rs.getString("name"));
+                    dto.setDescription(rs.getString("description"));
+                    dto.setLatitude(rs.getDouble("latitude"));
+                    dto.setLongitude(rs.getDouble("longitude"));
+                    dto.setAddress(rs.getString("address"));
+                    dto.setImage(rs.getString("image"));
+
+                    // Parse categories
+                    String categories = rs.getString("categories");
+                    if (categories != null && !categories.trim().isEmpty()) {
+                        List<Long> categoryIds = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))
+                                .filter(str -> !str.isEmpty())
+                                .map(Long::parseLong)
+                                .collect(Collectors.toList());
+                        dto.setCategories(categoryDAO.findByCategoryIds(categoryIds)
+                                .stream()
+                                .map(Category::getName)
+                                .collect(Collectors.toList()));
+                    } else {
+                        dto.setCategories(Collections.emptyList());
+                    }
+
+                    // Parse activities
+                    String activities = rs.getString("activities");
+                    if (activities != null && !activities.trim().isEmpty()) {
+                        List<Long> activityIds = Arrays.stream(activities.replaceAll("[\\[\\]\\s]", "").split(","))
+                                .filter(str -> !str.isEmpty())
+                                .map(Long::parseLong)
+                                .collect(Collectors.toList());
+                        dto.setActivities(activityDAO.findByActivityIds(activityIds)
+                                .stream()
+                                .map(Activity::getName)
+                                .collect(Collectors.toList()));
+                    } else {
+                        dto.setActivities(Collections.emptyList());
+                    }
+
+                    dto.setLiked(rs.getBoolean("liked"));
+                    dto.setRating(rs.getInt("rating"));
+                    return dto;
+                }
+        );
+    }
 
 }
+

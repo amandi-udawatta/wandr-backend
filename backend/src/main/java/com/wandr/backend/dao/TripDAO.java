@@ -55,5 +55,12 @@ public class TripDAO {
         }
     }
 
+    //find traveller by trip id
+    //findTravellerById
+    public Long findTravellerById(Long tripId) {
+        String sql = "SELECT traveller_id FROM trips WHERE trip_id = ?";
+        return jdbcTemplate.queryForObject(sql, Long.class, tripId);
+    }
+
 
 }

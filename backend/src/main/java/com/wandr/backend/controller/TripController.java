@@ -2,6 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.PlaceRatingDTO;
+import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.trip.*;
 
 import com.wandr.backend.service.TripService;
@@ -121,6 +122,17 @@ public class TripController {
             logger.error("An error occurred while reordering trip with tripId: {}", tripId, e);
             return new ApiResponse<>(false, 500, "An error occurred while reordering trip");
         }
+    }
+
+    @GetMapping("/recommended-places/{tripId}")
+    public ResponseEntity<ApiResponse<List<DashboardPlaceDTO>>> getRecommendedPlacesForTrip(@PathVariable Long tripId) {
+        try {
+            ApiResponse<List<DashboardPlaceDTO>> response = tripService.getRecommendedPlacesForTrip(tripId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting recommended places: " + e.getMessage()));
+        }
+
     }
 
 }
