@@ -6,13 +6,11 @@ import com.wandr.backend.dao.TripDAO;
 import com.wandr.backend.dao.TripPlaceDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
-import com.wandr.backend.dto.recommendation.RecommendedPlaceDTO;
 import com.wandr.backend.dto.trip.*;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.entity.TripPlace;
 import com.wandr.backend.service.TripService;
-import com.wandr.backend.util.BoundingBox;
 import com.wandr.backend.util.GoogleMapsDistanceMatrixUtil;
 import com.wandr.backend.util.RouteOptimizationUtil;
 import org.springframework.http.HttpStatus;
@@ -336,65 +334,57 @@ public class TripServiceImpl implements TripService {
 
     @Override
     public ApiResponse<List<DashboardPlaceDTO>> getRecommendedPlacesForTrip(Long tripId) {
-        // Step 1: Fetch trip details and places
+        // Fetch trip details and places
         Trip trip = tripDAO.findById(tripId);
         if (trip == null) {
             logger.error("Trip not found");
             return new ApiResponse<>(false, 404, "Trip not found", null);
         }
         List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripIdForRoute(tripId, "place_order");
+
         if (tripPlaces.isEmpty()) {
             logger.error("No places in the trip to calculate radius");
             return new ApiResponse<>(false, 400, "No places in the trip to calculate radius", null);
         }
 
-        // Step 2: Calculate bounding box for the trip
-        BoundingBox boundingBox = calculateBoundingBox(tripPlaces, 5000); // 5000m = 5km
+        // Step 1: Prepare origins (trip places)
+        List<String> tripPlaceCoordinates = tripPlaces.stream()
+                .map(tp -> placeDAO.getLatLongByPlaceId(tp.getPlaceId())) // Fetch lat/lng
+                .collect(Collectors.toList());
 
-        //find traveller by trip id
+        // Step 2: Fetch recommended places for the traveler
         Long travellerId = tripDAO.findTravellerById(tripId);
-
-        // Step 3: Fetch recommended places for the traveler
         List<Long> recommendedPlaceIds = travellerDAO.getRecommendedPlaceIds(travellerId);
+
+        //if there are recommendedPlaceIds which are in the tripPlaces list, remove them from the recommendedPlaceIds list
+        recommendedPlaceIds.removeIf(tripPlace -> tripPlaces.stream().anyMatch(tp -> tp.getPlaceId().equals(tripPlace)));
 
         if (recommendedPlaceIds.isEmpty()) {
             logger.error("No recommended places found for this traveller");
             return new ApiResponse<>(false, 400, "No recommended places found for this traveller", null);
         }
 
-        // Step 4: Filter recommended places within the bounding box
-        List<DashboardPlaceDTO> filteredPlaces = placeDAO.getDashboardPlacesWithinBoundingBox(recommendedPlaceIds, boundingBox, travellerId);
+        // Step 3: Prepare destinations (recommended places)
+        List<String> recommendedPlaceCoordinates = recommendedPlaceIds.stream()
+                .map(placeDAO::getLatLongByPlaceId)
+                .collect(Collectors.toList());
 
-        // Step 5: Return filtered recommended places
+        // Step 4: Use Distance Matrix API to filter places within 5km
+        List<Long> filteredPlaceIds = googleMapsDistanceMatrixUtil.filterPlacesWithinRadius(
+                tripPlaceCoordinates, recommendedPlaceIds, recommendedPlaceCoordinates, 5000);
+
+        if (filteredPlaceIds.isEmpty()) {
+            logger.info("No recommended places within the radius");
+            return new ApiResponse<>(true, 200, "No recommended places within the radius", List.of());
+        }
+
+        // Step 5: Fetch details for filtered places
+        List<DashboardPlaceDTO> filteredPlaces = placeDAO.getDashboardPlacesByIds(filteredPlaceIds, travellerId);
+
+        // Step 6: Return filtered places as a response
         return new ApiResponse<>(true, 200, "Recommended places within the trip radius retrieved successfully", filteredPlaces);
     }
 
-
-    public BoundingBox calculateBoundingBox(List<TripPlace> tripPlaces, double radiusMeters) {
-        double minLat = Double.MAX_VALUE, maxLat = Double.MIN_VALUE;
-        double minLng = Double.MAX_VALUE, maxLng = Double.MIN_VALUE;
-
-        for (TripPlace tripPlace : tripPlaces) {
-            String latLng = placeDAO.getLatLongByPlaceId(tripPlace.getPlaceId());
-            String[] coordinates = latLng.split(",");
-            double lat = Double.parseDouble(coordinates[0]);
-            double lng = Double.parseDouble(coordinates[1]);
-
-            minLat = Math.min(minLat, lat);
-            maxLat = Math.max(maxLat, lat);
-            minLng = Math.min(minLng, lng);
-            maxLng = Math.max(maxLng, lng);
-        }
-
-        // Add buffer (radius converted to degrees)
-        double radiusDegrees = radiusMeters / 111000; // Approx. 1 degree lat = 111km
-        minLat -= radiusDegrees;
-        maxLat += radiusDegrees;
-        minLng -= radiusDegrees;
-        maxLng += radiusDegrees;
-
-        return new BoundingBox(minLat, maxLat, minLng, maxLng);
-    }
 
 
 }
