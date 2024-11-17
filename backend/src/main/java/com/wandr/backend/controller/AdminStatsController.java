@@ -1,10 +1,10 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
-import com.wandr.backend.dto.statistics.RevenueDTO;
-import com.wandr.backend.dto.statistics.StatisticsDTO;
-import com.wandr.backend.service.StatisticsService;
+import com.wandr.backend.dto.admin.CountryStatisticsDTO;
+import com.wandr.backend.dto.admin.RevenueDTO;
+import com.wandr.backend.dto.admin.StatisticsDTO;
+import com.wandr.backend.service.AdminStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/statistics")
-public class StatisticsController {
+@RequestMapping("/api/admin/statistics")
+public class AdminStatsController {
 
-    private final StatisticsService statisticsService;
-    private static final Logger logger = LoggerFactory.getLogger(StatisticsController.class);
+    private final AdminStatsService statisticsService;
+    private static final Logger logger = LoggerFactory.getLogger(AdminStatsController.class);
 
     @Autowired
-    public StatisticsController(StatisticsService statisticsService) {
+    public AdminStatsController(AdminStatsService statisticsService) {
         this.statisticsService = statisticsService;
     }
 

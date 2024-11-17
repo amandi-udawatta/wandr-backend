@@ -18,7 +18,7 @@ public class BusinessPlanDAO {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
 
-    Logger logger = LoggerFactory.getLogger(StatisticsDAO.class);
+    Logger logger = LoggerFactory.getLogger(AdminStatsDAO.class);
 
     public BusinessPlanDAO(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
         this.jdbcTemplate = jdbcTemplate;

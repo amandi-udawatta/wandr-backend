@@ -1,8 +1,6 @@
 package com.wandr.backend.dao;
 
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
-import com.wandr.backend.entity.Business;
-import com.wandr.backend.mapper.BusinessRowMapper;
+import com.wandr.backend.dto.admin.CountryStatisticsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,17 +8,16 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-public class StatisticsDAO {
+public class AdminStatsDAO {
 
     private final JdbcTemplate jdbcTemplate;
-    Logger logger = LoggerFactory.getLogger(StatisticsDAO.class);
+    Logger logger = LoggerFactory.getLogger(AdminStatsDAO.class);
 
 
 
-    public StatisticsDAO(JdbcTemplate jdbcTemplate) {
+    public AdminStatsDAO(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

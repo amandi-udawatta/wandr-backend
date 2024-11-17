@@ -70,6 +70,7 @@ public class BusinessServiceImpl implements BusinessService {
         }
 
         if (!request.getPassword().equals(businessOpt.get().getPassword())) {
+            logger.info("password entered with salt: ", request.getPassword());
             logger.error("Invalid password for business with email: {}", request.getEmail());
             return new ApiResponse<>(false, 401, "Invalid password", null);
         }

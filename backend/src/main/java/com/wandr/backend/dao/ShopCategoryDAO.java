@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 public class ShopCategoryDAO {
 
     private final JdbcTemplate jdbcTemplate;
-    Logger logger = LoggerFactory.getLogger(StatisticsDAO.class);
+    Logger logger = LoggerFactory.getLogger(AdminStatsDAO.class);
 
     public ShopCategoryDAO(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;

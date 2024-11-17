@@ -1,4 +1,4 @@
-package com.wandr.backend.dto.statistics;
+package com.wandr.backend.dto.admin;
 
 import lombok.Data;
 

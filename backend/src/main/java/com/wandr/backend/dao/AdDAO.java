@@ -8,6 +8,7 @@ import com.wandr.backend.mapper.BusinessRowMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -42,5 +43,7 @@ public class AdDAO {
         String sql = "UPDATE ads SET status = ? WHERE ad_id = ?";
         jdbcTemplate.update(sql, status, adId);
     }
+
+
 
 }

@@ -1,12 +1,11 @@
 package com.wandr.backend.service.impl;
 
-import com.wandr.backend.dao.StatisticsDAO;
+import com.wandr.backend.dao.AdminStatsDAO;
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.ads.AdDTO;
-import com.wandr.backend.dto.statistics.CountryStatisticsDTO;
-import com.wandr.backend.dto.statistics.RevenueDTO;
-import com.wandr.backend.dto.statistics.StatisticsDTO;
-import com.wandr.backend.service.StatisticsService;
+import com.wandr.backend.dto.admin.CountryStatisticsDTO;
+import com.wandr.backend.dto.admin.RevenueDTO;
+import com.wandr.backend.dto.admin.StatisticsDTO;
+import com.wandr.backend.service.AdminStatsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +15,14 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Service
-public class StatisticsServiceImpl implements StatisticsService {
+public class AdminStatsServiceImpl implements AdminStatsService {
 
-    private final StatisticsDAO statisticsDAO;
+    private final AdminStatsDAO statisticsDAO;
 
-    private static final Logger logger = LoggerFactory.getLogger(StatisticsServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(AdminStatsServiceImpl.class);
 
     @Autowired
-    public StatisticsServiceImpl(StatisticsDAO statisticsDAO) {
+    public AdminStatsServiceImpl(AdminStatsDAO statisticsDAO) {
         this.statisticsDAO = statisticsDAO;
     }
     @Override
