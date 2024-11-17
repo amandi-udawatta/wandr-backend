@@ -182,9 +182,13 @@ public class TravellerServiceImpl implements TravellerService {
         }
         if (request.getCategories() != null) {
             existingTraveller.setCategories(request.getCategories());
+            List<RecommendedPlaceDTO> recommendations = getRecommendedPlaces(travellerId);
+            saveTopRecommendedPlaceIds(travellerId, recommendations);
         }
         if (request.getActivities() != null) {
             existingTraveller.setActivities(request.getActivities());
+            List<RecommendedPlaceDTO> recommendations = getRecommendedPlaces(travellerId);
+            saveTopRecommendedPlaceIds(travellerId, recommendations);
         }
         if (request.getProfileImage() != null) {
             existingTraveller.setProfileImage(request.getProfileImage());
