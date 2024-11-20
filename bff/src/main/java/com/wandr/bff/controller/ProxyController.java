@@ -88,6 +88,7 @@ public class ProxyController {
             String encryptedPassword = PasswordUtil.encryptPassword(hashedPassword, salt);
             loginDetails.put("password", encryptedPassword);
             loginDetails.remove("role"); // Remove the role field
+            logger.info("hashed password: {}", hashedPassword);
 
             logger.info("Encrypted password: {}", encryptedPassword);
 

@@ -96,7 +96,7 @@ public class TravellerDAO {
                 "EXISTS (SELECT 1 FROM likes l WHERE l.place_id = p.place_id AND l.traveller_id = ?) AS liked " +
                 "FROM places p " +
         "JOIN (" +
-            "SELECT jsonb_array_elements_text(recommended_places)::BIGINT AS place_id" +
+            "SELECT jsonb_array_elements_text(recommended_places)::BIGINT AS place_id " +
             "FROM travellers WHERE traveller_id = ?) r ON p.place_id = r.place_id";
 
         return jdbcTemplate.query(sql,
