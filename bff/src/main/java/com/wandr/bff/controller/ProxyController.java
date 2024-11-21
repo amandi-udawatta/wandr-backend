@@ -172,37 +172,43 @@ public class ProxyController {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(signupDetails, headers);
 
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-
+// Send signup request to the backend
+            ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange( signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
             if (response.getStatusCode() == HttpStatus.OK) {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> userDetails = (Map<String, Object>) response.getBody().get("data");
-                if (userDetails != null) {
-                    Long id = Long.valueOf(userDetails.get("id").toString());
-                    String role = userDetails.get("role").toString();
-                    String email = userDetails.get("email").toString();
-                    String name = userDetails.get("name").toString();
+                ApiResponse<?> backendResponse = response.getBody();
+                if (backendResponse != null && backendResponse.isSuccess()) {
+                    // Process successful signup response
+                    Map<String, Object> userDetails = (Map<String, Object>) backendResponse.getData();
+                    if (userDetails != null) {
+                        Long id = Long.valueOf(userDetails.get("id").toString());
+                        String role = userDetails.get("role").toString();
+                        String email = userDetails.get("email").toString();
+                        String name = userDetails.get("name").toString();
 
-                    String accessToken = jwtService.createJwtToken(id, role, email, name);
-                    String refreshToken = jwtService.createRefreshToken(id, role, email, name);
+                        // Generate JWT tokens
+                        String accessToken = jwtService.createJwtToken(id, role, email, name);
+                        String refreshToken = jwtService.createRefreshToken(id, role, email, name);
 
-                    logger.info("Successfully created JWT token for user with email: {}", email);
+                        logger.info("Successfully created JWT tokens for user with email: {}", email);
 
-                    // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/save-jwt";
+                        // Save the refresh token in the backend
+                        String saveRefreshTokenUrl = coreBackendUrl + "/" + userRole.toLowerCase() + "/save-jwt";
+                        Map<String, Object> saveTokenRequestBody = Map.of("userId", id, "jwtToken", refreshToken);
+                        HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, headers);
 
-                    Map<String, Object> saveTokenRequestBody = Map.of("userId", id, "jwtToken", refreshToken);
+                        restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
 
-                    HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, headers);
-
-                    ResponseEntity<Map<String, Object>> saveTokenResponse = restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
-
-                    // Create token response
-                    TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
-                    ApiResponse<TokenResponse> tokenApiResponse = new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully signed up", tokenResponse);
-                    return ResponseEntity.ok(tokenApiResponse);
+                        // Return the tokens as part of a successful response
+                        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
+                        return ResponseEntity.ok(new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully signed up", tokenResponse));
+                    }
                 }
+
+                // Handle backend's failure response without double wrapping
+                return ResponseEntity.status(response.getStatusCode()).body(backendResponse);
             }
+
+            // If backend's response is unexpected
             return ResponseEntity.status(response.getStatusCode())
                     .body(new ApiResponse<>(false, response.getStatusCodeValue(), "Sign Up failed", response.getBody()));
         } catch (HttpClientErrorException | HttpServerErrorException e) {
@@ -214,7 +220,7 @@ public class ProxyController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         } catch (Exception e) {
-            logger.error("Unexpected error: ", e);
+            logger.error("Unexpected error during signup: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         }
@@ -280,53 +286,59 @@ public class ProxyController {
 
             HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
+// Call the backend and handle its response
+            ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange(signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
             logger.info("Response: " + response);
 
             if (response.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> userDetails = (Map<String, Object>) response.getBody().get("data");
-                if (userDetails != null) {
-                    Long t_id = Long.valueOf(userDetails.get("id").toString());
-                    String t_role = userDetails.get("role").toString();
-                    String t_email = userDetails.get("email").toString();
-                    String t_name = userDetails.get("name").toString();
+                ApiResponse<?> backendResponse = response.getBody();
+                if (backendResponse != null && backendResponse.isSuccess()) {
+                    // Handle successful response
+                    Map<String, Object> userDetails = (Map<String, Object>) backendResponse.getData();
+                    if (userDetails != null) {
+                        Long t_id = Long.valueOf(userDetails.get("id").toString());
+                        String t_role = userDetails.get("role").toString();
+                        String t_email = userDetails.get("email").toString();
+                        String t_name = userDetails.get("name").toString();
 
-                    String accessToken = jwtService.createJwtToken(t_id, t_role, t_email, t_name);
-                    String refreshToken = jwtService.createRefreshToken(t_id, t_role, t_email, t_name);
+                        String accessToken = jwtService.createJwtToken(t_id, t_role, t_email, t_name);
+                        String refreshToken = jwtService.createRefreshToken(t_id, t_role, t_email, t_name);
 
-                    logger.info("Successfully created JWT token for user with email: {}", t_email);
+                        logger.info("Successfully created JWT token for user with email: {}", t_email);
 
-                    // Send refresh token to backend for it to save
-                    String saveRefreshTokenUrl = coreBackendUrl + "/business/save-jwt";
-                    logger.info("saveRefreshTokenUrl: " + saveRefreshTokenUrl);
+                        // Send refresh token to backend for it to save
+                        String saveRefreshTokenUrl = coreBackendUrl + "/business/save-jwt";
+                        logger.info("saveRefreshTokenUrl: " + saveRefreshTokenUrl);
 
-                    HttpHeaders jsonHeaders = new HttpHeaders();
-                    jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
+                        HttpHeaders jsonHeaders = new HttpHeaders();
+                        jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-                    Map<String, Object> saveTokenRequestBody = Map.of("userId", t_id, "jwtToken", refreshToken);
-                    logger.info("saveTokenRequestBody: " + saveTokenRequestBody);
+                        Map<String, Object> saveTokenRequestBody = Map.of("userId", t_id, "jwtToken", refreshToken);
+                        logger.info("saveTokenRequestBody: " + saveTokenRequestBody);
 
-                    HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, jsonHeaders);
-                    ResponseEntity<Map<String, Object>> saveTokenResponse = restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
+                        HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, jsonHeaders);
+                        restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
 
-                    // Create token response
-                    TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
-                    ApiResponse<TokenResponse> tokenApiResponse = new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully signed up", tokenResponse);
-                    logger.info("tokenApiResponse: " + tokenApiResponse);
-                    return ResponseEntity.ok(tokenApiResponse);
+                        // Create token response
+                        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
+                        return ResponseEntity.ok(new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully signed up", tokenResponse));
+                    }
                 }
             }
-            return ResponseEntity.status(response.getStatusCode())
-                    .body(new ApiResponse<>(false, response.getStatusCodeValue(), "Sign Up failed", response.getBody()));
+            // If the backend sends an error response, pass it through
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Handle client and server errors from the backend
             logger.error("Error during signup: ", e);
             return ResponseEntity.status(e.getStatusCode())
                     .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
         } catch (NoSuchAlgorithmException e) {
+            // Handle password encryption errors
             logger.error("Encryption error during signup: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         } catch (Exception e) {
+            // Handle unexpected errors
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
