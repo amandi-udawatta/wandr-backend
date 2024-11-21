@@ -1,7 +1,11 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.product.ProductDTO;
+import com.wandr.backend.dto.product.UpdateProductDTO;
+import com.wandr.backend.dto.traveller.TravellerDTO;
+import com.wandr.backend.dto.traveller.UpdateProfileDTO;
 import com.wandr.backend.service.ProductService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,6 +84,47 @@ public class ProductController {
             logger.error("Error retrieving products for business id {}: {}", businessId, e.getMessage(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error finding the products", null));
 
+        }
+    }
+
+    @PostMapping("/update/{productId}")
+    public ResponseEntity<ApiResponse<ProductDTO>> updateProduct(@PathVariable Long productId, @RequestBody UpdateProductDTO request) {
+        logger.info("Received request to update product with ID: {}", productId);
+        try {
+            ApiResponse<ProductDTO> response = productService.updateProduct(productId, request);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while updating product for with ID: {}", productId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating product"));
+        }
+    }
+
+    @PostMapping("/update/quantity/{productId}")
+    public ResponseEntity<ApiResponse<ProductDTO>> updateProductQuantity(@PathVariable Long productId, @RequestBody Integer quantity) {
+        logger.info("Received request to update quantity by {} product with ID: {}", quantity, productId);
+        try {
+            ApiResponse<ProductDTO> response = productService.updateProductQuantity(productId, quantity);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while updating quantity by {} product for with ID: {}", quantity, productId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating quantity of the product"));
+        }
+    }
+
+    @DeleteMapping("delete/{productId}")
+    public ApiResponse<Void> deleteProduct(@PathVariable long productId) {
+        ProductDTO product = productService.getProductById(productId);
+        if (product == null) {
+            logger.error("Product with id {} not found", productId);
+            return new ApiResponse<>(false, HttpStatus.NOT_FOUND.value(), "Product not found");
+        }
+        try {
+            productService.deleteProduct(productId);
+            logger.info("Successfully deleted product with id: {}", productId);
+            return new ApiResponse<>(true, HttpStatus.OK.value(), "Product deleted successfully");
+        } catch (Exception e) {
+            logger.error("Error deleting product with id {}: {}", productId, e.getMessage(), e);
+            return new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error deleting product");
         }
     }
 
