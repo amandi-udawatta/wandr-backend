@@ -1,0 +1,36 @@
+# Build folders
+target/
+build/
+target
+
+# IDE and editor-specific files
+.idea/
+.vscode/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+
+# Environment files
+.env
+
+
+
+*.iml
+*.class
+*.project
+
+# Ignore Python cache and virtual environment
+__pycache__/
+venv/
+pycache/
+*.pyc
+*.pyo
+env/
+*.log
+*.tmp
+*.swp
+*.bak
+
+

@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  bff:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wandr-bff
+    container_name: wandr-bff
+    ports:
+      - "5081:8081"  # Host port 5081 -> Container port 8081
+    environment:
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_ACCESS_TOKEN_EXPIRY: ${JWT_ACCESS_TOKEN_EXPIRY}
+      JWT_REFRESH_TOKEN_EXPIRY: ${JWT_REFRESH_TOKEN_EXPIRY}
+      CORE_BACKEND_URL: ${CORE_BACKEND_URL}
+    depends_on:
+      - wandr-backend
+    networks:
+      - wandr_network
+
+  wandr-backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: wandr-backend
+    container_name: wandr-backend
+    ports:
+      - "5080:8080"  # Host port 5080 -> Container port 8080
+    environment:
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      SERVER_PORT: ${SERVER_PORT}
+      CORE_BACKEND_URL: ${CORE_BACKEND_URL}
+      RECOMMENDATION_API_URL: ${RECOMMENDATION_API_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY}
+    depends_on:
+      - wandr-postgres
+      - wandr-recommendation
+    networks:
+      - wandr_network
+
+  wandr-postgres:
+    image: postgres:16
+    container_name: wandr-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "5435:5432"  # Host port 5435 -> Container port 5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - wandr_network
+
+  wandr-recommendation:
+    image: wandr-recommendation
+    container_name: wandr-recommendation
+    build:
+      context: ../../wandr-recommendation-python
+    ports:
+      - "5001:8000"  # Host port 5001 -> Container port 8000
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      - wandr-postgres
+    networks:
+      - wandr_network
+
+networks:
+  wandr_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

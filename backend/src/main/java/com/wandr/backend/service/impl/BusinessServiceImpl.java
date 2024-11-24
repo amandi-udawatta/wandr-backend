@@ -30,10 +30,6 @@ public class BusinessServiceImpl implements BusinessService {
     private final ShopCategoryDAO shopCategoryDAO;
     private final BusinessPlanDAO businessPlanDAO;
 
-    @Value("${core.backend.url}")
-    private String backendUrl;
-
-
     private static final Logger logger = LoggerFactory.getLogger(BusinessServiceImpl.class);
 
     @Autowired
@@ -231,11 +227,11 @@ public class BusinessServiceImpl implements BusinessService {
         businessDTO.setWebsiteUrl(business.getWebsiteUrl());
         businessDTO.setBusinessContact(business.getBusinessContact());
         if (business.getProfileImage() != null) {
-            String profileUri = backendUrl + "/business/profile_images/" + business.getProfileImage();
+            String profileUri = "/business/profile_images/" + business.getProfileImage();
             businessDTO.setProfileImage(profileUri);
         }
         if (business.getShopImage() != null) {
-            String imageUri = backendUrl + "/business/shop_images/" + business.getShopImage();
+            String imageUri = "/business/shop_images/" + business.getShopImage();
             businessDTO.setShopImage(imageUri);
         }
         businessDTO.setStatus(business.getStatus());
