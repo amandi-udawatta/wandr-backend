@@ -4,7 +4,6 @@ import com.wandr.backend.dao.ActivityDAO;
 import com.wandr.backend.dao.PlaceDAO;
 import com.wandr.backend.dao.CategoryDAO;
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.place.UpdatePlaceDTO;
 import com.wandr.backend.entity.Category;
@@ -34,7 +33,7 @@ public class PlaceServiceImpl implements PlaceService {
     private final ActivityDAO activityDAO;
     private final RestTemplate restTemplate;
 
-    @Value("${google.api.key}")
+    @Value("${GOOGLE_API_KEY}")
     private String apiKey;
 
     @Value("${google.places.api.url}")
@@ -51,9 +50,6 @@ public class PlaceServiceImpl implements PlaceService {
 
     @Value("${openai.api.url}")
     private String openAiApiUrl;
-
-    @Value("${core.backend.url}")
-    private String backendUrl;
 
     private static final Logger logger = LoggerFactory.getLogger(PlaceServiceImpl.class);
     public PlaceServiceImpl(PlaceDAO placeDAO, CategoryDAO categoryDAO, ActivityDAO activityDAO, RestTemplate restTemplate) {
@@ -517,7 +513,7 @@ public class PlaceServiceImpl implements PlaceService {
         placeDTO.setLongitude(place.getLongitude());
         placeDTO.setAddress(place.getAddress());//set image uri as image
         if (place.getImage() != null) {
-            placeDTO.setImage(backendUrl + "/places/" + place.getImage());
+            placeDTO.setImage("/places/" + place.getImage());
         }
         List<Category> categories = categoryDAO.findByCategoryIds(place.getCategories());
         List<Activity> activities = activityDAO.findByActivityIds(place.getActivities());

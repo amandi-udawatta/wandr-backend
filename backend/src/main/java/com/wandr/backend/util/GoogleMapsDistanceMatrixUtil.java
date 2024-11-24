@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class GoogleMapsDistanceMatrixUtil {
 
-    @Value("${google.api.key}")
+    @Value("${GOOGLE_API_KEY}")
     private String apiKey;
 
     private static final String DISTANCE_MATRIX_URL = "https://maps.googleapis.com/maps/api/distancematrix/json";

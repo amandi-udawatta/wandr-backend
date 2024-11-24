@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @Component
 public class RouteOptimizationUtil {
 
-    @Value("${google.api.key}")
+    @Value("${GOOGLE_API_KEY}")
     private String apiKey;
 
     private static final String ROUTE_OPTIMIZATION_URL = "https://routes.googleapis.com/directions/v2:computeRoutes";

@@ -49,9 +49,6 @@ public class TravellerServiceImpl implements TravellerService {
     @Value("${recommendation.api.url}")
     private String recommendationApiUrl;
 
-    @Value("${core.backend.url}")
-    private String backendUrl;
-
     @Autowired
     public TravellerServiceImpl(TravellerDAO travellerDAO, PlaceDAO placeDAO, ActivityDAO activityDAO, CategoryDAO categoryDAO, PlaceService placeService) {
         this.travellerDAO = travellerDAO;
@@ -234,7 +231,7 @@ public class TravellerServiceImpl implements TravellerService {
         travellerDTO.setCountry(traveller.getCountry());
         travellerDTO.setCategories(traveller.getCategories());
         travellerDTO.setActivities(traveller.getActivities());
-        String imageUri = backendUrl + "/traveller/profile_images/" + traveller.getProfileImage();
+        String imageUri =  "/traveller/profile_images/" + traveller.getProfileImage();
         travellerDTO.setProfileImage(imageUri);
         travellerDTO.setCreatedAt(traveller.getCreatedAt());
         travellerDTO.setMembership(traveller.getMembership());

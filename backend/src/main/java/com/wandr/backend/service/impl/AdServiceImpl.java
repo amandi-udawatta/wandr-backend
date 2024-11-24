@@ -31,9 +31,6 @@ public class AdServiceImpl implements AdService {
 
     private final BusinessPlanDAO businessPlanDAO;
 
-    @Value("${core.backend.url}")
-    private String backendUrl;
-
     private static final Logger logger = LoggerFactory.getLogger(AdServiceImpl.class);
 
     @Autowired
@@ -99,7 +96,7 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
-        String imageUri = backendUrl + "/business/ads/" + ad.getImage();
+        String imageUri = "/business/ads/" + ad.getImage();
         adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
         Business business = businessDAO.findById(ad.getBusinessId());
@@ -116,7 +113,7 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
-        String imageUri = backendUrl + "/business/ads/" + ad.getImage();
+        String imageUri = "/business/ads/" + ad.getImage();
         adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
         Business business = businessDAO.findById(ad.getBusinessId());
