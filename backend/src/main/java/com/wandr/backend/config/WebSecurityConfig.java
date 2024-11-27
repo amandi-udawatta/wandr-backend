@@ -23,6 +23,7 @@ public class WebSecurityConfig {
         http.csrf().disable()
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll() // Allow access to uploads
                         .requestMatchers("/places/**").permitAll()
                         .requestMatchers("/business/**").permitAll()
                         .requestMatchers("/traveller/**").permitAll()
