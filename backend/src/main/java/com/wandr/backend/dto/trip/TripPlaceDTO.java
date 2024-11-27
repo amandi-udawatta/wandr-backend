@@ -11,3 +11,5 @@ public class TripPlaceDTO {
     private Integer optimizedOrder;
     private Integer rating;
 }
+
+//TODO: lat long daanna methanata
