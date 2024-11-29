@@ -9,6 +9,7 @@ public class UpdateProductDTO {
     private String description;
     private Integer quantity;
     private Double price;
+    private Double reservation_payment;
 //    private String image;
 }
 

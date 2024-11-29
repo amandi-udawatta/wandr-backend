@@ -20,8 +20,8 @@ public class ProductDAO {
     }
 
     public void createProduct(Product product) {
-        String sql = "INSERT INTO products (name, description, price, quantity, business_id) VALUES (?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getBusiness_id());
+        String sql = "INSERT INTO products (name, description, price, quantity, business_id, reservation_payment) VALUES (?, ?, ?, ?, ?, ?)";
+        jdbcTemplate.update(sql, product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getBusiness_id(), product.getReservation_payment());
     }
 
     public List<Product> getAllProducts() {
@@ -52,8 +52,8 @@ public class ProductDAO {
     }
 
     public void updateProduct(Product product) {
-        String sql = "UPDATE products SET name = ?, description = ?, price = ?, quantity = ?  WHERE product_id = ?";
-        jdbcTemplate.update(sql, product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getProduct_id());
+        String sql = "UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, reservation_payment = ?  WHERE product_id = ?";
+        jdbcTemplate.update(sql, product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getReservation_payment(),product.getProduct_id());
     }
 
     public void updateProductQuantity(long product_id, int quantity) {

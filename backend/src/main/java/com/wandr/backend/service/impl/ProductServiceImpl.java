@@ -33,12 +33,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ApiResponse<ProductDTO> createProduct(ProductDTO productDTO) {
+
+        double reservation_percentage = 0.3;
+
         Product newProduct = new Product();
         newProduct.setName(productDTO.getName());
         newProduct.setDescription(productDTO.getDescription());
         newProduct.setPrice(productDTO.getPrice());
         newProduct.setQuantity(productDTO.getQuantity());
         newProduct.setBusiness_id(productDTO.getBusiness_id());
+        newProduct.setReservation_payment(productDTO.getPrice()*reservation_percentage);
 //        newProduct.setImage(productDTO.getImage());
         productDAO.createProduct(newProduct);
 
@@ -83,6 +87,9 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ApiResponse<ProductDTO> updateProduct(Long product_id, UpdateProductDTO request){
         Product existingProduct = productDAO.findById(product_id);
+
+        double reservation_percentage = 0.3;
+
         if (existingProduct == null) {
             return new ApiResponse<>(false, 404, "Product not found");
         }
@@ -94,6 +101,7 @@ public class ProductServiceImpl implements ProductService {
         }
         if (request.getPrice() != null) {
             existingProduct.setPrice(request.getPrice());
+            existingProduct.setReservation_payment(request.getPrice()*reservation_percentage);
         }
         if (request.getQuantity() != null) {
             existingProduct.setQuantity(request.getQuantity());
@@ -155,6 +163,7 @@ public class ProductServiceImpl implements ProductService {
         productDTO.setQuantity(product.getQuantity());
         productDTO.setBusiness_id(product.getBusiness_id());
         productDTO.setSales_count(product.getSales_count());
+        productDTO.setReservation_payment(product.getReservation_payment());
 //        productDTO.setImage(product.getImage());
 
         return productDTO;

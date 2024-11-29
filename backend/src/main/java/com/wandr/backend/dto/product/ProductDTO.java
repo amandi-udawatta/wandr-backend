@@ -12,6 +12,8 @@ public class ProductDTO {
     private Double price;
     private Long business_id;
     private Integer sales_count;
+    private Double reservation_payment;
+
 //    private String image;
 }
 
