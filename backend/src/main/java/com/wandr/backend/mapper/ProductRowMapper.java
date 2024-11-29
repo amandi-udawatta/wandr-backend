@@ -19,6 +19,7 @@ public class ProductRowMapper implements RowMapper<Product> {
         product.setQuantity(rs.getInt("quantity"));
         product.setBusiness_id(rs.getLong("business_id"));
         product.setSales_count(rs.getInt("sales_count"));
+        product.setReservation_payment(rs.getDouble("reservation_payment"));
         return product;
     }
 }

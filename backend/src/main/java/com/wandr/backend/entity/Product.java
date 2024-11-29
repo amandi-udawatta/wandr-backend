@@ -14,4 +14,5 @@ public class Product {
     private Long business_id;
     private Integer sales_count;
     private String image;
+    private Double reservation_payment;
 }
