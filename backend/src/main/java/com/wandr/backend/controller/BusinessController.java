@@ -3,6 +3,8 @@ package com.wandr.backend.controller;
 import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.business.*;
 import com.wandr.backend.dto.BusinessRatingDTO;
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
+import com.wandr.backend.dto.traveller.TravellerDTO;
 import com.wandr.backend.service.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -210,6 +212,19 @@ public class BusinessController {
         } catch (Exception e) {
             logger.error("An error occurred while rating business with businessId: {}", rating.getBusinessId(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating business"));
+        }
+    }
+
+    //get all travellers who have chatted with the business id
+    @GetMapping("/chatted-travellers/{businessId}")
+    public ResponseEntity<ApiResponse<List<ChattedTravellerDTO>>> getChattedTravellers(@PathVariable Long businessId) {
+        logger.info("Received request to get all travellers who have chatted with business with ID: {}", businessId);
+        try {
+            ApiResponse<List<ChattedTravellerDTO>> response = businessService.getChattedTravellers(businessId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting all travellers who have chatted with business with ID: {}", businessId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all travellers who have chatted with business"));
         }
     }
 

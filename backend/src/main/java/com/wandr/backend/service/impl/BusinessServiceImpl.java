@@ -7,6 +7,8 @@ import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.UserDetailsDTO;
 import com.wandr.backend.dto.UserLoginDTO;
 import com.wandr.backend.dto.business.*;
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
+import com.wandr.backend.dto.traveller.TravellerDTO;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.enums.Role;
 import com.wandr.backend.service.BusinessService;
@@ -334,6 +336,16 @@ public class BusinessServiceImpl implements BusinessService {
         businessDAO.upsertBusinessRating(travellerId,businessId, rating);
         businessDAO.updateAverageRating(businessId);
         return new ApiResponse<>(true, 200, "Business rated successfully");
+    }
+
+    //    ApiResponse<List<TravellerDTO>> response = businessService.getChattedTravellers(businessId);
+    @Override
+    public ApiResponse<List<ChattedTravellerDTO>> getChattedTravellers(Long businessId) {
+        if (businessDAO.getChattedTravellers(businessId).isEmpty()) {
+            return new ApiResponse<>(false, 404, "No chatted travellers found", null);
+        }
+        List<ChattedTravellerDTO> travellers = businessDAO.getChattedTravellers(businessId);
+        return new ApiResponse<>(true, 200, "Chatted travellers retrieved successfully", travellers);
     }
 
 
