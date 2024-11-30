@@ -14,4 +14,5 @@ public interface ReservationService {
 //    ApiResponse<String> expireReservations();
     List<ReservationForBusinessDTO> getReservationsByProductId(int productId);
     boolean updateReservationStatus(int reservationId, String status);
+    List<ReservationForBusinessDTO> getReservationsByBusinessId(int businessId);
 }

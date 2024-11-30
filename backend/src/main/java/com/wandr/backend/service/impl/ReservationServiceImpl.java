@@ -56,4 +56,9 @@ public class ReservationServiceImpl implements ReservationService {
         return reservationDAO.updateReservationStatus(reservationId, status);
     }
 
+    @Override
+    public List<ReservationForBusinessDTO> getReservationsByBusinessId(int businessId) {
+        return reservationDAO.findReservationsByBusinessId(businessId);
+    }
+
 }

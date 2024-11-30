@@ -40,6 +40,23 @@ public class ReservationController {
         }
     }
 
+    @GetMapping("/business/{businessId}")
+    public ResponseEntity<ApiResponse<List<ReservationForBusinessDTO>>> getReservationsByBusinessId(@PathVariable int businessId) {
+        logger.info("Fetching reservations for business ID: {}", businessId);
+        try {
+            List<ReservationForBusinessDTO> reservations = reservationService.getReservationsByBusinessId(businessId);
+            if (reservations.isEmpty()) {
+                logger.info("No reservations found for business ID: {}", businessId);
+                return ResponseEntity.ok(new ApiResponse<>(true, 200, "No reservations found", null));
+            }
+            logger.info("Reservations successfully retrieved for business ID: {}", businessId);
+            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Reservations retrieved successfully", reservations));
+        } catch (Exception e) {
+            logger.error("Error retrieving reservations for business ID {}: {}", businessId, e.getMessage());
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error retrieving reservations", null));
+        }
+    }
+
     @PutMapping("/{reservationId}/status")
     public ApiResponse<Void> updateReservationStatus(@PathVariable int reservationId, @RequestBody ReservationForBusinessDTO reservation) {
         logger.info("Successfully updated reservation {}", reservation);
