@@ -18,7 +18,6 @@ public class ReservationForBusinessDTO {
     private String reservationStatus;
     private String reservationDate;
     private String expirationDate;
-
 //    private String image;
 }
 

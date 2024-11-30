@@ -57,35 +57,7 @@ public class ReservationDAO {
         WHERE p.product_id = ?
     """;
 
-        return jdbcTemplate.query(query, new Object[]{productId}, (ResultSet rs) -> {
-            List<ReservationForBusinessDTO> reservations = new ArrayList<>();
-            while (rs.next()) {
-                ReservationForBusinessDTO dto = new ReservationForBusinessDTO();
-                dto.setReservation_id(rs.getInt("reservation_id"));
-                dto.setProduct_id(rs.getLong("product_id"));
-                dto.setUnit_id(rs.getLong("unit_id"));
-                dto.setTravellerName(rs.getString("name"));
-                dto.setProductName(rs.getString("product_name"));
-                dto.setQuantity(rs.getInt("quantity"));
-                dto.setProductReservationPrice(rs.getDouble("reservation_payment"));
-                dto.setProductPrice(rs.getDouble("price"));
-                dto.setReservationStatus(rs.getString("reservation_status"));
-                dto.setReservationDate(rs.getString("reservation_date"));
-                dto.setExpirationDate(rs.getString("expiration_date"));
-
-                // Calculate total price by multiplying price and quantity
-                double reservation_price = rs.getDouble("reservation_payment");
-                int quantity = rs.getInt("quantity");
-                double totalReservationPrice = reservation_price * quantity;
-                dto.setTotalReservationPrice(totalReservationPrice); // Assuming there’s a setter for total price
-
-                double price = rs.getDouble("price");
-                dto.setTotalPrice(price*quantity);
-
-                reservations.add(dto);
-            }
-            return reservations;
-        });
+        return jdbcTemplate.query(query, new ReservationRowMapper(), productId);
     }
 
     public boolean updateReservationStatus(int reservationId, String status) {
@@ -96,7 +68,23 @@ public class ReservationDAO {
             WHERE unit_id = ?
         """;
         int rowsUpdated = jdbcTemplate.update(updateQuery, status, reservationId);
+        System.out.println("rowsUpdated = " + rowsUpdated);
         return rowsUpdated > 0;
+    }
+
+    public List<ReservationForBusinessDTO> findReservationsByBusinessId(int businessId) {
+        String query = """
+        SELECT r.reservation_id, t.name, p.name AS product_name, ru.quantity, ru.unit_id,
+               r.total_amount, ru.reservation_status, r.reservation_date, r.expiration_date, 
+               p.product_id, p.reservation_payment, p.price
+            FROM reservations r
+            JOIN reserved_units ru ON r.reservation_id = ru.reservation_id
+            JOIN products p ON ru.product_id = p.product_id
+            JOIN travellers t ON r.traveller_id = t.traveller_id
+            JOIN businesses b ON p.business_id = b.business_id
+            WHERE b.business_id = ?
+        """;
+        return jdbcTemplate.query(query, new ReservationRowMapper() ,businessId);
     }
 
 }
