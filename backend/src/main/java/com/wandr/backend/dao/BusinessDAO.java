@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wandr.backend.dto.business.PaidBusinessDTO;
 import com.wandr.backend.dto.business.PopularStoreDTO;
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
+import com.wandr.backend.dto.traveller.TravellerDTO;
 import com.wandr.backend.entity.Activity;
 import com.wandr.backend.entity.Business;
 import com.wandr.backend.entity.Category;
 import com.wandr.backend.mapper.BusinessRowMapper;
+import lombok.Data;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -40,7 +43,6 @@ public class BusinessDAO {
     }
 
 
-
     //    public class BusinessSignupDTO {
 //        private String name;
 //        private String email;
@@ -68,7 +70,7 @@ public class BusinessDAO {
             // Convert the services and languages lists to JSON strings
             String servicesJson = new ObjectMapper().writeValueAsString(business.getServices());
             String languagesJson = new ObjectMapper().writeValueAsString(business.getLanguages());
-            jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), servicesJson, business.getAddress(),business.getLatitude(),business.getLongitude(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getBusinessType(), business.getShopCategory(), business.getStatus(),business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
+            jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getPassword(), business.getDescription(), servicesJson, business.getAddress(), business.getLatitude(), business.getLongitude(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getBusinessType(), business.getShopCategory(), business.getStatus(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getJwt(), business.getSalt(), business.getCreatedAt(), business.getShopImage());
         } catch (JsonProcessingException e) {
             logger.error("Error converting services or languages to JSON", e);
             throw new RuntimeException("Failed to save business due to JSON processing error", e);
@@ -86,11 +88,12 @@ public class BusinessDAO {
             // Convert the services and languages lists to JSON strings
             String servicesJson = new ObjectMapper().writeValueAsString(business.getServices());
             String languagesJson = new ObjectMapper().writeValueAsString(business.getLanguages());
-        jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), servicesJson, business.getAddress(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(),business.getProfileImage(), business.getBusinessType(), business.getShopCategory(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getStatus(), business.getPlanId(), business.getLatitude(), business.getLongitude(), business.getBusinessId());
+            jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), servicesJson, business.getAddress(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(), business.getProfileImage(), business.getBusinessType(), business.getShopCategory(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getStatus(), business.getPlanId(), business.getLatitude(), business.getLongitude(), business.getBusinessId());
         } catch (JsonProcessingException e) {
             logger.error("Error converting services or languages to JSON", e);
             throw new RuntimeException("Failed to update profile due to JSON processing error", e);
-        }}
+        }
+    }
 
 
     public Optional<Business> findByEmail(String email) {
@@ -103,7 +106,6 @@ public class BusinessDAO {
         String sql = "UPDATE businesses SET jwt = ? WHERE business_id = ?";
         jdbcTemplate.update(sql, jwt, businessId);
     }
-
 
 
     //get all pending businesses
@@ -209,6 +211,27 @@ public class BusinessDAO {
                 "SET rating = (SELECT AVG(rating) FROM business_ratings WHERE business_id = ?) " +
                 "WHERE business_id = ?";
         jdbcTemplate.update(sql, businessId, businessId);
+    }
+
+    //get all chatted travellers
+    //get all travellers who has received or sent messages with the business id
+    public List<ChattedTravellerDTO> getChattedTravellers(Long businessId) {
+        //ChattedTravellerDTO
+//            private Long travellerId;
+//            private String name;
+//            private String email;
+//            private String profileImage;
+        String sql = "SELECT t.traveller_id, t.name, t.email, t.profile_image " +
+                "FROM travellers t " +
+                "JOIN chat_messages cm ON t.traveller_id = cm.sender_id OR t.traveller_id = cm.receiver_id " +
+                "WHERE cm.sender_id = ? OR cm.receiver_id = ? " +
+                "GROUP BY t.traveller_id";
+        return jdbcTemplate.query(sql, new Object[]{businessId, businessId}, (rs, rowNum) -> new ChattedTravellerDTO(
+                rs.getLong("traveller_id"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("profile_image")
+        ));
     }
 
 }
