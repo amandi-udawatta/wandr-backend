@@ -55,8 +55,10 @@ public class TripController {
     public ResponseEntity<ApiResponse<List<PendingTripsDTO>>> getPendingTrips(@PathVariable Long travellerId) {
         try {
             ApiResponse<List<PendingTripsDTO>> response = tripService.getPendingTrips(travellerId);
+            logger.info("Successfully got pending trips for travellerId: {}", travellerId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("An error occurred while getting pending trips: " + e.getMessage());
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting pending trips: " + e.getMessage()));
         }
     }
@@ -66,8 +68,10 @@ public class TripController {
     public ResponseEntity<ApiResponse<List<PendingTripsDTO>>> getFinalizedTrips(@PathVariable Long travellerId) {
         try {
             ApiResponse<List<PendingTripsDTO>> response = tripService.getFinalizedTrips(travellerId);
+            logger.info("Successfully got finalized trips for travellerId: {}", travellerId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("An error occurred while getting finalized trips: " + e.getMessage());
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting finalized trips: " + e.getMessage()));
         }
     }
@@ -78,6 +82,7 @@ public class TripController {
         logger.info("Received request to get ongoing trips for travellerId: {}", travellerId);
         try {
             ApiResponse<PendingTripsDTO> response = tripService.getOngoingTrip(travellerId);
+            logger.info("Successfully got ongoing trips for travellerId: {}", travellerId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.info("An error occurred while getting ongoing trips: " + e.getMessage());
@@ -90,8 +95,10 @@ public class TripController {
     public ResponseEntity<ApiResponse<Void>> ratePlace(@RequestBody PlaceRatingDTO rating) {
         try {
             ApiResponse<Void> response = tripService.ratePlace(rating.getTravellerId(), rating.getPlaceId(), rating.getRating());
+            logger.info("Successfully rated place with placeId: {}", rating.getPlaceId());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            logger.error("An error occurred while rating place with placeId: {}", rating.getPlaceId(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating place: " + e.getMessage()));
         }
     }
