@@ -20,6 +20,7 @@ public class TripPlaceDAO {
     }
 
     public void addTripPlace(TripPlace tripPlace) {
+        //get place latitude longitude from places table
         String sql = "INSERT INTO trip_places (trip_id, place_id, title, description, place_order, visited, image_name) VALUES (?, ?, ?, ?, ?, ?, ?)";
         jdbcTemplate.update(sql, tripPlace.getTripId(), tripPlace.getPlaceId(), tripPlace.getTitle(), tripPlace.getDescription(), tripPlace.getPlaceOrder(), tripPlace.getVisited(), tripPlace.getImageName());
     }
@@ -36,7 +37,7 @@ public class TripPlaceDAO {
     }
 
     public List<TripPlaceDTO> getTripPlaces(Long tripId) {
-        String sql = "SELECT tp.trip_place_id, tp.place_id, tp.title, tp.place_order, tp.optimized_order, tp.rating, p.name AS place_name " +
+        String sql = "SELECT tp.trip_place_id, tp.place_id, tp.title, tp.place_order, tp.optimized_order, tp.rating, p.name AS place_name, p.latitude, p.longitude " +
                 "FROM trip_places tp JOIN places p ON tp.place_id = p.place_id WHERE tp.trip_id = ? ORDER BY tp.place_order ASC";
 
         return jdbcTemplate.query(sql, new Object[]{tripId}, (rs, rowNum) -> {
@@ -44,6 +45,8 @@ public class TripPlaceDAO {
             tripPlaceDTO.setTripPlaceId(rs.getLong("trip_place_id"));
             tripPlaceDTO.setPlaceId(rs.getLong("place_id"));
             tripPlaceDTO.setTitle(rs.getString("title"));
+            tripPlaceDTO.setLatitude(rs.getDouble("latitude"));
+            tripPlaceDTO.setLongitude(rs.getDouble("longitude"));
             tripPlaceDTO.setPlaceOrder(rs.getInt("place_order"));
             tripPlaceDTO.setOptimizedOrder(rs.getInt("optimized_order"));
             tripPlaceDTO.setRating(rs.getInt("rating"));
