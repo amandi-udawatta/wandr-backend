@@ -77,6 +77,8 @@ public class BusinessDAO {
         }
     }
 
+
+
     public Business findById(Long businessId) {
         String sql = "SELECT * FROM businesses WHERE business_id = ?";
         return jdbcTemplate.queryForObject(sql, new Object[]{businessId}, new BusinessRowMapper());

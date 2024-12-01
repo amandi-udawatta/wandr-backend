@@ -61,6 +61,19 @@ public class BusinessController {
         }
     }
 
+    //get businessby id
+    @GetMapping("/{businessId}")
+    public ResponseEntity<ApiResponse<BusinessDTO>> getBusinessById(@PathVariable Long businessId) {
+        logger.info("Received request to get business with ID: {}", businessId);
+        try {
+            ApiResponse<BusinessDTO> response = businessService.getBusinessById(businessId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting business with ID: {}", businessId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting business"));
+        }
+    }
+
 
     @PutMapping(value = "/update", consumes = {"multipart/form-data"})
     public ResponseEntity<ApiResponse<String>> updateProfile( @RequestParam(value = "businessId") Long businessId, @ModelAttribute UpdateProfileDTO request, @RequestParam(value = "shopImage", required = false) MultipartFile shopImage, @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {

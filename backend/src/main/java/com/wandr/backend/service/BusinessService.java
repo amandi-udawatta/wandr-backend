@@ -14,6 +14,7 @@ public interface BusinessService {
 
     ApiResponse<UserDetailsDTO> loginBusiness(UserLoginDTO request);
     ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFileName, Integer shopCategory);
+    ApiResponse<BusinessDTO> getBusinessById(Long businessId);
     ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request, MultipartFile shopImageFileName, MultipartFile profileImageFileName);
     ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId);
     ApiResponse<String> getSalt(String email);
