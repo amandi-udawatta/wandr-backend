@@ -2,6 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.product.ProductDTO;
+import com.wandr.backend.dto.reservation.CreateReservationRequestDTO;
 import com.wandr.backend.dto.reservation.ReservationForBusinessDTO;
 import com.wandr.backend.service.ReservationService;
 import org.springframework.http.HttpStatus;
@@ -23,17 +24,17 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
-//    @PostMapping("/create")
-//    public ResponseEntity<ApiResponse<Void>> createReservation(@RequestParam Long travellerId, @RequestBody List<Long> cartItemIds) {
-//        try{
-//            ApiResponse<Void> response = reservationService.createReservation(travellerId, cartItemIds);
-//            logger.info("Successfully received reservation request for traveller ID: {}", travellerId);
-//            return ResponseEntity.ok(response);
-//        } catch (Exception e) {
-//            logger.error("Error receiving reservation request for traveller ID: {}", travellerId, e);
-//            return ResponseEntity.ok(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error receiving reservation request", null));
-//        }
-//    }
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<Void>> createReservation(@RequestBody CreateReservationRequestDTO request) {
+        try{
+            ApiResponse<Void> response = reservationService.createReservation(request);
+            logger.info("Successfully received reservation request for traveller ID: {}", request.getTravellerId());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error receiving reservation request for traveller ID: {}", request.getTravellerId(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error receiving reservation request", null));
+        }
+    }
 
     @GetMapping("/product/{productId}")
     public ResponseEntity<ApiResponse<List<ReservationForBusinessDTO>>>  getReservationsByProductId(@PathVariable int productId) {
