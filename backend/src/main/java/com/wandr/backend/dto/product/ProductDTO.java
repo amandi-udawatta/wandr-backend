@@ -2,6 +2,8 @@ package com.wandr.backend.dto.product;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 
 @Data
 public class ProductDTO {
@@ -9,10 +11,11 @@ public class ProductDTO {
     private String name;
     private String description;
     private Integer quantity;
-    private Double price;
+    private BigDecimal price;
     private Long business_id;
     private Integer sales_count;
-    private Double reservation_payment;
+    private BigDecimal reservation_payment;
+    private String image;
 
 //    private String image;
 }

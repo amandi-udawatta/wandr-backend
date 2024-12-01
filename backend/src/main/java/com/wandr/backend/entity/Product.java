@@ -1,6 +1,8 @@
 package com.wandr.backend.entity;
 
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 
@@ -10,9 +12,9 @@ public class Product {
     private String name;
     private String description;
     private Integer quantity;
-    private Double price;
+    private BigDecimal price;
     private Long business_id;
     private Integer sales_count;
     private String image;
-    private Double reservation_payment;
+    private BigDecimal reservation_payment;
 }

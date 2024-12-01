@@ -62,3 +62,6 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
 }
+
+
+//TODO: Create reservation method, reservations per traveller, purchased items per traveller

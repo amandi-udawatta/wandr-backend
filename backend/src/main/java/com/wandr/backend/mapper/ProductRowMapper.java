@@ -14,12 +14,12 @@ public class ProductRowMapper implements RowMapper<Product> {
         product.setProduct_id(rs.getLong("product_id"));
         product.setName(rs.getString("name"));
         product.setDescription(rs.getString("description"));
-        product.setPrice(rs.getDouble("price"));
-//        product.setImage(rs.getString("image"));
+        product.setPrice(rs.getBigDecimal("price"));
+        product.setImage(rs.getString("image"));
         product.setQuantity(rs.getInt("quantity"));
         product.setBusiness_id(rs.getLong("business_id"));
         product.setSales_count(rs.getInt("sales_count"));
-        product.setReservation_payment(rs.getDouble("reservation_payment"));
+        product.setReservation_payment(rs.getBigDecimal("reservation_payment"));
         return product;
     }
 }

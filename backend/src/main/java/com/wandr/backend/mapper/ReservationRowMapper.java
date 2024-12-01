@@ -3,6 +3,7 @@ package com.wandr.backend.mapper;
 import com.wandr.backend.dto.reservation.ReservationForBusinessDTO;
 import org.springframework.jdbc.core.RowMapper;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -16,20 +17,20 @@ public class ReservationRowMapper implements RowMapper<ReservationForBusinessDTO
         dto.setTravellerName(rs.getString("name"));
         dto.setProductName(rs.getString("product_name"));
         dto.setQuantity(rs.getInt("quantity"));
-        dto.setProductReservationPrice(rs.getDouble("reservation_payment"));
-        dto.setProductPrice(rs.getDouble("price"));
+        dto.setProductReservationPrice(rs.getBigDecimal("reservation_payment"));
+        dto.setProductPrice(rs.getBigDecimal("price"));
         dto.setReservationStatus(rs.getString("reservation_status"));
         dto.setReservationDate(rs.getString("reservation_date"));
         dto.setExpirationDate(rs.getString("expiration_date"));
 
         // Calculate total reservation price
-        double reservationPayment = rs.getDouble("reservation_payment");
+        BigDecimal reservationPayment = rs.getBigDecimal("reservation_payment");
         int quantity = rs.getInt("quantity");
-        dto.setTotalReservationPrice(reservationPayment * quantity);
+        dto.setTotalReservationPrice(reservationPayment.multiply(BigDecimal.valueOf(quantity)));
 
         // Calculate total price using product price
-        double productPrice = rs.getDouble("price");
-        dto.setTotalPrice(productPrice * quantity);
+        BigDecimal productPrice = rs.getBigDecimal("price");
+        dto.setTotalPrice(productPrice.multiply(BigDecimal.valueOf(quantity)));
 
         return dto;
     }

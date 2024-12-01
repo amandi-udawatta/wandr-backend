@@ -1,16 +1,15 @@
 package com.wandr.backend.entity;
 
-import lombok.Data;
-
-import java.sql.Timestamp;
+import lombok.*;
 
 @Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class CartItem {
-    private long cartItemId;
-    private long cartId;
-    private long productId;
-    private long unitId;
-    private Timestamp addedAt;
+    private Long cartItemId;
+    private Long travellerId;
+    private Long productId;
     private Integer quantity;
 }
-

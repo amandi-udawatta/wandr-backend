@@ -42,7 +42,9 @@ public class ProductServiceImpl implements ProductService {
         newProduct.setPrice(productDTO.getPrice());
         newProduct.setQuantity(productDTO.getQuantity());
         newProduct.setBusiness_id(productDTO.getBusiness_id());
-        newProduct.setReservation_payment(productDTO.getPrice()*reservation_percentage);
+        // Convert the reservation percentage and price to BigDecimal
+        BigDecimal reservationPercentage = BigDecimal.valueOf(reservation_percentage);
+        newProduct.setReservation_payment(productDTO.getPrice().multiply(reservationPercentage));
 //        newProduct.setImage(productDTO.getImage());
         productDAO.createProduct(newProduct);
 
@@ -101,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
         }
         if (request.getPrice() != null) {
             existingProduct.setPrice(request.getPrice());
-            existingProduct.setReservation_payment(request.getPrice()*reservation_percentage);
+            existingProduct.setReservation_payment(request.getPrice().multiply(BigDecimal.valueOf(reservation_percentage)));
         }
         if (request.getQuantity() != null) {
             existingProduct.setQuantity(request.getQuantity());

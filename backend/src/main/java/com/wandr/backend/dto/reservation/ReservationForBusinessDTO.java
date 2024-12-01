@@ -2,6 +2,8 @@ package com.wandr.backend.dto.reservation;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 
 @Data
 public class ReservationForBusinessDTO {
@@ -11,10 +13,10 @@ public class ReservationForBusinessDTO {
     private long product_id;
     private String productName;
     private int quantity; //number of products reserved
-    private double productReservationPrice;
-    private double productPrice;
-    private double totalReservationPrice;
-    private double totalPrice;
+    private BigDecimal productReservationPrice;
+    private BigDecimal productPrice;
+    private BigDecimal totalReservationPrice;
+    private BigDecimal totalPrice;
     private String reservationStatus;
     private String reservationDate;
     private String expirationDate;
