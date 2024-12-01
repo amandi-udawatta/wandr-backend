@@ -342,7 +342,7 @@ public class TravellerServiceImpl implements TravellerService {
         dto.setLatitude(place.getLatitude());
         dto.setLongitude(place.getLongitude());
         dto.setAddress(place.getAddress());
-        dto.setImage(place.getImage());
+        dto.setImage("/places/" + place.getImage());
         dto.setCategories(place.getCategories());
         dto.setActivities(place.getActivities());
         dto.setLiked(placeDAO.isPlaceLikedByTraveller(place.getId(), travellerId));

@@ -23,6 +23,18 @@ public class ReservationController {
         this.reservationService = reservationService;
     }
 
+//    @PostMapping("/create")
+//    public ResponseEntity<ApiResponse<Void>> createReservation(@RequestParam Long travellerId, @RequestBody List<Long> cartItemIds) {
+//        try{
+//            ApiResponse<Void> response = reservationService.createReservation(travellerId, cartItemIds);
+//            logger.info("Successfully received reservation request for traveller ID: {}", travellerId);
+//            return ResponseEntity.ok(response);
+//        } catch (Exception e) {
+//            logger.error("Error receiving reservation request for traveller ID: {}", travellerId, e);
+//            return ResponseEntity.ok(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error receiving reservation request", null));
+//        }
+//    }
+
     @GetMapping("/product/{productId}")
     public ResponseEntity<ApiResponse<List<ReservationForBusinessDTO>>>  getReservationsByProductId(@PathVariable int productId) {
         logger.info("Successfully received reservations by product id {}", productId);
