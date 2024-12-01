@@ -9,7 +9,11 @@ import java.nio.file.Paths;
 import java.util.Random;
 
 public class FileUploadUtil {
-    private static final String UPLOAD_DIR = "uploads/";
+    //for local testing
+//    private static final String UPLOAD_DIR = "uploads/";
+    //for server testing
+    private static final String UPLOAD_DIR = "app/uploads/";
+
     //get file, directory and created at timestamp for this method
 public static String saveFile(MultipartFile file, String directory) {
     long createdAt = System.currentTimeMillis();
@@ -30,7 +34,7 @@ public static String saveFile(MultipartFile file, String directory) {
             }
 
             // Construct the new filename
-            String fileName = randomNumber +  + createdAt + fileExtension;
+            String fileName = randomNumber + createdAt + fileExtension;
 
             // Ensure the uploads directory exists
             Path uploadPath = Paths.get(UPLOAD_DIR + directory);
