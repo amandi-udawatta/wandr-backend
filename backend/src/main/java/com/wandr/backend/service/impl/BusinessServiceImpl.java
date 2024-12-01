@@ -40,6 +40,19 @@ public class BusinessServiceImpl implements BusinessService {
         this.shopCategoryDAO = shopCategoryDAO;
         this.businessPlanDAO = businessPlanDAO;
     }
+
+    //get business by id
+
+    @Override
+    public ApiResponse<BusinessDTO> getBusinessById(Long businessId) {
+        Business business = businessDAO.findById(businessId);
+        if (business == null) {
+            return new ApiResponse<>(false, 404, "Business not found", null);
+        }
+        BusinessDTO businessDTO = businessToBusinessDto(business);
+        return new ApiResponse<>(true, 200, "Business retrieved successfully", businessDTO);
+    }
+
     @Override
     public ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId) {
         businessDAO.updateBusinessJwt(jwt, businessId);
