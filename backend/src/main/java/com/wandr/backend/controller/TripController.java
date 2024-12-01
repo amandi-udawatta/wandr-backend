@@ -104,10 +104,10 @@ public class TripController {
     }
 
     @PostMapping("/shortest-route")
-    public ApiResponse<Void> optimizeTrip(@RequestBody ShortestTripDTO shortestTripDTO) {
+    public ApiResponse<TripTimeDTO> optimizeTrip(@RequestBody ShortestTripDTO shortestTripDTO) {
         logger.info("Received request to optimize trip with tripId: {}", shortestTripDTO.getTripId());
         try {
-            ApiResponse<Void> response = tripService.optimizeTrip(shortestTripDTO.getTripId(), shortestTripDTO.getStartLat(), shortestTripDTO.getStartLng(), shortestTripDTO.getEndLat(), shortestTripDTO.getEndLng());
+            ApiResponse<TripTimeDTO> response = tripService.optimizeTrip(shortestTripDTO.getTripId(), shortestTripDTO.getStartLat(), shortestTripDTO.getStartLng(), shortestTripDTO.getEndLat(), shortestTripDTO.getEndLng());
             logger.info("Successfully optimized trip with tripId: {}", shortestTripDTO.getTripId());
             return response;
         } catch (Exception e) {
@@ -118,11 +118,11 @@ public class TripController {
 
     //change the current trip place orders with new orders given
     @PostMapping("/reorder-route")
-    public ApiResponse<Void> reorderTrip(@RequestBody ReorderTripDTO reorderedTrip) {
+    public ApiResponse<TripTimeDTO> reorderTrip(@RequestBody ReorderTripDTO reorderedTrip) {
         Long tripId = reorderedTrip.getTripId();
         logger.info("Received request to reorder trip with tripId: {}", tripId);
         try {
-            ApiResponse<Void> response = tripService.reorderTrip(tripId, reorderedTrip.getPlaceList(), reorderedTrip.getStartLat(), reorderedTrip.getStartLng(), reorderedTrip.getEndLat(), reorderedTrip.getEndLng());
+            ApiResponse<TripTimeDTO> response = tripService.reorderTrip(tripId, reorderedTrip.getPlaceList(), reorderedTrip.getStartLat(), reorderedTrip.getStartLng(), reorderedTrip.getEndLat(), reorderedTrip.getEndLng());
             logger.info("Successfully reordered trip with tripId: {}", tripId);
             return response;
         } catch (Exception e) {

@@ -26,6 +26,8 @@ import org.springframework.web.client.RestTemplate;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import com.wandr.bff.util.PasswordUtil;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,15 +76,17 @@ public class ProxyController {
             ResponseEntity<ApiResponse<String>> saltResponse = restTemplate.exchange(getSaltUrl, HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
             logger.info("Salt response: {}", saltResponse);
 
-            // Check if the response is valid and contains the salt
-            if (saltResponse.getBody() == null || !saltResponse.getBody().isSuccess() || saltResponse.getBody().getData() == null) {
-                logger.error("Failed to retrieve salt for user: {}", userEmail);
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new ApiResponse<>(false, 401, "Please register first to login", null));
+
+            ApiResponse<String> saltApiResponse = saltResponse.getBody();
+            if (saltApiResponse == null || !saltApiResponse.isSuccess()) {
+                // Forward error message from backend (e.g., pending or rejected)
+                return ResponseEntity.status(saltApiResponse != null ? saltApiResponse.getStatusCode() : 500)
+                        .body(new ApiResponse<>(false, saltApiResponse != null ? saltApiResponse.getStatusCode() : 500,
+                                saltApiResponse != null ? saltApiResponse.getMessage() : "Unexpected error", null));
             }
 
-            String salt = saltResponse.getBody().getData();
-            logger.info("Salt: {}", salt);
+            String salt = saltApiResponse.getData();
+            logger.info("Salt retrieved successfully: {}", salt);
 
             // Encrypt the password with the retrieved salt
             String encryptedPassword = PasswordUtil.encryptPassword(hashedPassword, salt);
@@ -272,11 +276,9 @@ public class ProxyController {
             if (languages != null) body.add("languages", String.join(",", languages));
             body.add("businessContact", businessContact);
             body.add("businessType", businessType);
-
             if (shopCategory != null){
                 body.add("shopCategory", shopCategory);
             }
-
             body.add("shopImage", new ByteArrayResource(shopImage.getBytes()) {
                 @Override
                 public String getFilename() {
@@ -286,46 +288,22 @@ public class ProxyController {
 
             HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
 
-// Call the backend and handle its response
-            ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange(signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
-            logger.info("Response: " + response);
+            // Call the backend and forward its response
+            ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange(
+                    signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
+
+            logger.info("Response from backend: {}", response);
 
             if (response.getStatusCode() == HttpStatus.OK) {
                 ApiResponse<?> backendResponse = response.getBody();
                 if (backendResponse != null && backendResponse.isSuccess()) {
-                    // Handle successful response
-                    Map<String, Object> userDetails = (Map<String, Object>) backendResponse.getData();
-                    if (userDetails != null) {
-                        Long t_id = Long.valueOf(userDetails.get("id").toString());
-                        String t_role = userDetails.get("role").toString();
-                        String t_email = userDetails.get("email").toString();
-                        String t_name = userDetails.get("name").toString();
-
-                        String accessToken = jwtService.createJwtToken(t_id, t_role, t_email, t_name);
-                        String refreshToken = jwtService.createRefreshToken(t_id, t_role, t_email, t_name);
-
-                        logger.info("Successfully created JWT token for user with email: {}", t_email);
-
-                        // Send refresh token to backend for it to save
-                        String saveRefreshTokenUrl = coreBackendUrl + "/api/business/save-jwt";
-                        logger.info("saveRefreshTokenUrl: " + saveRefreshTokenUrl);
-
-                        HttpHeaders jsonHeaders = new HttpHeaders();
-                        jsonHeaders.setContentType(MediaType.APPLICATION_JSON);
-
-                        Map<String, Object> saveTokenRequestBody = Map.of("userId", t_id, "jwtToken", refreshToken);
-                        logger.info("saveTokenRequestBody: " + saveTokenRequestBody);
-
-                        HttpEntity<Map<String, Object>> saveTokenEntity = new HttpEntity<>(saveTokenRequestBody, jsonHeaders);
-                        restTemplate.exchange(saveRefreshTokenUrl, HttpMethod.POST, saveTokenEntity, new ParameterizedTypeReference<>() {});
-
-                        // Create token response
-                        TokenResponse tokenResponse = new TokenResponse(accessToken, refreshToken);
-                        return ResponseEntity.ok(new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully signed up", tokenResponse));
-                    }
+                    // Inform the user that the account is pending approval
+                    return ResponseEntity.ok(new ApiResponse<>(true, 201,
+                            "Registration successful. Please wait for admin approval.", null));
                 }
             }
-            // If the backend sends an error response, pass it through
+
+            // If the backend sends an error response, forward it
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             // Handle client and server errors from the backend

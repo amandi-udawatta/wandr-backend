@@ -18,6 +18,8 @@ public class PendingTripsDTO {
     private Integer optimizedTime;
     private Integer orderedDistance;
     private Integer optimizedDistance;
+    private Integer estimatedOrderedTime;
+    private Integer estimatedOptimizedTime;
     private double start_lat;
     private double start_lng;
     private double end_lat;

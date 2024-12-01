@@ -47,14 +47,33 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public String getSalt(String email){
+    public ApiResponse<String> getSalt(String email) {
         Optional<Business> businessOpt = businessDAO.findByEmail(email);
         if (businessOpt.isEmpty()) {
-            return null;
+            return new ApiResponse<>(false, 404, "Business not found");
         }
+
         Business business = businessOpt.get();
-        return business.getSalt();
+        String status = business.getStatus();
+
+        // Handle the status check logic
+        if ("pending".equalsIgnoreCase(status)) {
+            logger.warn("Business with email {} is still under review", email);
+            return new ApiResponse<>(false, 403, "Your account is pending approval. Please wait for admin review.");
+        }
+        if ("rejected".equalsIgnoreCase(status)) {
+            logger.warn("Business with email {} has been rejected", email);
+            return new ApiResponse<>(false, 403, "Your account has been rejected. Contact support for more details.");
+        }
+        if (!"approved".equalsIgnoreCase(status)) {
+            logger.error("Unexpected status '{}' for business with email {}", status, email);
+            return new ApiResponse<>(false, 500, "An unexpected error occurred. Contact support.");
+        }
+
+        // If approved, return the salt
+        return new ApiResponse<>(true, 200, "Salt retrieved successfully", business.getSalt());
     }
+
 
 
     @Override
@@ -67,14 +86,25 @@ public class BusinessServiceImpl implements BusinessService {
             return new ApiResponse<>(false, 401, "Invalid email", null);
         }
 
-        if (!request.getPassword().equals(businessOpt.get().getPassword())) {
-            logger.info("password entered with salt: ", request.getPassword());
+        Business business = businessOpt.get();
+        // Check if the business is approved
+        String status = business.getStatus();
+        if ("pending".equalsIgnoreCase(status)) {
+            logger.warn("Business with email {} is still under review", request.getEmail());
+            return new ApiResponse<>(false, 403, "Your account is pending approval. Please wait for admin review.", null);
+        }
+
+        if ("rejected".equalsIgnoreCase(status)) {
+            logger.warn("Business with email {} has been rejected", request.getEmail());
+            return new ApiResponse<>(false, 403, "Your account has been rejected. Contact support for more details.", null);
+        }
+
+        // Validate the password
+        if (!request.getPassword().equals(business.getPassword())) {
             logger.error("Invalid password for business with email: {}", request.getEmail());
             return new ApiResponse<>(false, 401, "Invalid password", null);
         }
 
-
-        Business business = businessOpt.get();
         UserDetailsDTO userDetails = new UserDetailsDTO(
                 business.getBusinessId(),
                 business.getEmail(),

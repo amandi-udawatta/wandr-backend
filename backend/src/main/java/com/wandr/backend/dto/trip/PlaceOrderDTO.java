@@ -6,4 +6,5 @@ import lombok.Data;
 public class PlaceOrderDTO {
     private Long tripPlaceId;
     private Integer order;
+
 }
