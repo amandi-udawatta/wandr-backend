@@ -13,6 +13,7 @@ import com.wandr.backend.entity.TripPlace;
 import com.wandr.backend.service.TripService;
 import com.wandr.backend.util.GoogleMapsDistanceMatrixUtil;
 import com.wandr.backend.util.RouteOptimizationUtil;
+import org.springframework.data.relational.core.sql.In;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,6 +119,11 @@ public class TripServiceImpl implements TripService {
 
             for (Trip trip : trips) {
                 List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(trip.getTripId());
+
+                // Calculate estimated times
+                int estimatedOrderedTime = calculateEstimatedTime(trip.getOrderedTime(), tripPlaces.size());
+                int estimatedOptimizedTime = calculateEstimatedTime(trip.getOptimizedTime(), tripPlaces.size());
+
                 PendingTripsDTO pendingTripDTO = new PendingTripsDTO();
                 pendingTripDTO.setTripId(trip.getTripId());
                 pendingTripDTO.setName(trip.getName());
@@ -129,6 +135,8 @@ public class TripServiceImpl implements TripService {
                 pendingTripDTO.setOptimizedTime(trip.getOptimizedTime());
                 pendingTripDTO.setOrderedDistance(trip.getOrderedDistance());
                 pendingTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+                pendingTripDTO.setEstimatedOrderedTime(estimatedOrderedTime);
+                pendingTripDTO.setEstimatedOptimizedTime(estimatedOptimizedTime);
                 pendingTripDTO.setStart_lat(trip.getStart_lat());
                 pendingTripDTO.setStart_lng(trip.getStart_lng());
                 pendingTripDTO.setEnd_lat(trip.getEnd_lat());
@@ -155,6 +163,11 @@ public class TripServiceImpl implements TripService {
 
             for (Trip trip : trips) {
                 List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(trip.getTripId());
+
+                // Calculate estimated times
+                int estimatedOrderedTime = calculateEstimatedTime(trip.getOrderedTime(), tripPlaces.size());
+                int estimatedOptimizedTime = calculateEstimatedTime(trip.getOptimizedTime(), tripPlaces.size());
+
                 PendingTripsDTO finalizedTripDTO = new PendingTripsDTO();
                 finalizedTripDTO.setTripId(trip.getTripId());
                 finalizedTripDTO.setName(trip.getName());
@@ -166,6 +179,8 @@ public class TripServiceImpl implements TripService {
                 finalizedTripDTO.setOptimizedTime(trip.getOptimizedTime());
                 finalizedTripDTO.setOrderedDistance(trip.getOrderedDistance());
                 finalizedTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+                finalizedTripDTO.setEstimatedOrderedTime(estimatedOrderedTime);
+                finalizedTripDTO.setEstimatedOptimizedTime(estimatedOptimizedTime);
                 finalizedTripDTO.setStart_lat(trip.getStart_lat());
                 finalizedTripDTO.setStart_lng(trip.getStart_lng());
                 finalizedTripDTO.setEnd_lat(trip.getEnd_lat());
@@ -189,6 +204,11 @@ public class TripServiceImpl implements TripService {
                 return new ApiResponse<>(false, 404, "No ongoing trip found");
             }
             List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(trip.getTripId());
+
+            // Calculate estimated times
+            int estimatedOrderedTime = calculateEstimatedTime(trip.getOrderedTime(), tripPlaces.size());
+            int estimatedOptimizedTime = calculateEstimatedTime(trip.getOptimizedTime(), tripPlaces.size());
+
             PendingTripsDTO ongoingTripDTO = new PendingTripsDTO();
             ongoingTripDTO.setTripId(trip.getTripId());
             ongoingTripDTO.setName(trip.getName());
@@ -200,6 +220,8 @@ public class TripServiceImpl implements TripService {
             ongoingTripDTO.setOptimizedTime(trip.getOptimizedTime());
             ongoingTripDTO.setOrderedDistance(trip.getOrderedDistance());
             ongoingTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+            ongoingTripDTO.setEstimatedOrderedTime(estimatedOrderedTime);
+            ongoingTripDTO.setEstimatedOptimizedTime(estimatedOptimizedTime);
             ongoingTripDTO.setStart_lat(trip.getStart_lat());
             ongoingTripDTO.setStart_lng(trip.getStart_lng());
             ongoingTripDTO.setEnd_lat(trip.getEnd_lat());
@@ -228,8 +250,7 @@ public class TripServiceImpl implements TripService {
 
     //reorder places
     @Override
-    public ApiResponse<Void> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList,double startLat, double startLng, double endLat, double endLng ) {
-
+    public ApiResponse<TripTimeDTO> reorderTrip(Long tripId, List<PlaceOrderDTO> placeOrderList,double startLat, double startLng, double endLat, double endLng ) {
         try {
             for (PlaceOrderDTO placeOrder : placeOrderList) {
                 TripPlace tripPlace = tripPlaceDAO.findByTripPlaceId(placeOrder.getTripPlaceId());
@@ -247,15 +268,24 @@ public class TripServiceImpl implements TripService {
             Trip trip = tripDAO.findById(tripId);
             trip.setOrderedDistance(result.getTotalDistance());
             trip.setOrderedTime(result.getTotalDuration());
-            trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
             trip.setStart_lat(startLat);
             trip.setStart_lng(startLng);
             trip.setEnd_lat(endLat);
             trip.setEnd_lng(endLng);
+            trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
             tripDAO.update(trip);
 
-            return new ApiResponse<>(true, 200, "Trip reordered successfully");
+            TripTimeDTO tripTimeDTO = new TripTimeDTO();
+            tripTimeDTO.setTripId(tripId);
+            tripTimeDTO.setOrderedTime(result.getTotalDuration());
+            tripTimeDTO.setOrderedDistance(result.getTotalDistance());
+            tripTimeDTO.setOptimizedTime(trip.getOptimizedTime());
+            tripTimeDTO.setOptimizedDistance(trip.getOptimizedDistance());
+            tripTimeDTO.setEstimatedOrderedTime(calculateEstimatedTime(result.getTotalDuration(), placeOrderList.size()));
+            tripTimeDTO.setEstimatedOptimizedTime(calculateEstimatedTime(trip.getOptimizedTime(), placeOrderList.size()));
+
+            return new ApiResponse<>(true, 200, "Trip reordered successfully", tripTimeDTO);
         } catch (Exception e) {
             return new ApiResponse<>(false, 500, "An error occurred while reordering trip places");
         }
@@ -282,7 +312,7 @@ public class TripServiceImpl implements TripService {
 
     @Transactional
     @Override
-    public ApiResponse<Void> optimizeTrip(Long tripId, double startLat, double startLng, double endLat, double endLng) {
+    public ApiResponse<TripTimeDTO> optimizeTrip(Long tripId, double startLat, double startLng, double endLat, double endLng) {
         String routeOrder = "optimized_order";
         List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripIdForRoute(tripId, routeOrder);
 
@@ -295,6 +325,8 @@ public class TripServiceImpl implements TripService {
                 .collect(Collectors.toList());
 
         List<Integer> optimizedOrder = routeOptimizationUtil.optimizeRoute(origin, destination, intermediates);
+
+        System.out.println("Optimized order: " + optimizedOrder);
 
         // Update the trip places in the database based on the optimized order
         for (int i = 0; i < optimizedOrder.size(); i++) {
@@ -316,7 +348,17 @@ public class TripServiceImpl implements TripService {
 
         tripDAO.update(trip);
 
-        return new ApiResponse<>(true, 200, "Trip optimized successfully");
+        TripTimeDTO tripTimeDTO = new TripTimeDTO();
+        tripTimeDTO.setTripId(tripId);
+        tripTimeDTO.setOrderedTime(trip.getOrderedTime());
+        tripTimeDTO.setOrderedDistance(trip.getOrderedDistance());
+        tripTimeDTO.setOptimizedTime(result.getTotalDuration());
+        tripTimeDTO.setOptimizedDistance(result.getTotalDistance());
+        tripTimeDTO.setEstimatedOrderedTime(calculateEstimatedTime(trip.getOrderedTime(), tripPlaces.size()));
+        tripTimeDTO.setEstimatedOptimizedTime(calculateEstimatedTime(result.getTotalDuration(), tripPlaces.size()));
+
+
+        return new ApiResponse<>(true, 200, "Trip optimized successfully", tripTimeDTO);
     }
 
     private String formatLatLong(double latitude, double longitude) {
@@ -384,6 +426,18 @@ public class TripServiceImpl implements TripService {
         // Step 6: Return filtered places as a response
         return new ApiResponse<>(true, 200, "Recommended places within the trip radius retrieved successfully", filteredPlaces);
     }
+
+    //create estimated time for the trip with 6 hours to eat, 2 hours for meals, 2 hours for other activities, per day and 2 hours per trip place in the trip
+    private int calculateEstimatedTime(int travelTimeMinutes, int numberOfPlaces) {
+        // Static time per day (in minutes)
+        int dailyStaticTimeMinutes = (6 + 2 + 2) * 60; // 6 hours eating + 2 hours meals + 2 hours activities
+        // Time for each trip place (in minutes)
+        int tripPlaceTimeMinutes = numberOfPlaces * 120; // 2 hours per place
+
+        // Total estimated time
+        return travelTimeMinutes + dailyStaticTimeMinutes + tripPlaceTimeMinutes;
+    }
+
 
 
 

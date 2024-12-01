@@ -5,6 +5,7 @@ import com.wandr.backend.dto.business.*;
 import com.wandr.backend.dto.BusinessRatingDTO;
 import com.wandr.backend.dto.chat.ChattedTravellerDTO;
 import com.wandr.backend.dto.traveller.TravellerDTO;
+import com.wandr.backend.entity.Business;
 import com.wandr.backend.service.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/business")
@@ -95,17 +97,12 @@ public class BusinessController {
         logger.info("Received request to get salt for business with email: {}", userEmail);
 
         try {
-            String salt = businessService.getSalt(userEmail);
-            if(salt == null) {
-                logger.error("No business found with email: {}", userEmail);
-                return ResponseEntity.ok(new ApiResponse<>(false, 404, "Business not found", null));
-            }
-            logger.info("Successfully retrieved salt for business with email: {}", userEmail);
-            return ResponseEntity.ok(new ApiResponse<>(true, 200, "Salt retrieved", salt));
+            ApiResponse<String> response = businessService.getSalt(userEmail);
+            return ResponseEntity.ok(response);
         }
         catch (Exception e) {
-            logger.error("Error retrieving salt for business with email {}: {}", userEmail, e.getMessage(), e);
-            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to retrieve salt", null));
+            logger.error("Error getting salt for business with email {}: {}", userEmail, e.getMessage(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Failed to get salt", null));
         }
     }
 
