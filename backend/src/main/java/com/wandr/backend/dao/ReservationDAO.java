@@ -1,6 +1,8 @@
 package com.wandr.backend.dao;
 
 import com.wandr.backend.dto.reservation.ReservationForBusinessDTO;
+import com.wandr.backend.entity.Reservation;
+import com.wandr.backend.entity.ReservedUnit;
 import com.wandr.backend.mapper.ReservationRowMapper;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,6 +22,18 @@ public class ReservationDAO {
     private final Logger logger = LoggerFactory.getLogger(ReservationDAO.class);
     public ReservationDAO(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    public Long createReservation(Reservation reservation) {
+        String sql = "INSERT INTO reservations (traveller_id, reservation_date, expiration_date, total_amount) VALUES (?, ?, ?, ?) RETURNING reservation_id";
+        return jdbcTemplate.queryForObject(sql, Long.class, reservation.getTravellerId(), reservation.getReservationDate(),
+                reservation.getExpirationDate(), reservation.getTotalAmount());
+    }
+
+    public void createReservedUnit(ReservedUnit reservedUnit) {
+        String sql = "INSERT INTO reserved_units (product_id, reservation_id, quantity, reservation_status) VALUES (?, ?, ?, ?)";
+        jdbcTemplate.update(sql, reservedUnit.getProductId(), reservedUnit.getReservationId(),
+                reservedUnit.getQuantity(), reservedUnit.getReservationStatus());
     }
 
     // Update reservation status to 'Purchased'

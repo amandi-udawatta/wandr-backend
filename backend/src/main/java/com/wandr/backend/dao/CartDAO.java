@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 public class CartDAO {
@@ -56,6 +57,17 @@ public class CartDAO {
         jdbcTemplate.update(sql, cartItemId);
     }
 
+    public List<CartItem> getCartItemsByIds(List<Long> cartItemIds) {
+        String sql = "SELECT * FROM cart_items WHERE cart_item_id IN (" +
+                cartItemIds.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
+        return jdbcTemplate.query(sql, new CartItemRowMapper());
+    }
+
+    public void deleteCartItems(List<Long> cartItemIds) {
+        String sql = "DELETE FROM cart_items WHERE cart_item_id IN (" +
+                cartItemIds.stream().map(String::valueOf).collect(Collectors.joining(", ")) + ")";
+        jdbcTemplate.update(sql);
+    }
 
 }
 
