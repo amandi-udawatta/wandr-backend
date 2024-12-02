@@ -27,6 +27,11 @@ public interface TripService {
 
     ApiResponse<List<DashboardPlaceDTO>> getRecommendedPlacesForTrip(Long tripId);
 
+    ApiResponse<Void> finalizeTrip(Long tripId);
+
+    ApiResponse<Void> deleteTripPlace(Long tripPlaceId);
 
 
-    }
+
+
+}

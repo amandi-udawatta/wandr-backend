@@ -1,6 +1,7 @@
 package com.wandr.backend.dao;
 
 
+import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.mapper.TripRowMapper;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -61,6 +62,7 @@ public class TripDAO {
         String sql = "SELECT traveller_id FROM trips WHERE trip_id = ?";
         return jdbcTemplate.queryForObject(sql, Long.class, tripId);
     }
+
 
 
 }

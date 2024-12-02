@@ -490,6 +490,48 @@ public class TripServiceImpl implements TripService {
     }
 
 
+    @Override
+    public ApiResponse<Void> finalizeTrip(Long tripId) {
+        try {
+            Trip trip = tripDAO.findById(tripId);
+            if (trip == null) {
+                return new ApiResponse<>(false, 404, "Trip not found");
+            }
+            trip.setStatus("finalized");
+            tripDAO.update(trip);
+            return new ApiResponse<>(true, 200, "Trip finalized successfully");
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while finalizing trip");
+        }
+    }
+
+    @Override
+    @Transactional
+    public ApiResponse<Void> deleteTripPlace(Long tripPlaceId) {
+        try {
+            // Validate if the trip place exists in the trip
+            TripPlace tripPlace = tripPlaceDAO.findByTripPlaceId(tripPlaceId);
+            if (tripPlace == null) {
+                return new ApiResponse<>(false, 404, "Trip place not found.");
+            }
+            // Delete the trip place
+            tripPlaceDAO.deleteTripPlace(tripPlaceId);
+
+            //GET TRIP BY TRIP PLACE
+            Trip trip = tripDAO.findById(tripPlace.getTripId());
+
+            // Update trip's updated_at timestamp
+            trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            tripDAO.update(trip);
+
+            return new ApiResponse<>(true, 200, "Trip place deleted successfully.");
+        } catch (Exception e) {
+            logger.error("Error deleting trip place with ID {}", tripPlaceId, e);
+            return new ApiResponse<>(false, 500, "An error occurred while deleting trip place.");
+        }
+    }
+
+
 
 
 

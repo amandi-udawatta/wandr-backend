@@ -159,4 +159,30 @@ public class TripController {
 
     }
 
+    //finalize a trip
+    @GetMapping("/finalize/{tripId}")
+    public ResponseEntity<ApiResponse<Void>> finalizeTrip(@PathVariable Long tripId) {
+        logger.info("Received request to finalize trip with tripId: {}", tripId);
+        try {
+            ApiResponse<Void> response = tripService.finalizeTrip(tripId);
+            logger.info("Successfully finalized trip with tripId: {}", tripId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while finalizing trip with tripId: {}", tripId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while finalizing trip"));
+        }
+    }
+
+    @DeleteMapping("/deleteTripPlace/{tripPlaceId}")
+    public ResponseEntity<ApiResponse<Void>> deleteTripPlace( @PathVariable Long tripPlaceId) {
+        try {
+            ApiResponse<Void> response = tripService.deleteTripPlace(tripPlaceId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error deleting trip place with ID {}", tripPlaceId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error deleting trip place."));
+        }
+    }
+
+
 }
