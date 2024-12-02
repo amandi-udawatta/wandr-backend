@@ -106,7 +106,44 @@ public class TripServiceImpl implements TripService {
         return new ApiResponse<>(true, 200, "Place added to trip successfully");
     }
 
+//    ApiResponse<PendingTripsDTO> response = tripService.getTripById(tripId);
+    //get trip details by id
+    @Override
+    public ApiResponse<PendingTripsDTO> getTripById(Long tripId){
+        try{
+            Trip trip = tripDAO.findById(tripId);
+            if(trip == null){
+                return new ApiResponse<>(false, 404, "Trip not found");
+            }
 
+            List<TripPlaceDTO> tripPlaces = tripPlaceDAO.getTripPlaces(tripId);
+            // Calculate estimated times
+            int estimatedOrderedTime = calculateEstimatedTime(trip.getOrderedTime(), tripPlaces.size());
+            int estimatedOptimizedTime = calculateEstimatedTime(trip.getOptimizedTime(), tripPlaces.size());
+
+            PendingTripsDTO pendingTripDTO = new PendingTripsDTO();
+            pendingTripDTO.setTripId(trip.getTripId());
+            pendingTripDTO.setName(trip.getName());
+            pendingTripDTO.setRouteType(trip.getRouteType());
+            pendingTripDTO.setCreatedAt(trip.getCreatedAt());
+            pendingTripDTO.setUpdatedAt(trip.getUpdatedAt());
+            pendingTripDTO.setTripPlaces(tripPlaces);
+            pendingTripDTO.setOrderedTime(trip.getOrderedTime());
+            pendingTripDTO.setOptimizedTime(trip.getOptimizedTime());
+            pendingTripDTO.setOrderedDistance(trip.getOrderedDistance());
+            pendingTripDTO.setOptimizedDistance(trip.getOptimizedDistance());
+            pendingTripDTO.setEstimatedOrderedTime(estimatedOrderedTime);
+            pendingTripDTO.setEstimatedOptimizedTime(estimatedOptimizedTime);
+            pendingTripDTO.setStart_lat(trip.getStart_lat());
+            pendingTripDTO.setStart_lng(trip.getStart_lng());
+            pendingTripDTO.setEnd_lat(trip.getEnd_lat());
+            pendingTripDTO.setEnd_lng(trip.getEnd_lng());
+
+            return new ApiResponse<>(true, 200, "Trip retrieved successfully", pendingTripDTO);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, 500, "An error occurred while retrieving trip");
+        }
+    }
 
     @Override
     public ApiResponse<List<PendingTripsDTO>> getPendingTrips(Long travellerId) {
@@ -272,6 +309,7 @@ public class TripServiceImpl implements TripService {
             trip.setStart_lng(startLng);
             trip.setEnd_lat(endLat);
             trip.setEnd_lng(endLng);
+            trip.setRouteType(2L);
             trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
             tripDAO.update(trip);
@@ -344,6 +382,7 @@ public class TripServiceImpl implements TripService {
         trip.setStart_lng(startLng);
         trip.setEnd_lat(endLat);
         trip.setEnd_lng(endLng);
+        trip.setRouteType(1L);
         trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
 
         tripDAO.update(trip);
@@ -428,15 +467,28 @@ public class TripServiceImpl implements TripService {
     }
 
     //create estimated time for the trip with 6 hours to eat, 2 hours for meals, 2 hours for other activities, per day and 2 hours per trip place in the trip
-    private int calculateEstimatedTime(int travelTimeMinutes, int numberOfPlaces) {
-        // Static time per day (in minutes)
-        int dailyStaticTimeMinutes = (6 + 2 + 2) * 60; // 6 hours eating + 2 hours meals + 2 hours activities
-        // Time for each trip place (in minutes)
-        int tripPlaceTimeMinutes = numberOfPlaces * 120; // 2 hours per place
+    private int calculateEstimatedTime(int travelTimeSeconds, int numberOfPlaces) {
+        // Static time per day (in seconds)
+        int dailyStaticTimeSeconds = (6 + 2 + 2) * 3600; // 6 hours eating + 2 hours sleeping + 2 hours activities
+        // Time for each trip place (in seconds)
+        int tripPlaceTimeSeconds = (numberOfPlaces * 2) * 3600; // 2 hours per place
+
+        // Calculate the number of days needed
+        int totalTripTimeSeconds = travelTimeSeconds + tripPlaceTimeSeconds;
+        int secondsPerDay = 24 * 3600;
+
+        // Calculate days required
+        int numberOfDays = (int) Math.ceil((double) totalTripTimeSeconds / secondsPerDay);
+        logger.info("Number of days needed for trip without sleep,eat or other: {}", numberOfDays);
+
+        // Add daily static time for each day
+        int totalStaticTimeSeconds = numberOfDays * dailyStaticTimeSeconds;
+        logger.info("Total time went to eat sleep and other activities in the trip: {}", totalStaticTimeSeconds);
 
         // Total estimated time
-        return travelTimeMinutes + dailyStaticTimeMinutes + tripPlaceTimeMinutes;
+        return totalTripTimeSeconds + totalStaticTimeSeconds;
     }
+
 
 
 

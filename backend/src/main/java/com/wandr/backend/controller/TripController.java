@@ -50,6 +50,23 @@ public class TripController {
 
     }
 
+    //get trip by trip id
+    @GetMapping("/{tripId}")
+    public ResponseEntity<ApiResponse<PendingTripsDTO>> getTripById(@PathVariable Long tripId) {
+        logger.info("Received request to get trip with tripId: {}", tripId);
+        try {
+            ApiResponse<PendingTripsDTO> response = tripService.getTripById(tripId);
+            logger.info("Successfully retrieved the trip with tripId: {}", tripId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while retrieving the trip with tripId: {}", tripId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting trip"));
+        }
+    }
+
+
+
+
     //get pending trips of the traveller
     @GetMapping("/pending/{travellerId}")
     public ResponseEntity<ApiResponse<List<PendingTripsDTO>>> getPendingTrips(@PathVariable Long travellerId) {

@@ -10,6 +10,9 @@ public interface TripService {
     ApiResponse<Void> createTrip(CreateTripDTO createTripDTO);
     ApiResponse<Void> addPlaceToTrip(AddPlaceToTripDTO addPlaceToTripDTO);
 
+    ApiResponse<PendingTripsDTO> getTripById(Long tripId);
+
+
     ApiResponse<List<PendingTripsDTO>> getPendingTrips(Long travellerId);
 
     ApiResponse<List<PendingTripsDTO>> getFinalizedTrips(Long travellerId);

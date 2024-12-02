@@ -45,7 +45,7 @@ public class ProductServiceImpl implements ProductService {
         // Convert the reservation percentage and price to BigDecimal
         BigDecimal reservationPercentage = BigDecimal.valueOf(reservation_percentage);
         newProduct.setReservation_payment(productDTO.getPrice().multiply(reservationPercentage));
-//        newProduct.setImage(productDTO.getImage());
+        newProduct.setImage(productDTO.getImage());
         productDAO.createProduct(newProduct);
 
         ProductDTO product = productToProductDTO(newProduct);
@@ -166,7 +166,7 @@ public class ProductServiceImpl implements ProductService {
         productDTO.setBusiness_id(product.getBusiness_id());
         productDTO.setSales_count(product.getSales_count());
         productDTO.setReservation_payment(product.getReservation_payment());
-//        productDTO.setImage(product.getImage());
+        productDTO.setImage(product.getImage());
 
         return productDTO;
     }

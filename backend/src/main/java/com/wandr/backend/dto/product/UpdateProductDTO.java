@@ -12,7 +12,7 @@ public class UpdateProductDTO {
     private Integer quantity;
     private BigDecimal price;
     private BigDecimal reservation_payment;
-//    private String image;
+    private String image;
 }
 
 

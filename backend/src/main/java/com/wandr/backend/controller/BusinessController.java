@@ -75,7 +75,7 @@ public class BusinessController {
     }
 
 
-    @PutMapping(value = "/update", consumes = {"multipart/form-data"})
+    @PutMapping("/update")
     public ResponseEntity<ApiResponse<String>> updateProfile( @RequestParam(value = "businessId") Long businessId, @ModelAttribute UpdateProfileDTO request, @RequestParam(value = "shopImage", required = false) MultipartFile shopImage, @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {
         logger.info("Received request to update profile for business with ID: {}", businessId);
         try {
