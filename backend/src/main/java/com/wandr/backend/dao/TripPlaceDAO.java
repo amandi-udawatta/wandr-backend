@@ -84,4 +84,9 @@ public class TripPlaceDAO {
         return jdbcTemplate.query(sql, new Object[]{tripId}, new TripPlaceRowMapper());
     }
 
+    public void deleteTripPlace(Long tripPlaceId) {
+        String sql = "DELETE FROM trip_places WHERE trip_place_id = ?";
+        jdbcTemplate.update(sql, tripPlaceId);
+    }
+
 }
