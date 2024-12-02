@@ -8,10 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,6 +25,16 @@ public class AdController {
     }
 
 
+    //create ad
+    @PostMapping("/create")
+    public ResponseEntity<ApiResponse<Void>> createAd(@RequestBody AdDTO request){
+        try{
+            return ResponseEntity.ok(adService.createAd(request));
+        } catch (Exception e) {
+            logger.error("Error approving advertisement of business id: {}", request.getBusinessId(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error creating advertisement", null));
+        }
+    }
 
     @GetMapping("/pending")
     public ResponseEntity<ApiResponse<List<AdDTO>>> getPendingAds() {
@@ -69,6 +76,18 @@ public class AdController {
         } catch (Exception e) {
             logger.error("Error declining advertisement with id: {}", adId, e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error declining advertisement", null));
+        }
+    }
+
+    //delete ad
+    @DeleteMapping("/delete/{adId}")
+    public ResponseEntity<ApiResponse<Void>> deleteAd(@PathVariable Long adId) {
+        try{
+            logger.info("Received request to delete ad with id: {}", adId);
+            return ResponseEntity.ok(adService.deleteAd(adId));
+        } catch (Exception e) {
+            logger.error("Error deleting advertisement with id: {}", adId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error deleting advertisement", null));
         }
     }
 

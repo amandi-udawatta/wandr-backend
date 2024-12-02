@@ -44,6 +44,33 @@ public class AdDAO {
         jdbcTemplate.update(sql, status, adId);
     }
 
+    public void saveAd(Ad ad) {
+        String sql = "INSERT INTO ads (business_id, title, description, image, requested_date, status) VALUES (?, ?, ?, ?, ?, 'pending')";
+        jdbcTemplate.update(sql, ad.getBusinessId(), ad.getTitle(), ad.getDescription(), ad.getImage(), ad.getRequestedDate());
+    }
+
+    public List<Ad> findAdsByBusinessId(Long businessId) {
+        String sql = "SELECT * FROM ads WHERE business_id = ?";
+        return jdbcTemplate.query(sql, new AdRowMapper(), businessId);
+    }
+
+    public long countAdsByBusinessId(Long businessId) {
+        String sql = "SELECT COUNT(*) FROM ads WHERE business_id = ? AND status = 'approved'";
+        try {
+            return jdbcTemplate.queryForObject(sql, new Object[]{businessId}, Long.class);
+        } catch (Exception e) {
+            logger.error("Error counting ads for business id: {}", businessId, e);
+            return 0;
+        }
+    }
+
+    //delete ad
+    public void deleteAd(Long adId) {
+        String sql = "DELETE FROM ads WHERE ad_id = ?";
+        jdbcTemplate.update(sql, adId);
+    }
+
+
 
 
 }

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -41,12 +42,62 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
+    public ApiResponse<Void> createAd(AdDTO request) {
+        try {
+            // Fetch the business details
+            Business business = businessDAO.findById(request.getBusinessId());
+            if (business == null) {
+                return new ApiResponse<>(false, 404, "Business not found", null);
+            }
+
+            // Ensure the business has a valid plan
+            if (business.getPlanId() == null) {
+                return new ApiResponse<>(false, 400, "No plan associated with this business. Please purchase a plan to proceed.", null);
+            }
+
+            int planId = business.getPlanId(); // Fetch the plan ID
+            long currentAdCount = adDAO.countAdsByBusinessId(request.getBusinessId()); // Count existing ads
+            logger.info("Current ad count: {}", currentAdCount);
+            logger.info("Plan ID: {}", planId);
+
+            // Plan-specific validations
+            if (planId == 1 && currentAdCount >= 1) {
+                logger.info("plan 1 exceeded: {}", currentAdCount);
+                // Plan ID 1: Basic (1 Ad Slot)
+                return new ApiResponse<>(false, 400, "Your plan allows only 1 ad. Upgrade your plan to create more ads.", null);
+            } else if (planId == 2 && currentAdCount >= 3) {
+                // Plan ID 2: Standard (3 Ad Slots)
+                return new ApiResponse<>(false, 400, "Your plan allows up to 3 ads. Upgrade your plan to create more ads.", null);
+            }
+            // Plan ID 3 (Premium): No restriction, no additional checks needed
+
+            // Create the ad
+            Ad ad = new Ad();
+            ad.setBusinessId(request.getBusinessId());
+            ad.setTitle(request.getTitle());
+            ad.setDescription(request.getDescription());
+            ad.setImage(request.getImage());
+            ad.setRequestedDate(Timestamp.valueOf(LocalDateTime.now()));
+            ad.setStatus("pending"); // Default status for new ads
+
+            adDAO.saveAd(ad); // Save the ad to the database
+
+            return new ApiResponse<>(true, 201, "Ad created successfully", null);
+
+        } catch (Exception e) {
+            logger.error("Error creating ad for business ID: {}", request.getBusinessId(), e);
+            return new ApiResponse<>(false, 500, "An error occurred while creating the ad.", null);
+        }
+    }
+
+
+    @Override
     public ApiResponse<List<AdDTO>> getPendingAds() {
         //if no pending ads, return null
         if (adDAO.getPendingAds().isEmpty()) {
             return new ApiResponse<>(false, 404, "No pending advertisements found", null);
         }
-        List<Ad> pendingAds =  adDAO.getPendingAds();
+        List<Ad> pendingAds = adDAO.getPendingAds();
         List<AdDTO> pendingAdsDTO = new ArrayList<>();
         for (Ad ad : pendingAds) {
             pendingAdsDTO.add(adToAdDTO(ad));
@@ -60,7 +111,7 @@ public class AdServiceImpl implements AdService {
         if (adDAO.getApprovedAds().isEmpty()) {
             return new ApiResponse<>(false, 404, "No approved advertisements found", null);
         }
-        List<Ad> approvedAds =  adDAO.getApprovedAds();
+        List<Ad> approvedAds = adDAO.getApprovedAds();
         List<ApprovedAdDTO> approvedAdDTO = new ArrayList<>();
         for (Ad ad : approvedAds) {
             approvedAdDTO.add(adToApprovedAdDTO(ad));
@@ -137,8 +188,12 @@ public class AdServiceImpl implements AdService {
 //        }
 //    }
 
-    //TODO: Implement create, update ad methods
-
-
-
+    public ApiResponse<Void> deleteAd(Long adId) {
+        Ad ad = adDAO.findById(adId);
+        if (ad == null) {
+            return new ApiResponse<>(false, 404, "Ad not found", null);
+        }
+        adDAO.deleteAd(adId);
+        return new ApiResponse<>(true, 200, "Ad deleted successfully", null);
+    }
 }
