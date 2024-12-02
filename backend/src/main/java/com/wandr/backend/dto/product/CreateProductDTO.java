@@ -18,9 +18,8 @@ public class CreateProductDTO {
     private Integer quantity;
     private BigDecimal price;
     private Long businessId;
-    private MultipartFile image;
+    private String image;
 
-//    private String image;
 }
 
 

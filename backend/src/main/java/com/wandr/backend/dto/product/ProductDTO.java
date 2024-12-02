@@ -16,8 +16,6 @@ public class ProductDTO {
     private Integer sales_count;
     private BigDecimal reservation_payment;
     private String image;
-
-//    private String image;
 }
 
 
