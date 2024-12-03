@@ -1,5 +1,6 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.entity.Payment;
 import com.wandr.backend.entity.Product;
 import com.wandr.backend.mapper.ProductRowMapper;
 import org.slf4j.Logger;
@@ -21,55 +22,18 @@ public class PaymentDAO {
 
     private static final Logger logger = LoggerFactory.getLogger(PaymentDAO.class);
 
-    public void createProduct(Product product) {
-        String sql = "INSERT INTO products (name, description, price, quantity, business_id, reservation_payment, image) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getBusiness_id(), product.getReservation_payment(), product.getImage());
+    public void save(Payment payment) {
+        String sql = "INSERT INTO payments (ref_id, type, user_id, role, date, amount, payment_status, plan_id) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        jdbcTemplate.update(sql,
+                payment.getRefId(),
+                payment.getType(),
+                payment.getUserId(),
+                payment.getRole(),
+                payment.getDate(),
+                payment.getAmount(),
+                payment.getPaymentStatus(),
+                payment.getPlanId());
     }
-
-    public List<Product> getAllProducts() {
-        String sql = "SELECT * FROM products";
-        try {
-            return jdbcTemplate.query(sql, new ProductRowMapper());
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    public Product findById(Long product_id) {
-        String sql = "SELECT * FROM products WHERE product_id =?";
-        try {
-            return jdbcTemplate.queryForObject(sql, new ProductRowMapper(), product_id);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    public List<Product> findAllByBusinessId(long business_id){
-        String sql = "SELECT * FROM products WHERE business_id =?";
-        try {
-            return jdbcTemplate.query(sql, new ProductRowMapper(), business_id);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
-    }
-
-    public void updateProduct(Product product) {
-        String sql = "UPDATE products SET name = ?, description = ?, price = ?, quantity = ?, reservation_payment = ?, image = ?  WHERE product_id = ?";
-        jdbcTemplate.update(sql, product.getName(), product.getDescription(), product.getPrice(), product.getQuantity(), product.getReservation_payment(), product.getImage(), product.getProduct_id());
-    }
-
-    public void updateProductQuantity(long product_id, int quantity) {
-        String sql = "UPDATE products SET quantity = ? WHERE product_id = ?";
-        jdbcTemplate.update(sql, quantity, product_id);
-    }
-
-    public void deleteProduct(long product_id) {
-        String sql = "DELETE FROM products WHERE product_id = ?";
-        jdbcTemplate.update(sql, product_id);
-    }
-
-
-
-
-
 }

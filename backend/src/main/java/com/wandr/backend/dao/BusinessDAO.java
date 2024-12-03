@@ -44,26 +44,13 @@ public class BusinessDAO {
     }
 
 
-    //    public class BusinessSignupDTO {
-//        private String name;
-//        private String email;
-//        private String password;
-//        private String description;
-//        private String services;
-//        private String address;
-//        private String languages;
-//        private String websiteUrl;
-//        private String businessContact;
-//        private String shopImage;
-//        private Integer businessType;
-//        private Integer shopCategory;
-//        private String ownerName;
-//        private String ownerContact;
-//        private String ownerNic;
-//        private String jwt;
-//        private String salt;
-//
-//    }
+//                businessDAO.updateStatus(paymentRequestDTO.getUserId(), paymentRequestDTO.getPlanId());
+
+    public void updateStatus(Long businessId, Long planId) {
+        String sql = "UPDATE businesses SET status = 'paid', plan_id = ?, paid_date = CURRENT_TIMESTAMP, plan_end_date = CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE business_id = ?";
+        jdbcTemplate.update(sql, planId, businessId);
+    }
+
 
     public void save(Business business) {
         String sql = "INSERT INTO businesses (name, email, password, description, services, address,latitude,longitude, languages, website_url, business_contact, business_type,shop_category, status, owner_name, owner_contact, owner_nic, jwt, salt, created_at, shop_image) VALUES (?, ?, ?, ?, ?::jsonb, ?,?,?, ?::jsonb, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?,?)";
