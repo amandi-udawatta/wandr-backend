@@ -36,28 +36,51 @@ public class ReservationDAO {
                 reservedUnit.getQuantity(), reservedUnit.getReservationStatus());
     }
 
-    // Update reservation status to 'Purchased'
-    public int markReservationAsPurchased(Long reservationId) {
-        String sql = "UPDATE reservations SET status = 'Purchased' WHERE reservation_id = ? AND status = 'Active'";
-        return jdbcTemplate.update(sql, reservationId);
-    }
-
-    // Update reservation status to 'Expired' for expired reservations
+    // Mark reserved units as expired and restore product count
     public int markExpiredReservations(LocalDateTime currentTime) {
-        String sql = "UPDATE reservations SET status = 'Expired' " +
-                "WHERE status = 'Active' AND expiration_date < ?";
-        return jdbcTemplate.update(sql, currentTime);
+        // Fetch all reserved units that are still active but expired
+        String fetchExpiredUnitsQuery = """
+        SELECT ru.unit_id, ru.product_id, ru.quantity
+        FROM reserved_units ru
+        JOIN reservations r ON ru.reservation_id = r.reservation_id
+        WHERE ru.reservation_status = 'active' 
+          AND r.expiration_date < ?
+    """;
+
+        List<ReservedUnit> expiredUnits = jdbcTemplate.query(fetchExpiredUnitsQuery, (rs, rowNum) -> {
+            ReservedUnit unit = new ReservedUnit();
+            unit.setUnitId(rs.getLong("unit_id"));
+            unit.setProductId(rs.getLong("product_id"));
+            unit.setQuantity(rs.getInt("quantity"));
+            return unit;
+        }, currentTime);
+
+        // Mark these reserved units as expired
+        String updateReservedUnitsQuery = """
+        UPDATE reserved_units 
+        SET reservation_status = 'expired' 
+        WHERE unit_id = ?
+    """;
+
+        // Restore product quantities for expired units
+        String updateProductQuantityQuery = """
+        UPDATE products 
+        SET quantity = quantity + ? 
+        WHERE product_id = ?
+    """;
+
+        for (ReservedUnit unit : expiredUnits) {
+            // Mark reserved unit as expired
+            jdbcTemplate.update(updateReservedUnitsQuery, unit.getUnitId());
+
+            // Restore product quantity
+            jdbcTemplate.update(updateProductQuantityQuery, unit.getQuantity(), unit.getProductId());
+        }
+
+        // Return the number of expired units
+        return expiredUnits.size();
     }
 
-    // Restore product counts for expired reservations
-    public void restoreProductCountForExpiredReservations() {
-        String sql = "UPDATE products p " +
-                "SET quantity = quantity + 1 " +
-                "FROM reserved_units ru " +
-                "JOIN reservations r ON ru.reservation_id = r.reservation_id " +
-                "WHERE r.status = 'Expired' AND p.product_id = ru.product_id";
-        jdbcTemplate.update(sql);
-    }
 
     public List<ReservationForBusinessDTO> findReservationsByProductId(int productId) {
         String query = """

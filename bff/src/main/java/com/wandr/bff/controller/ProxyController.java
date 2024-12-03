@@ -233,69 +233,33 @@ public class ProxyController {
     }
 
     @PostMapping("/signup-business")
-    public ResponseEntity<?> signup(@RequestParam("name") String name,
-                                    @RequestParam("email") String email,
-                                    @RequestParam("password") String password,
-                                    @RequestParam("description") String description,
-                                    @RequestParam("longitude") String longitude,
-                                    @RequestParam("latitude") String latitude,
-                                    @RequestParam("address") String address,
-                                    @RequestParam("websiteUrl") String websiteUrl,
-                                    @RequestParam("ownerName") String ownerName,
-                                    @RequestParam("ownerContact") String ownerContact,
-                                    @RequestParam("ownerNic") String ownerNic,
-                                    @RequestParam("services") List<String> services,
-                                    @RequestParam("languages") List<String> languages,
-                                    @RequestParam("businessContact") String businessContact,
-                                    @RequestParam("businessType") Integer businessType,
-                                    @RequestParam(value = "shopCategory", required = false) Integer shopCategory,
-                                    @RequestParam("shopImage") MultipartFile shopImage) {
-
+    public ResponseEntity<?> signupBusiness(@RequestBody Map<String, Object> signupDetails) {
         String signUpUrl = coreBackendUrl + "/api/business/signup";
 
         try {
-            // Add salt to hashed password
+            // Extract password and encrypt it with a generated salt
+            String password = (String) signupDetails.get("password");
             String salt = PasswordUtil.generateSalt();
             String encryptedPassword = PasswordUtil.encryptPassword(password, salt);
 
+            // Replace the password and add the salt to the signup details
+            signupDetails.put("password", encryptedPassword);
+            signupDetails.put("salt", salt);
+
+            // Set headers for the request
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("name", name);
-            body.add("email", email);
-            body.add("password", encryptedPassword);
-            body.add("description", description);
-            body.add("address", address);
-            body.add("latitude", latitude);
-            body.add("longitude", longitude);
-            body.add("websiteUrl", websiteUrl);
-            body.add("ownerName", ownerName);
-            body.add("ownerContact", ownerContact);
-            body.add("ownerNic", ownerNic);
-            body.add("salt", salt);
-            if (services != null) body.add("services", String.join(",", services));
-            if (languages != null) body.add("languages", String.join(",", languages));
-            body.add("businessContact", businessContact);
-            body.add("businessType", businessType);
-            if (shopCategory != null){
-                body.add("shopCategory", shopCategory);
-            }
-            body.add("shopImage", new ByteArrayResource(shopImage.getBytes()) {
-                @Override
-                public String getFilename() {
-                    return shopImage.getOriginalFilename();
-                }
-            });
+            // Prepare the request entity
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(signupDetails, headers);
 
-            HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
-
-            // Call the backend and forward its response
+            // Forward the request to the backend
             ResponseEntity<ApiResponse<Map<String, Object>>> response = restTemplate.exchange(
                     signUpUrl, HttpMethod.POST, entity, new ParameterizedTypeReference<>() {});
 
             logger.info("Response from backend: {}", response);
 
+            // Check if the backend responded successfully
             if (response.getStatusCode() == HttpStatus.OK) {
                 ApiResponse<?> backendResponse = response.getBody();
                 if (backendResponse != null && backendResponse.isSuccess()) {
@@ -319,11 +283,12 @@ public class ProxyController {
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         } catch (Exception e) {
             // Handle unexpected errors
-            logger.error("Unexpected error: ", e);
+            logger.error("Unexpected error during signup: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Sign Up failed", null));
         }
     }
+
 
     //logout users
     @PostMapping("/logout")
@@ -515,112 +480,6 @@ public class ProxyController {
     }
 
 
-    @PutMapping(value = "/update-business", consumes = {"multipart/form-data"})
-    public ResponseEntity<ApiResponse<Object>> updateBusinessProfile(
-            @RequestHeader("Authorization") String token,
-            @RequestParam("businessId") Long businessId,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "password", required = false) String password,
-            @RequestParam(value = "description", required = false) String description,
-            @RequestParam(value = "address", required = false) String address,
-            @RequestParam(value = "latitude", required = false) String latitude,
-            @RequestParam(value = "longitude", required = false) String longitude,
-            @RequestParam(value = "websiteUrl", required = false) String websiteUrl,
-            @RequestParam(value = "ownerName", required = false) String ownerName,
-            @RequestParam(value = "ownerContact", required = false) String ownerContact,
-            @RequestParam(value = "ownerNic", required = false) String ownerNic,
-            @RequestParam(value = "services", required = false) List<String> services,
-            @RequestParam(value = "languages", required = false) List<String> languages,
-            @RequestParam(value = "businessContact", required = false) String businessContact,
-            @RequestParam(value = "businessType", required = false) Integer businessType,
-            @RequestParam(value = "shopCategory", required = false) Integer shopCategory,
-            @RequestParam(value = "shopImage", required = false) MultipartFile shopImage,
-            @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {
 
-        if (!validateToken(token)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse<>(false, HttpStatus.UNAUTHORIZED.value(), "Invalid token", null));
-        }
-
-        String url = coreBackendUrl + "/api/business/update";
-
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-            body.add("businessId", businessId);
-
-            if (name != null) body.add("name", name);
-            if (email != null) body.add("email", email);
-
-            // Only encrypt password if it is provided
-            if (password != null) {
-                String salt = PasswordUtil.generateSalt();
-                String encryptedPassword = PasswordUtil.encryptPassword(password, salt);
-                body.add("password", encryptedPassword);
-                body.add("salt", salt);
-            }
-
-            if (description != null) body.add("description", description);
-            if (address != null) body.add("address", address);
-            if (latitude != null) body.add("latitude", latitude);
-            if (longitude != null) body.add("longitude", longitude);
-            if (websiteUrl != null) body.add("websiteUrl", websiteUrl);
-            if (ownerName != null) body.add("ownerName", ownerName);
-            if (ownerContact != null) body.add("ownerContact", ownerContact);
-            if (ownerNic != null) body.add("ownerNic", ownerNic);
-            if (services != null) body.add("services", String.join(",", services));
-            if (languages != null) body.add("languages", String.join(",", languages));
-            if (businessContact != null) body.add("businessContact", businessContact);
-            if (businessType != null) body.add("businessType", businessType);
-            if (shopCategory != null) body.add("shopCategory", shopCategory);
-
-            // Handle optional image files
-            if (shopImage != null && !shopImage.isEmpty()) {
-                body.add("shopImage", new ByteArrayResource(shopImage.getBytes()) {
-                    @Override
-                    public String getFilename() {
-                        return shopImage.getOriginalFilename();
-                    }
-                });
-            }
-
-            if (profileImage != null && !profileImage.isEmpty()) {
-                body.add("profileImage", new ByteArrayResource(profileImage.getBytes()) {
-                    @Override
-                    public String getFilename() {
-                        return profileImage.getOriginalFilename();
-                    }
-                });
-            }
-
-            HttpEntity<MultiValueMap<String, Object>> entity = new HttpEntity<>(body, headers);
-
-            // Make the request to the backend and capture the response
-            ResponseEntity<ApiResponse<Object>> response = restTemplate.exchange(
-                    url, HttpMethod.PUT, entity, new ParameterizedTypeReference<>() {});
-
-            logger.info("Response: " + response);
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null && response.getBody().isSuccess()) {
-                // Forward the updated profile information to the frontend
-                return ResponseEntity.ok(new ApiResponse<>(true, response.getStatusCodeValue(), "Business profile updated successfully", null));
-            } else {
-                return ResponseEntity.status(response.getStatusCode())
-                        .body(new ApiResponse<>(false, response.getStatusCodeValue(), "Failed to update business profile", null));
-            }
-
-        } catch (NoSuchAlgorithmException e) {
-            logger.error("Encryption error during profile update: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Profile update failed due to encryption error", null));
-        } catch (Exception e) {
-            logger.error("Unexpected error during profile update: ", e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Profile update failed", null));
-        }
-    }
 
 }

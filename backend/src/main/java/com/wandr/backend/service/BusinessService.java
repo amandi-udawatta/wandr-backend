@@ -13,9 +13,9 @@ import java.util.List;
 public interface BusinessService {
 
     ApiResponse<UserDetailsDTO> loginBusiness(UserLoginDTO request);
-    ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFileName, Integer shopCategory);
+    ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request);
     ApiResponse<BusinessDTO> getBusinessById(Long businessId);
-    ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request, MultipartFile shopImageFileName, MultipartFile profileImageFileName);
+    ApiResponse<String> updateProfile(UpdateProfileDTO request);
     ApiResponse<Void> updateBusinessJwt (String jwt, Long businessId);
     ApiResponse<String> getSalt(String email);
     ApiResponse<List<BusinessDTO>> getPendingBusinesses();

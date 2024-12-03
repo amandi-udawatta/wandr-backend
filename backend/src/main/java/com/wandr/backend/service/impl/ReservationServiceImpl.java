@@ -92,16 +92,17 @@ public class ReservationServiceImpl implements ReservationService {
 
 
     @Override
-    // Method to expire reservations and restore product count
     public ApiResponse<String> expireReservations() {
-        int expiredReservations = reservationDAO.markExpiredReservations(LocalDateTime.now());
-        if (expiredReservations > 0) {
-            reservationDAO.restoreProductCountForExpiredReservations();
-            return new ApiResponse<>(true, 200, "Expired reservations processed successfully", "Expired and Restored");
+        int expiredUnitsCount = reservationDAO.markExpiredReservations(LocalDateTime.now());
+
+        if (expiredUnitsCount > 0) {
+            return new ApiResponse<>(true, 200, "Expired reservations processed successfully",
+                    "Expired units: " + expiredUnitsCount);
         } else {
             return new ApiResponse<>(false, 404, "No active reservations to expire", null);
         }
-        }
+    }
+
     @Override
     public List<ReservationForBusinessDTO> getReservationsByProductId(int productId) {
         return reservationDAO.findReservationsByProductId(productId);

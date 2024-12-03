@@ -90,13 +90,14 @@ public class BusinessDAO {
         }
     }
 
+
     public void updateProfile(Business business) {
-        String sql = "UPDATE businesses SET name = ?, email = ?, description = ?, services = ?::jsonb, address = ?, languages = ?::jsonb, website_url = ?, business_contact = ?, shop_image = ?, profile_image = ?, business_type = ?, shop_category = ?, owner_name = ?, owner_contact = ?, owner_nic = ?, status = ?, plan_id=?, latitude=?, longitude=? WHERE business_id = ?";
+        String sql = "UPDATE businesses SET name = ?, email = ?, description = ?, services = ?::jsonb, address = ?, languages = ?::jsonb, website_url = ?, business_contact = ?, shop_image = ?, profile_image = ?, shop_category = ?, owner_name = ?, owner_contact = ?, status = ?, plan_id = ?, rating = ? WHERE business_id = ?";
         try {
             // Convert the services and languages lists to JSON strings
             String servicesJson = new ObjectMapper().writeValueAsString(business.getServices());
             String languagesJson = new ObjectMapper().writeValueAsString(business.getLanguages());
-            jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), servicesJson, business.getAddress(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(), business.getProfileImage(), business.getBusinessType(), business.getShopCategory(), business.getOwnerName(), business.getOwnerContact(), business.getOwnerNic(), business.getStatus(), business.getPlanId(), business.getLatitude(), business.getLongitude(), business.getBusinessId());
+            jdbcTemplate.update(sql, business.getName(), business.getEmail(), business.getDescription(), servicesJson, business.getAddress(), languagesJson, business.getWebsiteUrl(), business.getBusinessContact(), business.getShopImage(), business.getProfileImage(),  business.getShopCategory(), business.getOwnerName(), business.getOwnerContact(),  business.getStatus(), business.getPlanId(), business.getRating(), business.getBusinessId());
         } catch (JsonProcessingException e) {
             logger.error("Error converting services or languages to JSON", e);
             throw new RuntimeException("Failed to update profile due to JSON processing error", e);
