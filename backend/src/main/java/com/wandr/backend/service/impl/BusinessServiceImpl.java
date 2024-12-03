@@ -160,10 +160,8 @@ public class BusinessServiceImpl implements BusinessService {
         business.setJwt(null);
         business.setShopImage(request.getShopImage());
         // Convert latitude and longitude to BigDecimal
-        BigDecimal latitude = new BigDecimal(request.getLatitude());
-        BigDecimal longitude = new BigDecimal(request.getLongitude());
-        business.setLatitude(latitude);
-        business.setLongitude(longitude);
+        business.setLatitude(request.getLatitude());
+        business.setLongitude(request.getLongitude());
 
         businessDAO.save(business);
 
@@ -249,12 +247,10 @@ public class BusinessServiceImpl implements BusinessService {
         businessDTO.setWebsiteUrl(business.getWebsiteUrl());
         businessDTO.setBusinessContact(business.getBusinessContact());
         if (business.getProfileImage() != null) {
-            String profileUri = "/business/profile_images/" + business.getProfileImage();
-            businessDTO.setProfileImage(profileUri);
+            businessDTO.setProfileImage(business.getProfileImage());
         }
         if (business.getShopImage() != null) {
-            String imageUri = "/business/shop_images/" + business.getShopImage();
-            businessDTO.setShopImage(imageUri);
+            businessDTO.setShopImage(business.getShopImage());
         }
         businessDTO.setStatus(business.getStatus());
         businessDTO.setOwnerName(business.getOwnerName());

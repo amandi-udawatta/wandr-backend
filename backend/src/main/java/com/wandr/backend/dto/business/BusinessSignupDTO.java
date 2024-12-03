@@ -3,6 +3,7 @@ package com.wandr.backend.dto.business;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -13,8 +14,8 @@ public class BusinessSignupDTO {
     private String description;
     private List<String> services;
     private String address;
-    private String latitude;
-    private String longitude;
+    private BigDecimal latitude;
+    private BigDecimal longitude;
     private List<String> languages;
     private String websiteUrl;
     private String businessContact;

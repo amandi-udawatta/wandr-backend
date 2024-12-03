@@ -18,7 +18,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${STRIPE_API_VERSION}")
     private String stripeApiVersion;
 
-    public PaymentServiceImpl(@Value("${stripe.api.key}") String stripeApiKey) {
+    public PaymentServiceImpl(@Value("${STRIPE_API_KEY}") String stripeApiKey) {
         Stripe.apiKey = stripeApiKey;
         Stripe.setAppInfo("Wandr", "1.0", null);
     }

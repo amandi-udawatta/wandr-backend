@@ -233,8 +233,7 @@ public class TravellerServiceImpl implements TravellerService {
         travellerDTO.setCountry(traveller.getCountry());
         travellerDTO.setCategories(traveller.getCategories());
         travellerDTO.setActivities(traveller.getActivities());
-        String imageUri =  "/traveller/profile_images/" + traveller.getProfileImage();
-        travellerDTO.setProfileImage(imageUri);
+        travellerDTO.setProfileImage(traveller.getProfileImage());
         travellerDTO.setCreatedAt(traveller.getCreatedAt());
         travellerDTO.setMembership(traveller.getMembership());
         return travellerDTO;
