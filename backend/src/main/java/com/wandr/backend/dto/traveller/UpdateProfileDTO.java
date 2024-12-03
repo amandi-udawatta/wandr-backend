@@ -1,7 +1,6 @@
 package com.wandr.backend.dto.traveller;
 
 import lombok.Data;
-import org.springframework.data.relational.core.sql.In;
 
 import java.util.List;
 

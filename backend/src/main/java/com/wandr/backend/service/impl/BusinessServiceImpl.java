@@ -134,7 +134,7 @@ public class BusinessServiceImpl implements BusinessService {
 
 
     @Override
-    public ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request, MultipartFile shopImageFilename, Integer shopCategory) {
+    public ApiResponse<UserDetailsDTO> registerBusiness(BusinessSignupDTO request) {
         if (businessDAO.existsByEmail(request.getEmail())) {
             return new ApiResponse<>(false, 400, "Email already in use");
         }
@@ -148,28 +148,24 @@ public class BusinessServiceImpl implements BusinessService {
         business.setWebsiteUrl(request.getWebsiteUrl());
         business.setBusinessContact(request.getBusinessContact());
         business.setBusinessType(request.getBusinessType());
-        business.setShopCategory(shopCategory);
+        business.setShopCategory(request.getShopCategory());
         business.setOwnerName(request.getOwnerName());
         business.setOwnerContact(request.getOwnerContact());
         business.setOwnerNic(request.getOwnerNic());
         business.setEmail(request.getEmail());
         business.setPassword(request.getPassword());
-        //set default values 'pending' to status
         business.setStatus("pending");
         business.setSalt(request.getSalt());
         business.setCreatedAt(new java.sql.Timestamp(System.currentTimeMillis()));
-        business.setJwt(null); // Assuming jwt_token is null for initial registration
-        String shopImg = FileUploadUtil.saveFile(shopImageFilename, "business/shop_images");
-        business.setShopImage(shopImg);
+        business.setJwt(null);
+        business.setShopImage(request.getShopImage());
         // Convert latitude and longitude to BigDecimal
         BigDecimal latitude = new BigDecimal(request.getLatitude());
         BigDecimal longitude = new BigDecimal(request.getLongitude());
         business.setLatitude(latitude);
         business.setLongitude(longitude);
 
-
         businessDAO.save(business);
-        //return userDetails;
 
         Optional<Business> businessOpt = businessDAO.findByEmail(request.getEmail());
         Business businessData = businessOpt.get();
@@ -186,8 +182,8 @@ public class BusinessServiceImpl implements BusinessService {
     }
 
     @Override
-    public ApiResponse<String> updateProfile(Long businessId, UpdateProfileDTO request, MultipartFile shopImageFileName, MultipartFile profileImageFileName) {
-        Business existingBusiness = businessDAO.findById(businessId);
+    public ApiResponse<String> updateProfile(UpdateProfileDTO request) {
+        Business existingBusiness = businessDAO.findById(request.getBusinessId());
         if (existingBusiness == null) {
             return new ApiResponse<>(false, 404, "Business not found");
         }
@@ -216,9 +212,6 @@ public class BusinessServiceImpl implements BusinessService {
         if (request.getBusinessContact() != null) {
             existingBusiness.setBusinessContact(request.getBusinessContact());
         }
-        if (request.getBusinessType() != null) {
-            existingBusiness.setBusinessType(request.getBusinessType());
-        }
         if (request.getShopCategory() != null) {
             existingBusiness.setShopCategory(request.getShopCategory());
         }
@@ -228,32 +221,14 @@ public class BusinessServiceImpl implements BusinessService {
         if (request.getOwnerContact() != null) {
             existingBusiness.setOwnerContact(request.getOwnerContact());
         }
-        if (request.getOwnerNic() != null) {
-            existingBusiness.setOwnerNic(request.getOwnerNic());
+        if (request.getShopImage() != null) {
+            existingBusiness.setShopImage(request.getShopImage());
         }
-        if (request.getLatitude() != null) {
-            existingBusiness.setLatitude(new BigDecimal(request.getLatitude()));
+        if (request.getProfileImage() != null) {
+            existingBusiness.setProfileImage(request.getProfileImage());
         }
-        if (request.getLongitude() != null) {
-            existingBusiness.setLongitude(new BigDecimal(request.getLongitude()));
-        }
-        if (shopImageFileName != null && !shopImageFileName.isEmpty()) {
-            String shopImg = FileUploadUtil.saveFile(shopImageFileName, "business/shop_images");
-            // Delete the old image
-            String oldImage = existingBusiness.getShopImage();
-            if (oldImage != null && !oldImage.isEmpty()) {
-                FileUploadUtil.deleteFile("business/shop_images", oldImage);
-            }
-            existingBusiness.setShopImage(shopImg);
-        }
-        if (profileImageFileName != null && !profileImageFileName.isEmpty()) {
-            String profileImg = FileUploadUtil.saveFile(profileImageFileName, "business/profile_images");
-            // Delete the old image
-            String oldImage = existingBusiness.getProfileImage();
-            if (oldImage != null && !oldImage.isEmpty()) {
-                FileUploadUtil.deleteFile("business/profile_images", oldImage);
-            }
-            existingBusiness.setProfileImage(profileImg);
+        if (request.getRating() != null) {
+            existingBusiness.setRating(request.getRating());
         }
 
         businessDAO.updateProfile(existingBusiness);

@@ -4,8 +4,7 @@ import com.wandr.backend.dto.*;
 import com.wandr.backend.dto.business.*;
 import com.wandr.backend.dto.BusinessRatingDTO;
 import com.wandr.backend.dto.chat.ChattedTravellerDTO;
-import com.wandr.backend.dto.traveller.TravellerDTO;
-import com.wandr.backend.entity.Business;
+import com.wandr.backend.dto.business.UpdateProfileDTO;
 import com.wandr.backend.service.BusinessService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,11 +12,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/business")
@@ -44,15 +41,11 @@ public class BusinessController {
     }
 
 
-    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
-    public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@ModelAttribute BusinessSignupDTO request,
-            @RequestParam("shopImage") MultipartFile shopImage, @RequestParam(value = "shopCategory", required = false) Integer shopCategory
-    ) {
-        System.out.println("languages at controller: " + request.getLanguages());
+    @PostMapping(value = "/signup")
+    public ResponseEntity<ApiResponse<UserDetailsDTO>> signup(@RequestBody BusinessSignupDTO request) {
         logger.info("Received request to register business with email: {}", request.getEmail());
-
         try{
-            ApiResponse<UserDetailsDTO> response = businessService.registerBusiness(request, shopImage, shopCategory);
+            ApiResponse<UserDetailsDTO> response = businessService.registerBusiness(request);
             logger.info("Successfully registered business with email: {}", request.getEmail());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -61,7 +54,7 @@ public class BusinessController {
         }
     }
 
-    //get businessby id
+    //get business by id
     @GetMapping("/{businessId}")
     public ResponseEntity<ApiResponse<BusinessDTO>> getBusinessById(@PathVariable Long businessId) {
         logger.info("Received request to get business with ID: {}", businessId);
@@ -76,13 +69,13 @@ public class BusinessController {
 
 
     @PutMapping("/update")
-    public ResponseEntity<ApiResponse<String>> updateProfile( @RequestParam(value = "businessId") Long businessId, @ModelAttribute UpdateProfileDTO request, @RequestParam(value = "shopImage", required = false) MultipartFile shopImage, @RequestParam(value = "profileImage", required = false) MultipartFile profileImage) {
-        logger.info("Received request to update profile for business with ID: {}", businessId);
+    public ResponseEntity<ApiResponse<String>> updateProfile(@RequestBody UpdateProfileDTO request) {
+        logger.info("Received request to update profile for business with ID: {}", request.getBusinessId());
         try {
-            ApiResponse<String> response = businessService.updateProfile(businessId, request, shopImage, profileImage);
+            ApiResponse<String> response = businessService.updateProfile(request);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("An error occurred while updating profile for business with ID: {}", businessId, e);
+            logger.error("An error occurred while updating profile for business with ID: {}", request.getBusinessId(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while updating profile"));
         }
     }

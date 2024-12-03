@@ -23,6 +23,8 @@ public class BusinessSignupDTO {
     private String ownerContact;
     private String ownerNic;
     private String salt;
-    private MultipartFile shopImage;
+    private String shopImage;
+    private Integer shopCategory;
+
 
 }
