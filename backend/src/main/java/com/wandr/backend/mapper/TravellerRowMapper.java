@@ -23,8 +23,6 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
         traveller.setProfileImage(rs.getString("profile_image"));
         traveller.setJwt(rs.getString("jwt"));
         traveller.setMembership(rs.getInt("membership"));
-
-
         String categories = rs.getString("categories");
         if (categories != null && !categories.trim().isEmpty()) {
             List<Long> categoryList = Arrays.stream(categories.replaceAll("[\\[\\]\\s]", "").split(","))

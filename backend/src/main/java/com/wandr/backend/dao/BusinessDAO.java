@@ -194,6 +194,7 @@ public class BusinessDAO {
 
     // Insert or update rating
     public void upsertBusinessRating(Long travellerId, Long businessId, Integer rating) {
+        logger.info("Upserting rating for traveller {} and business {}", travellerId, businessId);
         String sql = "INSERT INTO business_ratings (traveller_id, business_id, rating) " +
                 "VALUES (?, ?, ?) " +
                 "ON CONFLICT (traveller_id, business_id) " +
