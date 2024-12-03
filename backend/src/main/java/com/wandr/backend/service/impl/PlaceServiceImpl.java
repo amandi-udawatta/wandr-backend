@@ -502,6 +502,12 @@ public class PlaceServiceImpl implements PlaceService {
         return ("No description found");
     }
 
+    @Override
+    public ApiResponse<Void> ratePlace(Long travellerId, Long placeId, Integer rating) {
+        placeDAO.upsertPlaceRating(travellerId,placeId, rating);
+        placeDAO.updateAverageRating(placeId);
+        return new ApiResponse<>(true, 200, "Place rated successfully");
+    }
 
     //place to placeDTO
     private PlaceDTO placeToPlaceDTO(Places place) {

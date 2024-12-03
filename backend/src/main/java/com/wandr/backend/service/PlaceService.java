@@ -23,9 +23,12 @@ public interface PlaceService {
 
     PlaceDTO add(String placeId);
 
+    ApiResponse<Void> ratePlace(Long travellerId, Long placeId, Integer rating);
 
 
 
 
 
-    }
+
+
+}

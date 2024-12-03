@@ -1,6 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.place.placeRatingDTO;
 import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.place.UpdatePlaceDTO;
 import com.wandr.backend.entity.Places;
@@ -113,8 +114,17 @@ public class PlaceController {
         }
     }
 
-
-
-
+    //rate business
+    @PostMapping("/rate-place")
+    public ResponseEntity<ApiResponse<Void>> ratePlace(@RequestBody placeRatingDTO rating) {
+        logger.info("Received request to rate place with placeId: {}", rating.getPlaceId());
+        try{
+            ApiResponse<Void> response = placeService.ratePlace(rating.getTravellerId(), rating.getPlaceId(), rating.getRating());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while rating place with placeId: {}", rating.getPlaceId(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while rating place"));
+        }
+    }
 
 }
