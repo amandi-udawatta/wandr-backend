@@ -36,7 +36,7 @@ public class ProductServiceImpl implements ProductService {
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Override
-    public ApiResponse<ProductDTO> createProduct(ProductDTO productDTO) {
+    public ApiResponse<String> createProduct(ProductDTO productDTO) {
 
         double reservation_percentage = 0.3;
 
@@ -52,12 +52,17 @@ public class ProductServiceImpl implements ProductService {
         }
         int planId = business.getPlanId(); // Fetch the plan ID for the business
 
+        //if plan id is null error msg
+        if (planId == 0) {
+            return new ApiResponse<>(false, 400, "You haven't subscribed to any plan yet. Please subscribe to a plan to add products.", "LIMIT_EXCEEDED");
+        }
+
         // Determine the product limit based on the plan
         int productLimit = getProductLimitByPlan(planId);
 
         // Check if the product limit is reached
         if (productLimit != -1 && currentProductCount >= productLimit) {
-            return new ApiResponse<>(false, 400, "Product limit reached for your current plan. Upgrade your plan to add more products.");
+            return new ApiResponse<>(false, 400, "Product limit reached for your current plan. Upgrade your plan to add more products.", "LIMIT_EXCEEDED");
         }
 
         Product newProduct = new Product();
@@ -72,9 +77,7 @@ public class ProductServiceImpl implements ProductService {
         newProduct.setImage(productDTO.getImage());
         productDAO.createProduct(newProduct);
 
-        ProductDTO product = productToProductDTO(newProduct);
-
-        return new ApiResponse<>(true, 200, "Product created successfully", product);
+        return new ApiResponse<>(true, 200, "Product created successfully", null);
     }
 
     private int getProductLimitByPlan(int planId) {

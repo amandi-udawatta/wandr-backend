@@ -27,9 +27,9 @@ public class AdController {
 
     //create ad
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Void>> createAd(@RequestBody AdDTO request){
+    public ResponseEntity<ApiResponse<String>> createAd(@RequestBody AdDTO request){
         try{
-            ApiResponse<Void> response = adService.createAd(request);
+            ApiResponse<String> response = adService.createAd(request);
             logger.info("Successfully created advertisement for business id: {}", response.isSuccess());
             return ResponseEntity.ok(response);
         } catch (Exception e) {

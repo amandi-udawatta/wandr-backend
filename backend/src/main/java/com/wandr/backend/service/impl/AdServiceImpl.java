@@ -43,7 +43,7 @@ public class AdServiceImpl implements AdService {
     }
 
     @Override
-    public ApiResponse<Void> createAd(AdDTO request) {
+    public ApiResponse<String> createAd(AdDTO request) {
         try {
             // Fetch the business details
             Business business = businessDAO.findById(request.getBusinessId());
@@ -53,7 +53,7 @@ public class AdServiceImpl implements AdService {
 
             // Ensure the business has a valid plan
             if (business.getPlanId() == null) {
-                return new ApiResponse<>(false, 400, "No plan associated with this business. Please purchase a plan to proceed.", null);
+                return new ApiResponse<>(false, 400, "No plan associated with this business. Please purchase a plan to proceed.", "LIMIT_EXCEEDED");
             }
 
             int planId = business.getPlanId(); // Fetch the plan ID
@@ -65,10 +65,10 @@ public class AdServiceImpl implements AdService {
             if (planId == 1 && currentAdCount >= 1) {
                 logger.info("plan 1 exceeded: {}", currentAdCount);
                 // Plan ID 1: Basic (1 Ad Slot)
-                return new ApiResponse<>(false, 400, "Your plan allows only 1 ad. Upgrade your plan to create more ads.", null);
+                return new ApiResponse<>(false, 400, "Your plan allows only 1 ad. Upgrade your plan to create more ads.", "LIMIT_EXCEEDED");
             } else if (planId == 2 && currentAdCount >= 3) {
                 // Plan ID 2: Standard (3 Ad Slots)
-                return new ApiResponse<>(false, 400, "Your plan allows up to 3 ads. Upgrade your plan to create more ads.", null);
+                return new ApiResponse<>(false, 400, "Your plan allows up to 3 ads. Upgrade your plan to create more ads.", "LIMIT_EXCEEDED");
             }
             // Plan ID 3 (Premium): No restriction, no additional checks needed
 

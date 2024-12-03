@@ -18,7 +18,7 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @GetMapping("/generate-hash")
+    @PostMapping("/generate-hash")
     public ResponseEntity<ApiResponse<String>> generateHash(
             @RequestBody GenerateHashRequestDTO request) {
 
