@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface AdService {
 
-    ApiResponse<Void> createAd(AdDTO request);
+    ApiResponse<String> createAd(AdDTO request);
     ApiResponse<List<AdDTO>> getAdsByBusinessId(Long businessId);
 
     ApiResponse<List<AdDTO>> getPendingAds();

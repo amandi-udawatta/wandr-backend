@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 
 public interface ProductService {
 
-    ApiResponse<ProductDTO> createProduct(ProductDTO productDTO);
+    ApiResponse<String> createProduct(ProductDTO productDTO);
     List<ProductDTO> getAllProducts();
     ProductDTO getProductById(long product_id);
     List<ProductDTO> getAllByBusinessId(long business_id);

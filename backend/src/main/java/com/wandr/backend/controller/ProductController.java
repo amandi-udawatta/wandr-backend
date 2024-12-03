@@ -29,7 +29,7 @@ public class ProductController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<ApiResponse<ProductDTO>> createProduct(@RequestBody ProductDTO productDTO) {
+    public ResponseEntity<ApiResponse<String>> createProduct(@RequestBody ProductDTO productDTO) {
         try {
             return ResponseEntity.ok(productService.createProduct(productDTO));
         } catch (Exception e) {
