@@ -15,5 +15,5 @@ public class TravellerDTO {
     private List<Long> categories;
     private List<Long> activities;
     private Timestamp createdAt;
-    private String membership;
+    private Integer membership;
 }

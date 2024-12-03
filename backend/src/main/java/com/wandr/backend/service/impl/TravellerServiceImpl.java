@@ -90,7 +90,8 @@ public class TravellerServiceImpl implements TravellerService {
                 traveller.getTravellerId(),
                 traveller.getEmail(),
                 Role.TRAVELLER,
-                traveller.getName()
+                traveller.getName(),
+                traveller.getMembership()
         );
 
         logger.info("Traveller with email: {} logged in successfully", request.getEmail());
@@ -127,7 +128,8 @@ public class TravellerServiceImpl implements TravellerService {
                 travellerData.getTravellerId(),
                 travellerData.getEmail(),
                 Role.TRAVELLER,
-                travellerData.getName()
+                travellerData.getName(),
+                travellerData.getMembership()
         );
 
         return new ApiResponse<>(true, 201, "Traveller registered successfully", userDetails);

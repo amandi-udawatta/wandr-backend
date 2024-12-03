@@ -62,7 +62,8 @@ public class  AdminServiceImpl implements AdminService {
                 admin.getAdminId(),
                 admin.getEmail(),
                 Role.ADMIN,
-                admin.getName()
+                admin.getName(),
+                0
         );
 
         logger.info("Admin with email: {} logged in successfully", request.getEmail());
