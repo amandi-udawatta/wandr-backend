@@ -29,10 +29,23 @@ public class AdController {
     @PostMapping("/create")
     public ResponseEntity<ApiResponse<Void>> createAd(@RequestBody AdDTO request){
         try{
-            return ResponseEntity.ok(adService.createAd(request));
+            ApiResponse<Void> response = adService.createAd(request);
+            logger.info("Successfully created advertisement for business id: {}", response.isSuccess());
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error approving advertisement of business id: {}", request.getBusinessId(), e);
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error creating advertisement", null));
+        }
+    }
+
+    //get all ads by business id
+    @GetMapping("/business/{businessId}")
+    public ResponseEntity<ApiResponse<List<AdDTO>>> getAdsByBusinessId(@PathVariable Long businessId) {
+        try{
+            return ResponseEntity.ok(adService.getAdsByBusinessId(businessId));
+        } catch (Exception e) {
+            logger.error("Error getting advertisements for business id: {}", businessId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "Error getting advertisements", null));
         }
     }
 

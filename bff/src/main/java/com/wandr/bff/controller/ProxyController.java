@@ -400,7 +400,7 @@ public class ProxyController {
 
     //handle post requests with form data
     @PostMapping("/forward-form")
-    public ResponseEntity<ApiResponse<Object>> forwardFormPostRequest(
+    public ResponseEntity<?> forwardFormPostRequest(
             @RequestHeader("Authorization") String token,
             @RequestParam MultiValueMap<String, String> formData,
             HttpServletRequest request) {
@@ -417,7 +417,21 @@ public class ProxyController {
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(formData, headers);
         String requestUri = request.getRequestURI().replace("/proxy/forward", "");
         String forwardUrl = coreBackendUrl + requestUri;
-        return forwardRequestWithEntity(forwardUrl, entity, HttpMethod.POST);
+
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(forwardUrl, HttpMethod.POST, entity, String.class);
+
+            // Forward backend response exactly
+            return ResponseEntity.status(response.getStatusCode())
+                    .headers(response.getHeaders())
+                    .body(response.getBody());
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(e.getResponseBodyAsString());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Internal server error", null));
+        }
     }
 
     //handle put requests
@@ -465,14 +479,15 @@ public class ProxyController {
         try {
             ResponseEntity<String> response = restTemplate.exchange(coreBackendUrl + requestUri, method, entity, String.class);
 
-            // Parse the backend response to an object
-            ApiResponse<?> backendResponse = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-
-            return ResponseEntity.ok(new ApiResponse<>(true, backendResponse.getStatusCode(), backendResponse.getMessage(), backendResponse.getData()));
+            // Return the backend's response directly
+            return ResponseEntity.status(response.getStatusCode())
+                    .headers(response.getHeaders()) // Preserve original headers
+                    .body(response.getBody()); // Preserve original body
         } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Forward backend error responses as they are
             logger.error("Error forwarding request: ", e);
             return ResponseEntity.status(e.getStatusCode())
-                    .body(new ApiResponse<>(false, e.getStatusCode().value(), e.getResponseBodyAsString(), null));
+                    .body(e.getResponseBodyAsString()); // Forward the backend error response as-is
         } catch (Exception e) {
             logger.error("Unexpected error: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

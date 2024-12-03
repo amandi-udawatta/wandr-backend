@@ -13,9 +13,12 @@ public class ApprovedAdDTO {
     private String description;
     private String image;
     private String businessPlan;
-    private Timestamp postedDate;
+    private Timestamp requestedDate;
+    private Timestamp adStartDate; // Added
+    private Timestamp adExpirationDate; // Added
     private int remainingDays;
     private String status;
+    private boolean isActive;
+    private Integer clickCount;
+
 }
-
-

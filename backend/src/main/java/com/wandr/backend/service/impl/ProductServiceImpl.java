@@ -1,5 +1,6 @@
 package com.wandr.backend.service.impl;
 
+import com.wandr.backend.dao.BusinessDAO;
 import com.wandr.backend.dao.ProductDAO;
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.product.ProductDTO;
@@ -7,6 +8,7 @@ import com.wandr.backend.dto.product.UpdateProductDTO;
 import com.wandr.backend.dto.recommendation.RecommendedPlaceDTO;
 import com.wandr.backend.dto.traveller.TravellerDTO;
 import com.wandr.backend.dto.traveller.UpdateProfileDTO;
+import com.wandr.backend.entity.Business;
 import com.wandr.backend.entity.Product;
 import com.wandr.backend.entity.Traveller;
 import com.wandr.backend.service.ProductService;
@@ -23,10 +25,12 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductDAO productDAO;
+    private final BusinessDAO businessDAO;
 
     @Autowired
-    public ProductServiceImpl(ProductDAO productDAO) {
+    public ProductServiceImpl(ProductDAO productDAO, BusinessDAO businessDAO) {
         this.productDAO = productDAO;
+        this.businessDAO = businessDAO;
     }
 
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
@@ -35,6 +39,26 @@ public class ProductServiceImpl implements ProductService {
     public ApiResponse<ProductDTO> createProduct(ProductDTO productDTO) {
 
         double reservation_percentage = 0.3;
+
+        // Fetch the number of existing products for the business
+        List<Product> existingProducts = productDAO.findAllByBusinessId(productDTO.getBusiness_id());
+        int currentProductCount = existingProducts != null ? existingProducts.size() : 0;
+        logger.info("Current product count: {}", currentProductCount);
+
+        // Fetch the business plan
+        Business business = businessDAO.findById(productDTO.getBusiness_id());
+        if (business == null) {
+            return new ApiResponse<>(false, 404, "Business not found");
+        }
+        int planId = business.getPlanId(); // Fetch the plan ID for the business
+
+        // Determine the product limit based on the plan
+        int productLimit = getProductLimitByPlan(planId);
+
+        // Check if the product limit is reached
+        if (productLimit != -1 && currentProductCount >= productLimit) {
+            return new ApiResponse<>(false, 400, "Product limit reached for your current plan. Upgrade your plan to add more products.");
+        }
 
         Product newProduct = new Product();
         newProduct.setName(productDTO.getName());
@@ -51,6 +75,19 @@ public class ProductServiceImpl implements ProductService {
         ProductDTO product = productToProductDTO(newProduct);
 
         return new ApiResponse<>(true, 200, "Product created successfully", product);
+    }
+
+    private int getProductLimitByPlan(int planId) {
+        switch (planId) {
+            case 1: // Basic Plan
+                return 5;
+            case 2: // Standard Plan
+                return 15;
+            case 3: // Premium Plan
+                return -1; // Unlimited products
+            default:
+                throw new IllegalArgumentException("Unknown business plan.");
+        }
     }
 
     @Override

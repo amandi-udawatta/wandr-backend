@@ -74,14 +74,9 @@ public class ReservationDAO {
         return jdbcTemplate.query(query, new ReservationRowMapper(), productId);
     }
 
-    public boolean updateReservationStatus(int reservationId, String status) {
-        logger.info("came to update reservation_status");
-        String updateQuery = """
-            UPDATE reserved_units
-            SET reservation_status = ?
-            WHERE unit_id = ?
-        """;
-        int rowsUpdated = jdbcTemplate.update(updateQuery, status, reservationId);
+    public boolean updateReservationStatus(long reservationUnitId, String status) {
+        String updateQuery = "UPDATE reserved_units SET reservation_status = ? WHERE unit_id = ?";
+        int rowsUpdated = jdbcTemplate.update(updateQuery, status, reservationUnitId);
         System.out.println("rowsUpdated = " + rowsUpdated);
         return rowsUpdated > 0;
     }
@@ -99,6 +94,36 @@ public class ReservationDAO {
             WHERE b.business_id = ?
         """;
         return jdbcTemplate.query(query, new ReservationRowMapper() ,businessId);
+    }
+
+    // Fetch Reserved Items (Active Status)
+    public List<ReservationForBusinessDTO> findReservedItemsByTravellerId(Long travellerId) {
+        String sql = """
+        SELECT r.reservation_id, t.name, p.name AS product_name, ru.quantity, ru.unit_id,
+               ru.reservation_status, r.reservation_date, r.expiration_date, 
+               p.product_id, p.reservation_payment, p.price
+        FROM reservations r
+        JOIN reserved_units ru ON r.reservation_id = ru.reservation_id
+        JOIN products p ON ru.product_id = p.product_id
+        JOIN travellers t ON r.traveller_id = t.traveller_id
+        WHERE r.traveller_id = ? AND ru.reservation_status = 'active'
+    """;
+        return jdbcTemplate.query(sql, new ReservationRowMapper(), travellerId);
+    }
+
+    // Fetch Purchased Items
+    public List<ReservationForBusinessDTO> findPurchasedItemsByTravellerId(Long travellerId) {
+        String sql = """
+        SELECT r.reservation_id, t.name, p.name AS product_name, ru.quantity, ru.unit_id,
+               ru.reservation_status, r.reservation_date, r.expiration_date, 
+               p.product_id, p.reservation_payment, p.price
+        FROM reservations r
+        JOIN reserved_units ru ON r.reservation_id = ru.reservation_id
+        JOIN products p ON ru.product_id = p.product_id
+        JOIN travellers t ON r.traveller_id = t.traveller_id
+        WHERE r.traveller_id = ? AND ru.reservation_status = 'purchased'
+    """;
+        return jdbcTemplate.query(sql, new ReservationRowMapper(), travellerId);
     }
 
 }

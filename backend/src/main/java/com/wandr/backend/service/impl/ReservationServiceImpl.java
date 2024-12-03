@@ -90,43 +90,44 @@ public class ReservationServiceImpl implements ReservationService {
         return new ApiResponse<>(true, 200, "Reservation created successfully");
     }
 
-//    @Override
-//    // Method to mark reservation as purchased
-//    public ApiResponse<String> markReservationAsPurchased(Long reservationId) {
-//        int rowsUpdated = reservationDAO.markReservationAsPurchased(reservationId);
-//        if (rowsUpdated > 0) {
-//            return new ApiResponse<>(true, 200, "Reservation marked as purchased successfully", "Purchased");
-//        } else {
-//            return new ApiResponse<>(false, 404, "Reservation not found or already processed", null);
-//        }
-//    }
-//
-//    @Override
-//    // Method to expire reservations and restore product count
-//    public ApiResponse<String> expireReservations() {
-//        int expiredReservations = reservationDAO.markExpiredReservations(LocalDateTime.now());
-//        if (expiredReservations > 0) {
-//            reservationDAO.restoreProductCountForExpiredReservations();
-//            return new ApiResponse<>(true, 200, "Expired reservations processed successfully", "Expired and Restored");
-//        } else {
-//            return new ApiResponse<>(false, 404, "No active reservations to expire", null);
-//        }
-    //    }
+
+    @Override
+    // Method to expire reservations and restore product count
+    public ApiResponse<String> expireReservations() {
+        int expiredReservations = reservationDAO.markExpiredReservations(LocalDateTime.now());
+        if (expiredReservations > 0) {
+            reservationDAO.restoreProductCountForExpiredReservations();
+            return new ApiResponse<>(true, 200, "Expired reservations processed successfully", "Expired and Restored");
+        } else {
+            return new ApiResponse<>(false, 404, "No active reservations to expire", null);
+        }
+        }
     @Override
     public List<ReservationForBusinessDTO> getReservationsByProductId(int productId) {
         return reservationDAO.findReservationsByProductId(productId);
     }
 
     @Override
-    public boolean updateReservationStatus(int reservationId, String status) {
+    public boolean updateReservationStatus(long reservationUnitId, String status) {
         System.out.println("status" + status);
-        return reservationDAO.updateReservationStatus(reservationId, status);
+        return reservationDAO.updateReservationStatus(reservationUnitId, status);
     }
 
     @Override
     public List<ReservationForBusinessDTO> getReservationsByBusinessId(int businessId) {
         return reservationDAO.findReservationsByBusinessId(businessId);
     }
+
+    @Override
+    public List<ReservationForBusinessDTO> getReservedItemsByTravellerId(Long travellerId) {
+        return reservationDAO.findReservedItemsByTravellerId(travellerId);
+    }
+
+    @Override
+    public List<ReservationForBusinessDTO> getPurchasedItemsByTravellerId(Long travellerId) {
+        return reservationDAO.findPurchasedItemsByTravellerId(travellerId);
+    }
+
 
 }
 

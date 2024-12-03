@@ -14,7 +14,16 @@ public class AdDTO {
     private String image;
     private String businessPlan;
     private Timestamp requestedDate;
+    private Timestamp adStartDate; // Added
+    private Timestamp adExpirationDate; // Added
     private String status;
+    private Integer remainingDays; // New
+    private boolean isActive;
+    private Integer viewCount;
+    private Integer clickCount;
+
+
+
 }
 
 

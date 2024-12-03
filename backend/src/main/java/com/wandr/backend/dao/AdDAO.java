@@ -1,5 +1,7 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.ads.AdDTO;
 import com.wandr.backend.dto.business.PaidBusinessDTO;
 import com.wandr.backend.entity.Ad;
 import com.wandr.backend.entity.Business;
@@ -11,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,6 +30,16 @@ public class AdDAO {
     public Ad findById(Long adId) {
         String sql = "SELECT * FROM ads WHERE ad_id = ?";
         return jdbcTemplate.queryForObject(sql, new AdRowMapper(), adId);
+    }
+
+   public void updateAd(Ad ad) {
+    String sql = "UPDATE ads SET title = ?, description = ?, image = ?, ad_start_date = ?, ad_expiration_date = ?, is_active = ?, view_count = ?, click_count = ? WHERE ad_id = ?";
+    jdbcTemplate.update(sql, ad.getTitle(), ad.getDescription(), ad.getImage(), ad.getAdStartDate(), ad.getAdExpirationDate(), ad.isActive(), ad.getViewCount(), ad.getClickCount(), ad.getAdId());
+}
+
+    public List<Ad> getAdsByBusinessId(Long businessId) {
+        String sql = "SELECT * FROM ads WHERE business_id = ?";
+        return jdbcTemplate.query(sql, new AdRowMapper(), businessId);
     }
 
     public List<Ad> getPendingAds() {
@@ -49,26 +62,24 @@ public class AdDAO {
         jdbcTemplate.update(sql, ad.getBusinessId(), ad.getTitle(), ad.getDescription(), ad.getImage(), ad.getRequestedDate());
     }
 
-    public List<Ad> findAdsByBusinessId(Long businessId) {
-        String sql = "SELECT * FROM ads WHERE business_id = ?";
-        return jdbcTemplate.query(sql, new AdRowMapper(), businessId);
-    }
-
-    public long countAdsByBusinessId(Long businessId) {
-        String sql = "SELECT COUNT(*) FROM ads WHERE business_id = ? AND status = 'approved'";
-        try {
-            return jdbcTemplate.queryForObject(sql, new Object[]{businessId}, Long.class);
-        } catch (Exception e) {
-            logger.error("Error counting ads for business id: {}", businessId, e);
-            return 0;
-        }
-    }
 
     //delete ad
     public void deleteAd(Long adId) {
         String sql = "DELETE FROM ads WHERE ad_id = ?";
         jdbcTemplate.update(sql, adId);
     }
+
+    public List<Ad> findExpiredAds() {
+        String sql = "SELECT * FROM ads WHERE ad_expiration_date <= NOW() AND is_active = TRUE";
+        return jdbcTemplate.query(sql, new AdRowMapper());
+    }
+
+    public long countAdsByBusinessId(Long businessId) {
+        String sql = "SELECT COUNT(*) FROM ads WHERE business_id = ? AND is_active = TRUE";
+        return jdbcTemplate.queryForObject(sql, Long.class, businessId);
+    }
+
+
 
 
 

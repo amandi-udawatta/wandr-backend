@@ -13,6 +13,7 @@ import com.wandr.backend.mapper.BusinessRowMapper;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
@@ -80,8 +81,13 @@ public class BusinessDAO {
 
 
     public Business findById(Long businessId) {
-        String sql = "SELECT * FROM businesses WHERE business_id = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{businessId}, new BusinessRowMapper());
+        try {
+            // Fetch the business details
+            String sql = "SELECT * FROM businesses WHERE business_id = ?";
+            return jdbcTemplate.queryForObject(sql, new Object[]{businessId}, new BusinessRowMapper());
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public void updateProfile(Business business) {
