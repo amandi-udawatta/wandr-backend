@@ -36,19 +36,31 @@ public class TripController {
         }
     }
 
-    @PostMapping("/add-place")
-    public ResponseEntity<ApiResponse<Void>> addPlaceToTrip(@RequestBody AddPlaceToTripDTO addPlaceToTripDTO) {
-        logger.info("Received request to add place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
+//    @PostMapping("/add-place")
+//    public ResponseEntity<ApiResponse<Void>> addPlaceToTrip(@RequestBody AddPlaceToTripDTO addPlaceToTripDTO) {
+//        logger.info("Received request to add place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
+//        try {
+//            ApiResponse<Void> response = tripService.addPlaceToTrip(addPlaceToTripDTO);
+//            logger.info("Successfully added place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
+////            return ResponseEntity.ok(response);
+//        } catch (Exception e) {
+//            logger.error("An error occurred while adding place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId(), e);
+//            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while adding place to trip"));
+//        }
+//
+//    }
+    @PostMapping("/add-places")
+    public ResponseEntity<ApiResponse<Void>> addPlacesToTrip(@RequestBody AddPlaceToTripDTO addPlaceToTripDTO) {
+        logger.info("Received request to add places to trip with tripId: {}", addPlaceToTripDTO.getTripId());
         try {
             ApiResponse<Void> response = tripService.addPlaceToTrip(addPlaceToTripDTO);
-            logger.info("Successfully added place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId());
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            logger.error("An error occurred while adding place to trip with placeId: {}", addPlaceToTripDTO.getPlaceId(), e);
-            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while adding place to trip"));
+            logger.error("An error occurred while adding places to trip with tripId: {}", addPlaceToTripDTO.getTripId(), e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while adding places to trip."));
         }
-
     }
+
 
     //get trip by trip id
     @GetMapping("/{tripId}")

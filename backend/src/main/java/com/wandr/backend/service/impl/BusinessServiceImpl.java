@@ -349,6 +349,7 @@ public class BusinessServiceImpl implements BusinessService {
     //rate business
     @Override
     public ApiResponse<Void> rateBusiness(Long travellerId, Long businessId, Integer rating) {
+        logger.info("Rating business with id: {} by traveller with id: {} with rating: {}", businessId, travellerId, rating);
         businessDAO.upsertBusinessRating(travellerId,businessId, rating);
         businessDAO.updateAverageRating(businessId);
         return new ApiResponse<>(true, 200, "Business rated successfully");

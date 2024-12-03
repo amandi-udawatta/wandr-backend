@@ -85,28 +85,78 @@ public class TripServiceImpl implements TripService {
     }
 
 
+//    @Override
+//    public ApiResponse<Void> addPlaceToTrip(AddPlaceToTripDTO addPlaceToTripDTO) {
+//        if (tripPlaceDAO.checkIfPlaceExists(addPlaceToTripDTO.getTripId(), addPlaceToTripDTO.getPlaceId())) {
+//            return new ApiResponse<>(false, 400, "Place already exists in the trip");
+//        }
+//        TripPlace tripPlace = new TripPlace();
+//        Places placeName = placeDAO.findById(addPlaceToTripDTO.getPlaceId());
+//        tripPlace.setTitle(placeName.getName());
+//        tripPlace.setTripId(addPlaceToTripDTO.getTripId());
+//        tripPlace.setPlaceId(addPlaceToTripDTO.getPlaceId());
+//        tripPlace.setPlaceOrder(tripPlaceDAO.getNextPlaceOrder(addPlaceToTripDTO.getTripId()));
+//        tripPlace.setVisited(false);
+//        //update updated time of trips entity
+//        Trip trip = tripDAO.findById(addPlaceToTripDTO.getTripId());
+//        trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+//        tripPlaceDAO.addTripPlace(tripPlace);
+//        tripDAO.update(trip);
+//
+//        return new ApiResponse<>(true, 200, "Place added to trip successfully");
+//    }
+
     @Override
     public ApiResponse<Void> addPlaceToTrip(AddPlaceToTripDTO addPlaceToTripDTO) {
-        if (tripPlaceDAO.checkIfPlaceExists(addPlaceToTripDTO.getTripId(), addPlaceToTripDTO.getPlaceId())) {
-            return new ApiResponse<>(false, 400, "Place already exists in the trip");
-        }
-        TripPlace tripPlace = new TripPlace();
-        Places placeName = placeDAO.findById(addPlaceToTripDTO.getPlaceId());
-        tripPlace.setTitle(placeName.getName());
-        tripPlace.setTripId(addPlaceToTripDTO.getTripId());
-        tripPlace.setPlaceId(addPlaceToTripDTO.getPlaceId());
-        tripPlace.setPlaceOrder(tripPlaceDAO.getNextPlaceOrder(addPlaceToTripDTO.getTripId()));
-        tripPlace.setVisited(false);
-        //update updated time of trips entity
-        Trip trip = tripDAO.findById(addPlaceToTripDTO.getTripId());
-        trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
-        tripPlaceDAO.addTripPlace(tripPlace);
-        tripDAO.update(trip);
+        try {
+            Long tripId = addPlaceToTripDTO.getTripId();
+            List<Long> placeIds = addPlaceToTripDTO.getPlaceIds(); // Updated DTO to accept a list of place IDs
 
-        return new ApiResponse<>(true, 200, "Place added to trip successfully");
+            // Check if the trip exists
+            Trip trip = tripDAO.findById(tripId);
+            if (trip == null) {
+                return new ApiResponse<>(false, 404, "Trip not found.");
+            }
+
+            // Iterate through each placeId
+            for (Long placeId : placeIds) {
+                // Check if the place already exists in the trip
+                if (tripPlaceDAO.checkIfPlaceExists(tripId, placeId)) {
+                    logger.warn("Place with ID {} already exists in the trip.", placeId);
+                    continue; // Skip duplicates
+                }
+
+                // Fetch place details
+                Places place = placeDAO.findById(placeId);
+                if (place == null) {
+                    logger.warn("Place with ID {} not found. Skipping.", placeId);
+                    continue; // Skip invalid places
+                }
+
+                // Create and add a new TripPlace
+                TripPlace tripPlace = new TripPlace();
+                tripPlace.setTitle(place.getName());
+                tripPlace.setTripId(tripId);
+                tripPlace.setPlaceId(placeId);
+                tripPlace.setPlaceOrder(tripPlaceDAO.getNextPlaceOrder(tripId));
+                tripPlace.setVisited(false);
+
+                tripPlaceDAO.addTripPlace(tripPlace);
+            }
+
+            // Update the trip's updated_at timestamp
+            trip.setUpdatedAt(new Timestamp(System.currentTimeMillis()));
+            tripDAO.update(trip);
+
+            return new ApiResponse<>(true, 200, "Places added to trip successfully.");
+        } catch (Exception e) {
+            logger.error("An error occurred while adding places to trip with ID {}", addPlaceToTripDTO.getTripId(), e);
+            return new ApiResponse<>(false, 500, "An error occurred while adding places to trip.");
+        }
     }
 
-//    ApiResponse<PendingTripsDTO> response = tripService.getTripById(tripId);
+
+    //    ApiResponse<PendingTripsDTO> response = tripService.getTripById(tripId);
     //get trip details by id
     @Override
     public ApiResponse<PendingTripsDTO> getTripById(Long tripId){

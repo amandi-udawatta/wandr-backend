@@ -28,8 +28,12 @@ public class TripDAO {
 
 
     public Trip findById(Long tripId) {
-        String sql = "SELECT * FROM trips WHERE trip_id = ?";
-        return jdbcTemplate.queryForObject(sql, new Object[]{tripId}, new TripRowMapper());
+        try {
+            String sql = "SELECT * FROM trips WHERE trip_id = ?";
+            return jdbcTemplate.queryForObject(sql, new Object[]{tripId}, new TripRowMapper());
+        } catch (EmptyResultDataAccessException e) {
+            return null;
+        }
     }
 
     public void update(Trip trip) {
