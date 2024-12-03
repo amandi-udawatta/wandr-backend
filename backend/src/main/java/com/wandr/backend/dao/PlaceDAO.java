@@ -97,5 +97,22 @@ public class PlaceDAO {
         return jdbcTemplate.query(sql, new Object[]{travellerId}, new DashboardPlacesRowMapper(categoryDAO, activityDAO));
     }
 
+    // Insert or update rating
+    public void upsertPlaceRating(Long travellerId, Long placeId, Integer rating) {
+        String sql = "INSERT INTO place_ratings (traveller_id, place_id, rating) " +
+                "VALUES (?, ?, ?) " +
+                "ON CONFLICT (traveller_id, place_id) " +
+                "DO UPDATE SET rating = EXCLUDED.rating";
+        jdbcTemplate.update(sql, travellerId, placeId, rating);
+    }
+
+    // Calculate and update average rating
+    public void updateAverageRating(Long placeId) {
+        String sql = "UPDATE places " +
+                "SET rating = (SELECT AVG(rating) FROM place_ratings WHERE place_id = ?) " +
+                "WHERE place_id = ?";
+        jdbcTemplate.update(sql, placeId, placeId);
+    }
+
 }
 
