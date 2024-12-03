@@ -1,39 +1,41 @@
 package com.wandr.backend.service.impl;
 
+import com.stripe.Stripe;
+import com.stripe.model.PaymentIntent;
+import com.stripe.param.PaymentIntentCreateParams;
+import com.wandr.backend.dto.payment.CreatePaymentIntentRequestDTO;
+import com.wandr.backend.dto.payment.CreatePaymentIntentResponseDTO;
 import com.wandr.backend.service.PaymentService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 @Service
 public class PaymentServiceImpl implements PaymentService {
 
-    @Value("${PAYHERE_MERCHANT_ID}")
-    private String merchantId;
+    @Value("${STRIPE_API_KEY}")
+    private String stripeApiKey;
 
-    @Value("${PAYHERE_MERCHANT_SECRET}")
-    private String merchantSecret;
+    @Value("${STRIPE_API_VERSION}")
+    private String stripeApiVersion;
 
-    @Override
-    public String generatePaymentHash(String orderId, double amount, String currency) {
-        try {
-            String secretHash = md5(merchantSecret.toUpperCase());
-            String data = merchantId + orderId + amount + currency + secretHash;
-            return md5(data).toUpperCase();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("Error generating hash: " + e.getMessage(), e);
-        }
+    public PaymentServiceImpl(@Value("${stripe.api.key}") String stripeApiKey) {
+        Stripe.apiKey = stripeApiKey;
+        Stripe.setAppInfo("Wandr", "1.0", null);
     }
 
-    private String md5(String input) throws NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        byte[] digest = md.digest(input.getBytes());
-        StringBuilder sb = new StringBuilder();
-        for (byte b : digest) {
-            sb.append(String.format("%02x", b));
+    @Override
+    public CreatePaymentIntentResponseDTO createPaymentIntent(CreatePaymentIntentRequestDTO requestDTO) {
+        try {
+            PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                    .setAmount(requestDTO.getAmount()) // Amount in cents
+                    .setCurrency("usd") // Change as needed
+                    .addPaymentMethodType("card")
+                    .build();
+
+            PaymentIntent paymentIntent = PaymentIntent.create(params);
+            return new CreatePaymentIntentResponseDTO(paymentIntent.getClientSecret());
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating payment intent: " + e.getMessage(), e);
         }
-        return sb.toString();
     }
 }
