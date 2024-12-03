@@ -6,12 +6,12 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AdRowMapper implements RowMapper<Ad> {
+
+    Logger logger = LoggerFactory.getLogger(AdRowMapper.class);
 
     @Override
     public Ad mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -22,7 +22,12 @@ public class AdRowMapper implements RowMapper<Ad> {
         ad.setDescription(rs.getString("description"));
         ad.setImage(rs.getString("image"));
         ad.setRequestedDate(rs.getTimestamp("requested_date"));
+        ad.setAdStartDate(rs.getTimestamp("ad_start_date"));
+        ad.setAdExpirationDate(rs.getTimestamp("ad_expiration_date"));
+        ad.setActive(rs.getBoolean("is_active"));
         ad.setStatus(rs.getString("status"));
+        ad.setClickCount(rs.getInt("click_count"));
+        ad.setViewCount(rs.getInt("view_count"));
         return ad;
     }
 }

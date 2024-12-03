@@ -9,6 +9,7 @@ import java.util.List;
 public interface AdService {
 
     ApiResponse<Void> createAd(AdDTO request);
+    ApiResponse<List<AdDTO>> getAdsByBusinessId(Long businessId);
 
     ApiResponse<List<AdDTO>> getPendingAds();
     ApiResponse<List<ApprovedAdDTO>> getApprovedAds();
@@ -16,8 +17,9 @@ public interface AdService {
     ApiResponse<Void> declineAd(Long adId);
     ApiResponse<Void> deleteAd(Long adId);
 
+    void deactivateExpiredAds();
 
-//    public void approvePendingAds();
+    ApiResponse<Void> incrementClickCount(Long adId);
 
 
 

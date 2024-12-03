@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class AdServiceImpl implements AdService {
@@ -47,7 +48,7 @@ public class AdServiceImpl implements AdService {
             // Fetch the business details
             Business business = businessDAO.findById(request.getBusinessId());
             if (business == null) {
-                return new ApiResponse<>(false, 404, "Business not found", null);
+                return new ApiResponse<>(false, 404, "Business not found");
             }
 
             // Ensure the business has a valid plan
@@ -79,6 +80,11 @@ public class AdServiceImpl implements AdService {
             ad.setImage(request.getImage());
             ad.setRequestedDate(Timestamp.valueOf(LocalDateTime.now()));
             ad.setStatus("pending"); // Default status for new ads
+            ad.setAdStartDate(null); // Start date will be set on approval
+            ad.setAdExpirationDate(null); // Expiration will be set on approval
+            ad.setActive(false); // Default active status
+            ad.setViewCount(0); // Initialize view count
+            ad.setClickCount(0); // Initialize click count
 
             adDAO.saveAd(ad); // Save the ad to the database
 
@@ -90,34 +96,49 @@ public class AdServiceImpl implements AdService {
         }
     }
 
+    @Override
+    public ApiResponse<List<AdDTO>> getAdsByBusinessId(Long businessId) {
+        List<Ad> ads = adDAO.getAdsByBusinessId(businessId);
+        if (ads.isEmpty()) {
+            return new ApiResponse<>(false, 404, "No advertisements found for the business", null);
+        }
+
+        List<AdDTO> adDTOs = ads.stream()
+                .map(this::adToAdDTO)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(true, 200, "Advertisements retrieved successfully", adDTOs);
+    }
+
 
     @Override
     public ApiResponse<List<AdDTO>> getPendingAds() {
-        //if no pending ads, return null
-        if (adDAO.getPendingAds().isEmpty()) {
+        List<Ad> pendingAds = adDAO.getPendingAds();
+        if (pendingAds.isEmpty()) {
             return new ApiResponse<>(false, 404, "No pending advertisements found", null);
         }
-        List<Ad> pendingAds = adDAO.getPendingAds();
-        List<AdDTO> pendingAdsDTO = new ArrayList<>();
-        for (Ad ad : pendingAds) {
-            pendingAdsDTO.add(adToAdDTO(ad));
-        }
-        return new ApiResponse<>(true, 200, "Pending Advertisements retrieved successfully", pendingAdsDTO);
+
+        List<AdDTO> adDTOs = pendingAds.stream()
+                .map(this::adToAdDTO)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(true, 200, "Pending advertisements retrieved successfully", adDTOs);
     }
 
     @Override
     public ApiResponse<List<ApprovedAdDTO>> getApprovedAds() {
-        //if no pending ads, return null
-        if (adDAO.getApprovedAds().isEmpty()) {
+        List<Ad> approvedAds = adDAO.getApprovedAds();
+        if (approvedAds.isEmpty()) {
             return new ApiResponse<>(false, 404, "No approved advertisements found", null);
         }
-        List<Ad> approvedAds = adDAO.getApprovedAds();
-        List<ApprovedAdDTO> approvedAdDTO = new ArrayList<>();
-        for (Ad ad : approvedAds) {
-            approvedAdDTO.add(adToApprovedAdDTO(ad));
-        }
-        return new ApiResponse<>(true, 200, "Approved Advertisements retrieved successfully", approvedAdDTO);
+
+        List<ApprovedAdDTO> approvedAdDTOs = approvedAds.stream()
+                .map(this::adToApprovedAdDTO)
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(true, 200, "Approved advertisements retrieved successfully", approvedAdDTOs);
     }
+
 
     @Override
     public ApiResponse<Void> approveAd(Long adId) {
@@ -125,9 +146,19 @@ public class AdServiceImpl implements AdService {
         if (ad == null) {
             return new ApiResponse<>(false, 404, "Ad not found", null);
         }
-        adDAO.setStatus(adId, "approved");
+
+        // Set start and expiration dates
+        Timestamp startDate = new Timestamp(System.currentTimeMillis());
+        Timestamp expirationDate = Timestamp.valueOf(startDate.toLocalDateTime().plusMonths(1));
+        ad.setAdStartDate(startDate);
+        ad.setAdExpirationDate(expirationDate);
+        ad.setActive(true);
+
+        adDAO.updateAd(ad);
+
         return new ApiResponse<>(true, 200, "Ad approved successfully", null);
     }
+
 
     @Override
     public ApiResponse<Void> declineAd(Long adId) {
@@ -147,13 +178,23 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
-        String imageUri = "/business/ads/" + ad.getImage();
-        adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
-        Business business = businessDAO.findById(ad.getBusinessId());
-        adDto.setBusinessPlan(businessPlanDAO.findNameById(business.getPlanId()));
+        adDto.setBusinessPlan(businessPlanDAO.findNameById(ad.getBusinessId()));
         adDto.setRequestedDate(ad.getRequestedDate());
+        adDto.setAdStartDate(ad.getAdStartDate()); // New field
+        adDto.setAdExpirationDate(ad.getAdExpirationDate()); // New field
         adDto.setStatus(ad.getStatus());
+        adDto.setActive(ad.isActive());
+        adDto.setClickCount(ad.getClickCount());
+        if (ad.getAdExpirationDate() != null) {
+            LocalDateTime expiration = ad.getAdExpirationDate().toLocalDateTime();
+            LocalDateTime now = LocalDateTime.now();
+            int remainingDays = (int) ChronoUnit.DAYS.between(now, expiration);
+            adDto.setRemainingDays(Math.max(0, remainingDays)); // Avoid negative days
+        } else {
+            adDto.setRemainingDays(null); // No expiration date means unlimited or undefined
+        }
+
         return adDto;
     }
 
@@ -164,29 +205,21 @@ public class AdServiceImpl implements AdService {
         adDto.setBusinessId(ad.getBusinessId());
         adDto.setTitle(ad.getTitle());
         adDto.setDescription(ad.getDescription());
-        String imageUri = "/business/ads/" + ad.getImage();
-        adDto.setImage(imageUri);
         adDto.setImage(ad.getImage());
-        Business business = businessDAO.findById(ad.getBusinessId());
-        adDto.setBusinessPlan(businessPlanDAO.findNameById(business.getPlanId()));
-        adDto.setPostedDate(business.getPaidDate());
-        Timestamp planEndTimestamp = business.getPlanEndDate();
-        LocalDateTime planEndDate = planEndTimestamp.toLocalDateTime();
-        LocalDateTime currentDateTime = LocalDateTime.now();
-        Integer remainingDays = (int) ChronoUnit.DAYS.between(currentDateTime, planEndDate);
-        adDto.setRemainingDays(remainingDays);
+        adDto.setBusinessPlan(businessPlanDAO.findNameById(ad.getBusinessId()));
+        adDto.setRequestedDate(ad.getRequestedDate());
+        adDto.setAdStartDate(ad.getAdStartDate()); // New field
+        adDto.setAdExpirationDate(ad.getAdExpirationDate()); // New field
         adDto.setStatus(ad.getStatus());
+        adDto.setActive(ad.isActive());
+        adDto.setClickCount(ad.getClickCount());
+        if (ad.getAdExpirationDate() != null) {
+            LocalDateTime expirationDate = ad.getAdExpirationDate().toLocalDateTime();
+            LocalDateTime now = LocalDateTime.now();
+            adDto.setRemainingDays((int) ChronoUnit.DAYS.between(now, expirationDate));
+        }
         return adDto;
     }
-
-//    public void approvePendingAds() {
-//        int rowsUpdated = adDAO.approvePendingAds();
-//        if (rowsUpdated > 0) {
-//            System.out.println(rowsUpdated + " ad(s) updated to 'approved' status.");
-//        } else {
-//            System.out.println("No pending ads to approve.");
-//        }
-//    }
 
     public ApiResponse<Void> deleteAd(Long adId) {
         Ad ad = adDAO.findById(adId);
@@ -196,4 +229,28 @@ public class AdServiceImpl implements AdService {
         adDAO.deleteAd(adId);
         return new ApiResponse<>(true, 200, "Ad deleted successfully", null);
     }
+
+    @Override
+    public void deactivateExpiredAds() {
+        List<Ad> expiredAds = adDAO.findExpiredAds();
+        for (Ad ad : expiredAds) {
+            ad.setActive(false);
+            adDAO.updateAd(ad);
+        }
+    }
+
+    @Override
+    public ApiResponse<Void> incrementClickCount(Long adId) {
+        Ad ad = adDAO.findById(adId);
+        if (ad == null) {
+            return new ApiResponse<>(false, 404, "Ad not found", null);
+        }
+
+        ad.setClickCount(ad.getClickCount() + 1);
+        adDAO.updateAd(ad);
+
+        return new ApiResponse<>(true, 200, "Click count incremented", null);
+    }
+
+
 }

@@ -70,11 +70,11 @@ public class ReservationController {
         }
     }
 
-    @PutMapping("/{reservationId}/status")
-    public ApiResponse<Void> updateReservationStatus(@PathVariable int reservationId, @RequestBody ReservationForBusinessDTO reservation) {
+    @PutMapping("/{reservationUnitId}/status")
+    public ApiResponse<Void> updateReservationStatus(@PathVariable long reservationUnitId, @RequestBody ReservationForBusinessDTO reservation) {
         logger.info("Successfully updated reservation {}", reservation);
         try {
-            reservationService.updateReservationStatus(reservationId, reservation.getReservationStatus());
+            reservationService.updateReservationStatus(reservationUnitId, reservation.getReservationStatus());
             logger.info("Successfully updated reservation {}", reservation);
             return new ApiResponse<>(true, HttpStatus.OK.value(), "Successfully updated the reservation");
         }
@@ -82,6 +82,22 @@ public class ReservationController {
             logger.error("Error updating reservation {}", e.getMessage(), e);
             return new ApiResponse<>(false, HttpStatus.INTERNAL_SERVER_ERROR.value(), "Error updating the reservation");
         }
+    }
+
+    // Fetch Reserved Items for Traveller
+    @GetMapping("/traveller/reserved-items/{travellerId}")
+    public ResponseEntity<ApiResponse<List<ReservationForBusinessDTO>>> getReservedItems(
+            @PathVariable Long travellerId) {
+        List<ReservationForBusinessDTO> reservedItems = reservationService.getReservedItemsByTravellerId(travellerId);
+        return ResponseEntity.ok(new ApiResponse<>(true, 200, "Reserved items fetched successfully", reservedItems));
+    }
+
+    // Fetch Purchased Items for Traveller
+    @GetMapping("/traveller/purchased-items/{travellerId}")
+    public ResponseEntity<ApiResponse<List<ReservationForBusinessDTO>>> getPurchasedItems(
+            @PathVariable Long travellerId) {
+        List<ReservationForBusinessDTO> purchasedItems = reservationService.getPurchasedItemsByTravellerId(travellerId);
+        return ResponseEntity.ok(new ApiResponse<>(true, 200, "Purchased items fetched successfully", purchasedItems));
     }
 
 }

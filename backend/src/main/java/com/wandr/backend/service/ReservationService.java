@@ -11,12 +11,15 @@ import java.util.List;
 
 public interface ReservationService {
 
-//    ApiResponse<String> markReservationAsPurchased(Long reservationId);
-//    ApiResponse<String> expireReservations();
+    ApiResponse<String> expireReservations();
     List<ReservationForBusinessDTO> getReservationsByProductId(int productId);
-    boolean updateReservationStatus(int reservationId, String status);
+    boolean updateReservationStatus(long reservationUnitId, String status);
     List<ReservationForBusinessDTO> getReservationsByBusinessId(int businessId);
 
     ApiResponse<Void> createReservation(CreateReservationRequestDTO requestDTO);
+
+    List<ReservationForBusinessDTO> getReservedItemsByTravellerId(Long travellerId);
+
+    List<ReservationForBusinessDTO> getPurchasedItemsByTravellerId(Long travellerId);
 
     }
