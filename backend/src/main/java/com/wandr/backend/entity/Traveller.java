@@ -16,7 +16,7 @@ public class Traveller {
     private List<Long> activities;
     private String profileImage;
     private Timestamp createdAt;
-    private String membership;
+    private Integer membership;
     private String jwt;
     private String salt;
 

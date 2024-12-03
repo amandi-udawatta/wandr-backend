@@ -22,7 +22,7 @@ public class TravellerRowMapper implements RowMapper<Traveller> {
         traveller.setCountry(rs.getString("country"));
         traveller.setProfileImage(rs.getString("profile_image"));
         traveller.setJwt(rs.getString("jwt"));
-        traveller.setMembership(rs.getString("membership"));
+        traveller.setMembership(rs.getInt("membership"));
 
 
         String categories = rs.getString("categories");

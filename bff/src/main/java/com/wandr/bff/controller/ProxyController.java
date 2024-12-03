@@ -115,9 +115,10 @@ public class ProxyController {
                     String role = userDetails.get("role").toString();
                     String email = userDetails.get("email").toString();
                     String name = userDetails.get("name").toString();
+                    Integer plan =  Integer.valueOf(userDetails.get("plan").toString());
 
-                    String accessToken = jwtService.createJwtToken(id, role, email, name);
-                    String refreshToken = jwtService.createRefreshToken(id, role, email, name);
+                    String accessToken = jwtService.createJwtToken(id, role, email, name, plan);
+                    String refreshToken = jwtService.createRefreshToken(id, role, email, name, plan);
 
                     logger.info("Successfully created JWT token for user with email: {}", email);
 
@@ -188,10 +189,11 @@ public class ProxyController {
                         String role = userDetails.get("role").toString();
                         String email = userDetails.get("email").toString();
                         String name = userDetails.get("name").toString();
+                        Integer plan = Integer.valueOf(userDetails.get("plan").toString());
 
                         // Generate JWT tokens
-                        String accessToken = jwtService.createJwtToken(id, role, email, name);
-                        String refreshToken = jwtService.createRefreshToken(id, role, email, name);
+                        String accessToken = jwtService.createJwtToken(id, role, email, name, plan);
+                        String refreshToken = jwtService.createRefreshToken(id, role, email, name, plan);
 
                         logger.info("Successfully created JWT tokens for user with email: {}", email);
 

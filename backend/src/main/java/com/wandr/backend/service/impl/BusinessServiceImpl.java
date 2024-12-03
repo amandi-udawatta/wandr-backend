@@ -122,7 +122,8 @@ public class BusinessServiceImpl implements BusinessService {
                 business.getBusinessId(),
                 business.getEmail(),
                 Role.BUSINESS,
-                business.getName()
+                business.getName(),
+                business.getPlanId()
         );
 
         logger.info("Business with email: {} logged in successfully", request.getEmail());
@@ -176,7 +177,8 @@ public class BusinessServiceImpl implements BusinessService {
                 businessData.getBusinessId(),
                 businessData.getEmail(),
                 Role.BUSINESS,
-                businessData.getName()
+                businessData.getName(),
+                businessData.getPlanId()
         );
 
         return new ApiResponse<>(true, 201, "Business registered successfully", userDetails);

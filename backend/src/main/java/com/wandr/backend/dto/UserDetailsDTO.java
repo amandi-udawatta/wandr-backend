@@ -13,4 +13,5 @@ public class UserDetailsDTO {
     private String email;
     private Role role;
     private String name;
+    private Integer plan;
 }

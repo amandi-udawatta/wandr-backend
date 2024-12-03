@@ -1,6 +1,7 @@
 package com.wandr.backend.dto.traveller;
 
 import lombok.Data;
+import org.springframework.data.relational.core.sql.In;
 
 import java.util.List;
 
@@ -12,5 +13,5 @@ public class UpdateProfileDTO {
     private String profileImage;  // This will be the URL or filename of the profile image
     private List<Long> categories;
     private List<Long> activities;
-    private String membership;
+    private Integer membership;
 }

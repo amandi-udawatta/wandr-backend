@@ -22,12 +22,13 @@ public class JwtService {
     @Value("${jwt.refresh.token.expiry}")
     private long REFRESH_TOKEN_EXPIRY;
 
-    public String createJwtToken(Long id, String role, String email, String name) {
+    public String createJwtToken(Long id, String role, String email, String name, Integer plan) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("role", role);
         claims.put("email", email);
         claims.put("name", name);
+        claims.put("plan", plan); // Include plan here
 
         return Jwts.builder()
                 .setClaims(claims)
@@ -38,12 +39,13 @@ public class JwtService {
                 .compact();
     }
 
-    public String createRefreshToken(Long id, String role, String email, String name) {
+    public String createRefreshToken(Long id, String role, String email, String name, Integer plan) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("role", role);
         claims.put("email", email);
         claims.put("name", name);
+        claims.put("plan", plan); // Include plan here
 
         return Jwts.builder()
                 .setClaims(claims)

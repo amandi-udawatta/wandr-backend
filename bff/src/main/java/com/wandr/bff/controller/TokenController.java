@@ -21,8 +21,9 @@ public class TokenController {
         String role = userInfo.get("role").toString();
         String email = userInfo.get("email").toString();
         String name = userInfo.get("name").toString();
+        Integer plan = Integer.valueOf(userInfo.get("plan").toString());
 
-        return jwtService.createJwtToken(id, role, email, name);
+        return jwtService.createJwtToken(id, role, email, name, plan);
     }
 
     @PostMapping("/generate-refresh-token")
@@ -31,8 +32,9 @@ public class TokenController {
         String role = userInfo.get("role").toString();
         String email = userInfo.get("email").toString();
         String name = userInfo.get("name").toString();
+        Integer plan = Integer.valueOf(userInfo.get("plan").toString());
 
-        return jwtService.createRefreshToken(id, role, email, name);
+        return jwtService.createRefreshToken(id, role, email, name, plan);
     }
 
     @PostMapping("/refresh-token")
@@ -44,8 +46,9 @@ public class TokenController {
         String role = claims.get("role", String.class);
         String email = claims.get("email", String.class);
         String name = claims.get("name", String.class);
+        Integer plan = claims.get("plan", Integer.class);
 
         // Generate new access token
-        return jwtService.createJwtToken(id, role, email, name);
+        return jwtService.createJwtToken(id, role, email, name, plan);
     }
 }
