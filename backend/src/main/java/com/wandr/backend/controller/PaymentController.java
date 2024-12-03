@@ -1,14 +1,16 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
-import com.wandr.backend.dto.payment.GenerateHashRequestDTO;
+import com.wandr.backend.dto.payment.CreatePaymentIntentRequestDTO;
+import com.wandr.backend.dto.payment.CreatePaymentIntentResponseDTO;
 import com.wandr.backend.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
-@RequestMapping("/api/payments")
+@RequestMapping("/api/stripe")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -18,11 +20,11 @@ public class PaymentController {
         this.paymentService = paymentService;
     }
 
-    @PostMapping("/generate-hash")
-    public ResponseEntity<ApiResponse<String>> generateHash(
-            @RequestBody GenerateHashRequestDTO request) {
+    @PostMapping("/create-payment-intent")
+    public ResponseEntity<ApiResponse<CreatePaymentIntentResponseDTO>> createPaymentIntent(
+             @RequestBody CreatePaymentIntentRequestDTO requestDTO) {
 
-        String hash = paymentService.generatePaymentHash(request.getOrderId(), request.getAmount(), request.getCurrency());
-        return ResponseEntity.ok(new ApiResponse<>(true, 200, "Hash generated successfully", hash));
+        CreatePaymentIntentResponseDTO responseDTO = paymentService.createPaymentIntent(requestDTO);
+        return ResponseEntity.ok(new ApiResponse<>(true, 200, "Payment Intent created successfully", responseDTO));
     }
 }
