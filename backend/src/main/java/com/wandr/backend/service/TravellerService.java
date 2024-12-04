@@ -1,6 +1,7 @@
 package com.wandr.backend.service;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.recommendation.RecommendedPlaceDTO;
 import com.wandr.backend.dto.traveller.*;
@@ -34,6 +35,7 @@ public interface TravellerService {
 
     ApiResponse<List<DashboardPlaceDTO>> getRecommendedPlacesForDashboard(Long travellerId);
 
+    ApiResponse<List<ChattedBusinessDTO>> getChattedBusinesses(Long travellerId);
 
 
 
@@ -44,4 +46,6 @@ public interface TravellerService {
 
 
 
-    }
+
+
+}

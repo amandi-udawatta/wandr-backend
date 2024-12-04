@@ -1,6 +1,7 @@
 package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.recommendation.RecommendedPlaceDTO;
 import com.wandr.backend.dto.traveller.*;
@@ -201,4 +202,18 @@ public class TravellerController {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while filling recommended places"));
         }
     }
+
+    //get all travellers who have chatted with the business id
+    @GetMapping("/chatted-businesses/{travellerId}")
+    public ResponseEntity<ApiResponse<List<ChattedBusinessDTO>>> getChattedBusiness(@PathVariable Long travellerId) {
+        logger.info("Received request to get all travellers who have chatted with business with ID: {}", travellerId);
+        try {
+            ApiResponse<List<ChattedBusinessDTO>> response = travellerService.getChattedBusinesses(travellerId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("An error occurred while getting all travellers who have chatted with business with ID: {}", travellerId, e);
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting all travellers who have chatted with business"));
+        }
+    }
+
 }

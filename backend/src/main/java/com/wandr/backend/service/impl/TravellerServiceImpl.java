@@ -5,6 +5,7 @@ import com.wandr.backend.dao.CategoryDAO;
 import com.wandr.backend.dao.PlaceDAO;
 import com.wandr.backend.dao.TravellerDAO;
 import com.wandr.backend.dto.*;
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.place.PlaceDTO;
 import com.wandr.backend.dto.recommendation.*;
@@ -357,6 +358,16 @@ public class TravellerServiceImpl implements TravellerService {
         List<DashboardPlaceDTO> recommendedPlaces = travellerDAO.getRecommendedPlaces(travellerId);
         return new ApiResponse<>(true, 200, "Recommended places retrieved successfully", recommendedPlaces);
     }
+
+    @Override
+    public ApiResponse<List<ChattedBusinessDTO>> getChattedBusinesses(Long travellerId) {
+        if (travellerDAO.getChattedBusinesses(travellerId).isEmpty()) {
+            return new ApiResponse<>(false, 404, "No chatted businesses found", null);
+        }
+        List<ChattedBusinessDTO> businesses = travellerDAO.getChattedBusinesses(travellerId);
+        return new ApiResponse<>(true, 200, "Chatted businesses retrieved successfully", businesses);
+    }
+
 
 
 
