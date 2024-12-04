@@ -1,6 +1,8 @@
 package com.wandr.backend.dao;
 
+import com.wandr.backend.dto.chat.ChattedTravellerDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
+import com.wandr.backend.dto.traveller.ChattedBusinessDTO;
 import com.wandr.backend.entity.Activity;
 import com.wandr.backend.entity.Category;
 import com.wandr.backend.entity.Traveller;
@@ -183,6 +185,20 @@ public class TravellerDAO {
     public List<Long> getRecommendedPlaceIds(Long travellerId) {
         String sql = "SELECT jsonb_array_elements_text(recommended_places)::BIGINT AS place_id FROM travellers WHERE traveller_id = ?";
         return jdbcTemplate.queryForList(sql, new Object[]{travellerId}, Long.class);
+    }
+
+    public List<ChattedBusinessDTO> getChattedBusinesses(Long travellerId) {
+        String sql = "SELECT b.business_id, b.name, b.email, b.profile_image " +
+                "FROM businesses b " +
+                "JOIN chat_messages cm ON b.business_id = cm.sender_id OR b.business_id = cm.receiver_id " +
+                "WHERE cm.sender_id = ? OR cm.receiver_id = ? " +
+                "GROUP BY b.business_id";
+        return jdbcTemplate.query(sql, new Object[]{travellerId, travellerId}, (rs, rowNum) -> new ChattedBusinessDTO(
+                rs.getLong("business_id"),
+                rs.getString("name"),
+                rs.getString("email"),
+                rs.getString("profile_image")
+        ));
     }
 
 
