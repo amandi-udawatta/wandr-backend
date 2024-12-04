@@ -20,13 +20,6 @@ public class ChatMessageController {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatMessageController.class);
 
-    /**
-     * Get chat history between two parties.
-     *
-     * @param senderId   the sender ID
-     * @param receiverId the receiver ID
-     * @return List of chat messages
-     */
     @GetMapping("/history")
     public ResponseEntity<ApiResponse<List<ChatMessageDTO>>> getChatHistory(
             @RequestParam Long senderId,
@@ -41,12 +34,6 @@ public class ChatMessageController {
         }
     }
 
-    /**
-     * Fetch a specific chat message by its ID.
-     *
-     * @param messageId the message ID
-     * @return the chat message
-     */
     @GetMapping("/{messageId}")
     public ResponseEntity<ChatMessageDTO> getMessage(@PathVariable Long messageId) {
         logger.info("Fetching message with ID " + messageId);
