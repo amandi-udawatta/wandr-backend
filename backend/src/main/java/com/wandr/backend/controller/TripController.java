@@ -2,6 +2,7 @@ package com.wandr.backend.controller;
 
 import com.wandr.backend.dto.ApiResponse;
 import com.wandr.backend.dto.PlaceRatingDTO;
+import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.trip.*;
 
@@ -167,6 +168,17 @@ public class TripController {
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting recommended places: " + e.getMessage()));
+        }
+
+    }
+
+    @GetMapping("/recommended-businesses/{tripId}")
+    public ResponseEntity<ApiResponse<List<BusinessDTO>>> getRecommendedBusinessesForTrip(@PathVariable Long tripId) {
+        try {
+            ApiResponse<List<BusinessDTO>> response = tripService.getRecommendedBusinessesForTrip(tripId);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.ok(new ApiResponse<>(false, 500, "An error occurred while getting recommended shops: " + e.getMessage()));
         }
 
     }

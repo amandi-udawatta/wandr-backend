@@ -2,6 +2,7 @@ package com.wandr.backend.dao;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.business.PaidBusinessDTO;
 import com.wandr.backend.dto.business.PopularStoreDTO;
 import com.wandr.backend.dto.chat.ChattedTravellerDTO;
@@ -149,8 +150,6 @@ public class BusinessDAO {
             Business business = new BusinessRowMapper().mapRow(rs, rowNum);
             String businessType = business.getBusinessType() == 1 ? "Shop" : "Service";
             String shopCategory = jdbcTemplate.queryForObject("SELECT name FROM shop_categories WHERE category_id = ?", new Object[]{business.getShopCategory()}, String.class);
-            String shopImage = business.getShopImage() == null ? null : backendUrl + "/business/shop_images/" + business.getShopImage();
-            String profileImage = business.getProfileImage() == null ? null : backendUrl + "/business/profile_images/" + business.getProfileImage();
 
             return new PaidBusinessDTO(
                     business.getBusinessId(),
@@ -162,8 +161,8 @@ public class BusinessDAO {
                     business.getLanguages(),
                     business.getWebsiteUrl(),
                     business.getBusinessContact(),
-                    shopImage,
-                    profileImage,
+                    business.getShopImage(),
+                    business.getProfileImage(),
                     businessType,
                     business.getOwnerName(),
                     business.getOwnerContact(),
@@ -230,5 +229,13 @@ public class BusinessDAO {
                 rs.getString("profile_image")
         ));
     }
+
+    public List<Business> getAllBusinesses() {
+        String sql = "SELECT * FROM businesses WHERE status = 'approved' OR status = 'paid'";
+        return jdbcTemplate.query(sql, new BusinessRowMapper());
+    }
+
+
+
 
 }

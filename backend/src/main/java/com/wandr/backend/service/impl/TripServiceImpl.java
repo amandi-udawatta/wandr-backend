@@ -1,12 +1,11 @@
 package com.wandr.backend.service.impl;
 
-import com.wandr.backend.dao.PlaceDAO;
-import com.wandr.backend.dao.TravellerDAO;
-import com.wandr.backend.dao.TripDAO;
-import com.wandr.backend.dao.TripPlaceDAO;
+import com.wandr.backend.dao.*;
 import com.wandr.backend.dto.ApiResponse;
+import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.trip.*;
+import com.wandr.backend.entity.Business;
 import com.wandr.backend.entity.Places;
 import com.wandr.backend.entity.Trip;
 import com.wandr.backend.entity.TripPlace;
@@ -38,12 +37,19 @@ public class TripServiceImpl implements TripService {
 
     private final PlaceDAO placeDAO;
 
+    private final BusinessDAO businessDAO;
+    private final ShopCategoryDAO shopCategoryDAO;
+    private final BusinessPlanDAO businessPlanDAO;
+
     private final TravellerDAO travellerDAO;
 
     private static final Logger logger = LoggerFactory.getLogger(TripServiceImpl.class);
-    public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, TravellerDAO travellerDAO, RouteOptimizationUtil routeOptimizationUtil, GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil) {
+    public TripServiceImpl(TripDAO tripDAO, TripPlaceDAO tripPlaceDAO, PlaceDAO placeDAO, TravellerDAO travellerDAO, RouteOptimizationUtil routeOptimizationUtil, GoogleMapsDistanceMatrixUtil googleMapsDistanceMatrixUtil, BusinessDAO businessDAO, ShopCategoryDAO shopCategoryDAO, BusinessPlanDAO businessPlanDAO) {
         this.tripDAO = tripDAO;
         this.tripPlaceDAO = tripPlaceDAO;
+        this.businessDAO = businessDAO;
+        this.shopCategoryDAO = shopCategoryDAO;
+        this.businessPlanDAO = businessPlanDAO;
         this.travellerDAO = travellerDAO;
         this.placeDAO = placeDAO;
         this.routeOptimizationUtil = routeOptimizationUtil;
@@ -515,6 +521,100 @@ public class TripServiceImpl implements TripService {
         // Step 6: Return filtered places as a response
         return new ApiResponse<>(true, 200, "Recommended places within the trip radius retrieved successfully", filteredPlaces);
     }
+
+    @Override
+    public ApiResponse<List<BusinessDTO>> getRecommendedBusinessesForTrip(Long tripId) {
+        // Fetch trip details and places
+        Trip trip = tripDAO.findById(tripId);
+        if (trip == null) {
+            logger.error("Trip not found");
+            return new ApiResponse<>(false, 404, "Trip not found", null);
+        }
+
+        List<TripPlace> tripPlaces = tripPlaceDAO.getTripPlacesByTripIdForRoute(tripId, "place_order");
+        if (tripPlaces.isEmpty()) {
+            logger.error("No places in the trip to calculate radius");
+            return new ApiResponse<>(false, 400, "No places in the trip to calculate radius", null);
+        }
+
+        // Step 1: Prepare origins (trip places)
+        List<String> tripPlaceCoordinates = tripPlaces.stream()
+                .map(tp -> placeDAO.getLatLongByPlaceId(tp.getPlaceId())) // Fetch lat/lng
+                .collect(Collectors.toList());
+
+        // Step 2: Fetch all businesses from the DAO
+        List<Business> allBusinesses = businessDAO.getAllBusinesses();
+        if (allBusinesses.isEmpty()) {
+            logger.info("No businesses found");
+            return new ApiResponse<>(true, 200, "No businesses found", List.of());
+        }
+
+        // Step 3: Prepare destinations (businesses' lat/lng)
+        List<String> businessCoordinates = allBusinesses.stream()
+                .map(b -> formatLatLong(b.getLatitude().doubleValue(), b.getLongitude().doubleValue()))
+                .collect(Collectors.toList());
+
+        // Step 4: Use Distance Matrix API to filter businesses within 5km radius
+        List<Long> filteredBusinessIds = googleMapsDistanceMatrixUtil.filterPlacesWithinRadius(
+                tripPlaceCoordinates,
+                allBusinesses.stream().map(Business::getBusinessId).collect(Collectors.toList()),
+                businessCoordinates,
+                5000
+        );
+
+        if (filteredBusinessIds.isEmpty()) {
+            logger.info("No recommended businesses within the radius");
+            return new ApiResponse<>(true, 200, "No recommended businesses within the radius", List.of());
+        }
+
+        // Step 5: Map filtered businesses to BusinessDTO and limit to 20
+        List<BusinessDTO> recommendedBusinesses = allBusinesses.stream()
+                .filter(b -> filteredBusinessIds.contains(b.getBusinessId()))
+                .limit(20)
+                .map(this::businessToBusinessDto) // Map each Business to BusinessDTO
+                .collect(Collectors.toList());
+
+        return new ApiResponse<>(true, 200, "Recommended businesses within the trip radius retrieved successfully", recommendedBusinesses);
+    }
+
+
+    private BusinessDTO businessToBusinessDto (Business business) {
+        BusinessDTO businessDTO = new BusinessDTO();
+        businessDTO.setBusinessId(business.getBusinessId());
+        businessDTO.setName(business.getName());
+        businessDTO.setEmail(business.getEmail());
+        businessDTO.setDescription(business.getDescription());
+        businessDTO.setServices(business.getServices());
+        businessDTO.setAddress(business.getAddress());
+        businessDTO.setLanguages(business.getLanguages());
+        businessDTO.setWebsiteUrl(business.getWebsiteUrl());
+        businessDTO.setBusinessContact(business.getBusinessContact());
+        if (business.getProfileImage() != null) {
+            businessDTO.setProfileImage(business.getProfileImage());
+        }
+        if (business.getShopImage() != null) {
+            businessDTO.setShopImage(business.getShopImage());
+        }
+        businessDTO.setStatus(business.getStatus());
+        businessDTO.setOwnerName(business.getOwnerName());
+        businessDTO.setOwnerContact(business.getOwnerContact());
+        businessDTO.setOwnerNic(business.getOwnerNic());
+        businessDTO.setCreatedAt(business.getCreatedAt());
+        if (business.getBusinessType() == 1) {
+            businessDTO.setBusinessType("Shop");
+        } else if (business.getBusinessType() == 2) {
+            businessDTO.setBusinessType("Service");
+        }
+        businessDTO.setLatitude(business.getLatitude());
+        businessDTO.setLongitude(business.getLongitude());
+        String shop_category = shopCategoryDAO.findNameById(business.getShopCategory());
+        businessDTO.setShopCategory(shop_category);
+        String business_plan = businessPlanDAO.findNameById(business.getPlanId());
+        businessDTO.setPlan(business_plan);
+        businessDTO.setRating(business.getRating());
+        return businessDTO;
+    }
+
 
     //create estimated time for the trip with 6 hours to eat, 2 hours for meals, 2 hours for other activities, per day and 2 hours per trip place in the trip
     private int calculateEstimatedTime(int travelTimeSeconds, int numberOfPlaces) {

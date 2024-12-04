@@ -1,5 +1,6 @@
 package com.wandr.backend.service;
 
+import com.wandr.backend.dto.business.BusinessDTO;
 import com.wandr.backend.dto.place.DashboardPlaceDTO;
 import com.wandr.backend.dto.trip.*;
 import com.wandr.backend.dto.ApiResponse;
@@ -26,6 +27,8 @@ public interface TripService {
     ApiResponse<TripTimeDTO> optimizeTrip(Long tripId, double startLat, double startLng, double endLat, double endLng);
 
     ApiResponse<List<DashboardPlaceDTO>> getRecommendedPlacesForTrip(Long tripId);
+    ApiResponse<List<BusinessDTO>> getRecommendedBusinessesForTrip(Long tripId);
+
 
     ApiResponse<Void> finalizeTrip(Long tripId);
 
